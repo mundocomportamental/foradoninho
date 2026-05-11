@@ -72,7 +72,7 @@ export default function BottomNav() {
       ticking.current = true
       requestAnimationFrame(() => {
         const target = e.target as HTMLElement
-        const currentY = (target && target !== document && target !== window)
+        const currentY = (e.target && e.target !== document && e.target !== window)
           ? (target as HTMLElement).scrollTop ?? window.scrollY
           : window.scrollY
         const diff = currentY - lastScrollY.current
