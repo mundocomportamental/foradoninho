@@ -19,21 +19,21 @@ const items = [
     ),
   },
   {
-    href: '/recentes',
-    label: 'Recentes',
+    href: '/locais',
+    label: 'Explorar',
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
         stroke={active ? '#4caf85' : '#8e8e8e'}
         strokeWidth={active ? 2.5 : 2}
         strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <polyline points="12,7 12,12 15,15" />
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
     ),
   },
   {
-    href: '/favoritos',
-    label: 'Favoritos',
+    href: '/meus-locais',
+    label: 'Meus Locais',
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24"
         fill={active ? '#4caf85' : 'none'}
@@ -65,7 +65,6 @@ export default function BottomNav() {
   const lastScrollY = useRef(0)
   const ticking = useRef(false)
 
-  // Esconde ao rolar para baixo, mostra ao rolar para cima — igual ao Nóz
   useEffect(() => {
     const handleScroll = (e: Event) => {
       if (ticking.current) return
@@ -89,11 +88,13 @@ export default function BottomNav() {
     }
   }, [])
 
-  // Sempre mostra ao trocar de rota
   useEffect(() => {
     setVisible(true)
     lastScrollY.current = 0
   }, [path])
+
+  // Redireciona /recentes e /favoritos para /meus-locais
+  const activePath = (path === '/recentes' || path === '/favoritos') ? '/meus-locais' : path
 
   return (
     <nav
@@ -108,10 +109,9 @@ export default function BottomNav() {
       }}
     >
       {items.map((item) => {
-        const active = path === item.href || (item.href !== '/mapa' && path.startsWith(item.href))
+        const active = activePath === item.href || (item.href !== '/mapa' && activePath.startsWith(item.href))
         return (
           <Link key={item.href} href={item.href} className="nav-item" style={{ color: active ? '#4caf85' : '#8e8e8e' }}>
-            {/* Pill de fundo no ícone ativo — igual ao Nóz */}
             <div style={{
               padding: '6px',
               borderRadius: '12px',

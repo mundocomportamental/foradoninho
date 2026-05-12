@@ -9,18 +9,21 @@ interface Props {
   onMarkerClick: (id: string) => void
 }
 
-// Igual ao Nóz: círculo com emoji + fundo colorido por tipo
-const TIPO_CONFIG: Record<string, { emoji: string; bg: string; border: string }> = {
-  posto:      { emoji: '⛽', bg: '#DCFCE7', border: '#86EFAC' },
-  restaurante:{ emoji: '🍽️', bg: '#FEF3C7', border: '#F59E0B' },
-  hotel:      { emoji: '🏨', bg: '#DBEAFE', border: '#93C5FD' },
-  shopping:   { emoji: '🛍️', bg: '#F3E8FF', border: '#C084FC' },
-  farmacia:   { emoji: '💊', bg: '#FFE4E6', border: '#F87171' },
-  lanchonete: { emoji: '🥐', bg: '#FEF9C3', border: '#FACC15' },
-}
-
-function getTipoConfig(tipo: string) {
-  return TIPO_CONFIG[tipo] || { emoji: '📍', bg: '#F0FAF4', border: '#86EFAC' }
+// SVG de pin de geolocalização simples
+function pinSVG(color: string, size: number) {
+  return `<div style="
+    width:${size}px;
+    height:${size}px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  ">
+    <svg width="${size}" height="${size}" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 0C7.03 0 3 4.03 3 9c0 6.75 9 16 9 16s9-9.25 9-16c0-4.97-4.03-9-9-9z"
+        fill="${color}" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="9" r="3.5" fill="white" opacity="0.9"/>
+    </svg>
+  </div>`
 }
 
 export default function MapView({ locais, userPos, center, onMarkerClick }: Props) {
@@ -42,7 +45,6 @@ export default function MapView({ locais, userPos, center, onMarkerClick }: Prop
         attributionControl: false,
       })
 
-      // CartoDB light_all — mapa cinza igual ao Nóz
       L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
         { attribution: '© CartoDB' }
@@ -71,7 +73,7 @@ export default function MapView({ locais, userPos, center, onMarkerClick }: Prop
       markersRef.current.forEach(m => m.remove())
       markersRef.current = []
 
-      // User dot — coral com glow ring, igual ao Nóz
+      // Ponto do usuário — círculo verde com anel
       if (userPos) {
         const userIcon = L.divIcon({
           html: `<div style="
@@ -87,26 +89,14 @@ export default function MapView({ locais, userPos, center, onMarkerClick }: Prop
         L.marker([userPos.lat, userPos.lng], { icon: userIcon }).addTo(map)
       }
 
-      // Marcadores — círculo com emoji por tipo, igual ao Nóz
+      // Todos os locais com pin simples
       locais.forEach(local => {
-        const cfg = getTipoConfig(local.tipo)
-        const size = local.certificado_pitstop ? 46 : 40
-        const ring = local.certificado_pitstop
-          ? `outline:2.5px solid ${cfg.border};outline-offset:2px;`
-          : ''
+        const pinColor = local.certificado_pitstop ? '#4caf85' : '#e05b4e'
+        const size = local.certificado_pitstop ? 32 : 28
         const icon = L.divIcon({
-          html: `<div style="
-            width:${size}px;height:${size}px;
-            border-radius:50%;
-            background:${cfg.bg};
-            border:2.5px solid ${cfg.border};
-            display:flex;align-items:center;justify-content:center;
-            font-size:${local.certificado_pitstop ? 20 : 18}px;
-            box-shadow:0 4px 12px rgba(0,0,0,0.13);
-            ${ring}
-          ">${cfg.emoji}</div>`,
+          html: pinSVG(pinColor, size),
           iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2],
+          iconAnchor: [size / 2, size],
           className: '',
         })
         const marker = L.marker([local.lat, local.lng], { icon })
