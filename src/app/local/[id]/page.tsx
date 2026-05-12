@@ -38,14 +38,14 @@ function RatingBar({ label, value }: { label: string; value: number | null }) {
   )
 }
 
-// ── Componente ScorePicker (1-10) ──────────────────────────────────────
+// ── ScorePicker geral (1-10, barras numéricas) ────────────────────────
 function ScorePicker({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 14, fontWeight: 600 }}>{label}</span>
-        <span style={{ fontSize: 18, fontWeight: 800, color: value >= 8 ? 'var(--green-dark)' : value >= 5 ? '#f59e0b' : value > 0 ? '#ef4444' : 'var(--text-muted)' }}>
-          {value > 0 ? value : '—'}
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <span style={{ fontSize: 15, fontWeight: 700 }}>{label}</span>
+        <span style={{ fontSize: 22, fontWeight: 800, color: value >= 8 ? 'var(--green-dark)' : value >= 5 ? '#f59e0b' : value > 0 ? '#ef4444' : 'var(--text-muted)' }}>
+          {value > 0 ? value : '—'}<span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>/10</span>
         </span>
       </div>
       <div style={{ display: 'flex', gap: 4 }}>
@@ -54,27 +54,59 @@ function ScorePicker({ label, value, onChange }: { label: string; value: number;
             key={n}
             onClick={() => onChange(n)}
             style={{
-              flex: 1,
-              height: 32,
-              borderRadius: 6,
-              border: 'none',
+              flex: 1, height: 36, borderRadius: 8, border: 'none',
               background: n <= value
                 ? (value >= 8 ? '#4caf85' : value >= 5 ? '#f59e0b' : '#ef4444')
                 : 'var(--border)',
-              cursor: 'pointer',
-              transition: 'background 0.1s',
-              fontSize: 11,
-              fontWeight: 700,
+              cursor: 'pointer', transition: 'background 0.1s',
+              fontSize: 12, fontWeight: 700,
               color: n <= value ? 'white' : 'var(--text-muted)',
             }}
-          >
-            {n}
-          </button>
+          >{n}</button>
         ))}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Péssimo</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Péssima</span>
         <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Excepcional</span>
+      </div>
+    </div>
+  )
+}
+
+// ── SmilePicker (1-5 com carinhas, sem números) ───────────────────────
+const SMILES = ['😞', '😕', '😐', '🙂', '😄']
+const SMILE_LABELS = ['Ruim', 'Regular', 'Ok', 'Bom', 'Ótimo']
+
+function SmilePicker({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <span style={{ fontSize: 15, fontWeight: 700 }}>{label}</span>
+        {value > 0 && (
+          <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>{SMILE_LABELS[value - 1]}</span>
+        )}
+      </div>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+        {SMILES.map((emoji, i) => {
+          const n = i + 1
+          const active = value === n
+          return (
+            <button
+              key={n}
+              onClick={() => onChange(n)}
+              style={{
+                flex: 1, height: 54, borderRadius: 12, border: active ? '2px solid var(--green)' : '1.5px solid var(--border)',
+                background: active ? 'var(--green-soft)' : 'var(--bg)',
+                cursor: 'pointer', transition: 'all 0.15s',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+                fontSize: active ? 26 : 22,
+                transform: active ? 'scale(1.08)' : 'scale(1)',
+              }}
+            >
+              <span>{emoji}</span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
@@ -401,19 +433,20 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
               ))}
             </div>
 
-            {/* Etapa 1: Ratings 1-10 */}
+            {/* Etapa 1: Experiência geral (1-10) + Limpeza/Atendimento/Instalações (carinhas 1-5) */}
             {flowStep === 1 && (
               <>
                 <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Como foi sua experiência?</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Avalie de 1 a 10 em cada categoria</div>
-                <ScorePicker label="Limpeza" value={rLimpeza} onChange={setRLimpeza} />
-                <ScorePicker label="Atendimento" value={rAtendimento} onChange={setRAtendimento} />
-                <ScorePicker label="Instalações" value={rInstalacoes} onChange={setRInstalacoes} />
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Avalie de 1 a 10 na experiência geral e use as carinhas para o resto</div>
                 <ScorePicker label="Experiência geral" value={rExperiencia} onChange={setRExperiencia} />
+                <div style={{ height: 1, background: 'var(--border)', margin: '4px 0 18px' }} />
+                <SmilePicker label="Limpeza" value={rLimpeza} onChange={setRLimpeza} />
+                <SmilePicker label="Atendimento" value={rAtendimento} onChange={setRAtendimento} />
+                <SmilePicker label="Instalações" value={rInstalacoes} onChange={setRInstalacoes} />
                 <button
                   className="btn-primary"
                   style={{ marginTop: 8 }}
-                  disabled={!rLimpeza || !rAtendimento || !rInstalacoes || !rExperiencia}
+                  disabled={!rExperiencia || !rLimpeza || !rAtendimento || !rInstalacoes}
                   onClick={() => setFlowStep(2)}
                 >
                   Próximo
