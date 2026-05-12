@@ -8,7 +8,7 @@ const SLIDES = [
     emoji: '🗺️',
     bg: 'linear-gradient(135deg, #e8f5ef 0%, #d1f0e0 100%)',
     title: 'Encontre locais\nbaby-friendly',
-    desc: 'Fraldários, microondas, cadeirão e muito mais. Tudo mapeado colaborativamente por pais e mães em viagem.',
+    desc: 'Fraldários, microondas, cadeirão e muito mais. Tudo mapeado colaborativamente por pais, mães e cuidadores em viagem.',
   },
   {
     emoji: '📍',
@@ -20,7 +20,7 @@ const SLIDES = [
     emoji: '✅',
     bg: 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)',
     title: 'Check-in e\navaliações',
-    desc: 'Com um toque, confirme que um local está ativo e avalie a experiência para ajudar outras famílias na estrada.',
+    desc: 'Com um toque, confirme que um local está ativo e avalie a experiência para ajudar outras famílias e cuidadores na estrada.',
   },
 ]
 
@@ -75,6 +75,7 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
 
   async function handleGoogle() {
     setGoogleLoading(true); setError('')
+    localStorage.setItem('onboarding_done', '1')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/mapa` },
@@ -84,6 +85,7 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
 
   async function handleFacebook() {
     setFacebookLoading(true); setError('')
+    localStorage.setItem('onboarding_done', '1')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'facebook',
       options: { redirectTo: `${window.location.origin}/mapa` },
