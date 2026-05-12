@@ -43,6 +43,7 @@ export default function PerfilPage() {
   const [monthlyTotal, setMonthlyTotal] = useState(0)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [showAnuncio, setShowAnuncio] = useState(false)
+  const [showSobreNos, setShowSobreNos] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [editName, setEditName] = useState('')
   const [editUsername, setEditUsername] = useState('')
@@ -89,8 +90,6 @@ export default function PerfilPage() {
   const initials = profile?.display_name
     ? profile.display_name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
     : '?'
-
-  const isPro = profile?.plano === 'viajante'
 
   async function saveProfile() {
     setSaving(true)
@@ -211,13 +210,7 @@ export default function PerfilPage() {
                   {profile.username ? `@${profile.username}` : isLoggedIn ? 'Toque no ✏ para adicionar @' : ''}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                  {isPro
-                    ? <span style={{ fontSize: 11, fontWeight: 700, background: 'var(--pro)', color: '#7a5000', padding: '2px 8px', borderRadius: 20 }}>Viajante</span>
-                    : <>
-                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Grátis</span>
-                        <Link href="/planos" style={{ fontSize: 12, color: 'var(--green)', fontWeight: 600, textDecoration: 'none' }}>Fazer upgrade</Link>
-                      </>
-                  }
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Grátis</span>
                 </div>
               </div>
             )}
@@ -278,6 +271,19 @@ export default function PerfilPage() {
         </div>
 
         <div className="card" style={{ margin: '0 16px 12px', overflow: 'hidden' }}>
+          <button className="menu-item" style={{ width: '100%', border: 'none', background: 'none', fontFamily: 'var(--font)', cursor: 'pointer', textAlign: 'left' }} onClick={() => setShowSobreNos(true)}>
+            <div className="menu-item-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <span className="menu-item-text">Sobre nós</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
           <button className="menu-item" style={{ width: '100%', border: 'none', background: 'none', fontFamily: 'var(--font)', cursor: 'pointer', textAlign: 'left' }} onClick={() => setOfflineMsg(true)}>
             <div className="menu-item-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -322,26 +328,12 @@ export default function PerfilPage() {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: '#5b21b6', marginBottom: 2 }}>Anuncie seu serviço</div>
-              <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.4 }}>Doula, consultora, pediatra e mais — alcance famílias na sua cidade</div>
+              <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.4 }}>Doula, consultora, pediatra e mais — alcance famílias e cuidadores na sua cidade</div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </div>
 
-        {!isPro && (
-          <div className="pro-banner">
-            <div className="pro-banner-title">
-              <span className="pro-crown">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="#e8b84b" stroke="none">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-              </span>
-              Viaje sem limites por R$ 14,90/mês
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Mapa offline, alertas na rota e sem anúncios.</div>
-            <Link href="/planos"><button className="btn-primary" style={{ marginTop: 4, fontSize: 13, padding: '11px 20px' }}>Ver planos</button></Link>
-          </div>
-        )}
       </div>
 
       {/* Modal Anuncie */}
@@ -351,21 +343,16 @@ export default function PerfilPage() {
             <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
             <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Anuncie seu serviço</div>
             <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
-              Alcance pais e mães que precisam de profissionais de confiança na sua cidade.
+              Alcance pais, mães e cuidadores que precisam de profissionais de confiança na sua cidade.
             </div>
 
-            {[
-              { title: 'Básico', price: 'R$ 99/mês', desc: 'Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.', color: '#7c3aed', bg: '#f3e8ff' },
-              { title: 'Completo', price: 'R$ 179/mês', desc: 'Tudo do Básico + destaque no topo da lista, anúncio na tela inicial e badge verificado.', color: '#059669', bg: '#ecfdf5' },
-            ].map(plan => (
-              <div key={plan.title} style={{ padding: '16px', background: plan.bg, borderRadius: 16, border: `1.5px solid ${plan.color}30`, marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: plan.color }}>{plan.title}</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: plan.color }}>{plan.price}</div>
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{plan.desc}</div>
+            <div style={{ padding: '16px', background: '#f3e8ff', borderRadius: 16, border: '1.5px solid #7c3aed30', marginBottom: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#7c3aed' }}>Plano Profissional</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#7c3aed' }}>R$ 89/mês</div>
               </div>
-            ))}
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.</div>
+            </div>
 
             <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', margin: '12px 0' }}>
               Entre em contato para começar:
@@ -404,7 +391,7 @@ export default function PerfilPage() {
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Termos e Privacidade</div>
 
             {[
-              { title: '📋 Termos de Uso', body: 'O PitStop Baby é um aplicativo colaborativo para pais e mães compartilharem e avaliarem locais baby-friendly em viagens. Ao usar o app, você concorda em fornecer informações verdadeiras, respeitar outros usuários e contribuir de forma construtiva.\n\nAvaliações e fotos passam por moderação. Não são permitidos conteúdos ofensivos, irrelevantes ou imagens de pessoas. O PitStop Baby pode remover conteúdo que viole estes termos.' },
+              { title: '📋 Termos de Uso', body: 'O PitStop Baby é um aplicativo colaborativo para pais, mães e cuidadores compartilharem e avaliarem locais baby-friendly em viagens. Ao usar o app, você concorda em fornecer informações verdadeiras, respeitar outros usuários e contribuir de forma construtiva.\n\nAvaliações e fotos passam por moderação. Não são permitidos conteúdos ofensivos, irrelevantes ou imagens de pessoas. O PitStop Baby pode remover conteúdo que viole estes termos.' },
               { title: '🔒 Privacidade', body: 'Coletamos apenas o necessário para o funcionamento do app: nome de perfil, email de autenticação e localização (para exibir locais próximos). Não vendemos seus dados a terceiros.\n\nSua localização é usada exclusivamente para ordenar locais por proximidade e não é armazenada permanentemente. Você pode excluir sua conta a qualquer momento pelo Perfil.' },
               { title: '📸 Fotos e Conteúdo', body: 'Fotos enviadas devem retratar o espaço físico do estabelecimento. Imagens com rostos ou pessoas identificáveis serão removidas. Ao enviar uma foto, você confirma que tem o direito de compartilhá-la.' },
             ].map(sec => (
@@ -415,6 +402,55 @@ export default function PerfilPage() {
             ))}
 
             <button className="btn-primary" onClick={() => setShowTermos(false)}>Entendi</button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Sobre nós */}
+      {showSobreNos && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }}>
+          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '85vh', overflowY: 'auto', padding: '20px 20px 48px' }}>
+            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: 'var(--green-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="22" height="29" viewBox="0 0 24 32" fill="none">
+                  <path d="M12 0C7.03 0 3 4.03 3 9c0 6.75 9 16 9 16s9-9.25 9-16c0-4.97-4.03-9-9-9z" fill="#4caf85" stroke="white" strokeWidth="1.2"/>
+                  <circle cx="12" cy="9" r="3.5" fill="white" opacity="0.9"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>Sobre o PitStop Baby</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Nossa história e missão</div>
+              </div>
+            </div>
+
+            <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
+              O PitStop Baby nasceu de uma necessidade real: a de quem já esteve na estrada com um bebê no colo e não sabia onde parar com segurança. Fraldário limpo, um lugar tranquilo para amamentar, um restaurante com cadeirão — coisas simples que fazem toda a diferença.
+            </div>
+
+            <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
+              Mais do que um app de mapas, queremos construir uma <strong style={{ color: 'var(--green-dark)' }}>comunidade</strong> — de pais, mães e cuidadores que se ajudam nos momentos que mais precisam. Cada avaliação, cada check-in, cada foto compartilhada é um presente para quem ainda não conhece aquele local.
+            </div>
+
+            <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
+              Porque viajar com crianças pequenas não precisa ser estressante. Com as informações certas — e com a ajuda uns dos outros — cada parada pode ser um bom momento.
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+              {[
+                { icon: '🗺️', label: 'Locais mapeados\npela comunidade' },
+                { icon: '🤝', label: 'Famílias que se\najudam na estrada' },
+                { icon: '💚', label: 'Gratuito para\npais e cuidadores' },
+              ].map(item => (
+                <div key={item.label} style={{ flex: 1, background: 'var(--green-soft)', borderRadius: 14, padding: '12px 10px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 22, marginBottom: 6 }}>{item.icon}</div>
+                  <div style={{ fontSize: 11, color: 'var(--green-dark)', fontWeight: 600, lineHeight: 1.4, whiteSpace: 'pre-line' }}>{item.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <button className="btn-primary" onClick={() => setShowSobreNos(false)}>Fechar</button>
           </div>
         </div>
       )}

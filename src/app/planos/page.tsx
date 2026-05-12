@@ -25,51 +25,19 @@ const plans = [
     disabled: true,
     badge: null,
   },
-  {
-    id: 'viajante',
-    name: 'Viajante',
-    price: 'R$ 14,90',
-    period: '/mês ou R$ 99/ano',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#e8b84b" stroke="none">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>
-    ),
-    features: [
-      'Tudo do Grátis',
-      'Mapa offline por rota',
-      'Planejador de rota baby-friendly',
-      'Alertas "parada próxima" na rota',
-      'Sem anúncios',
-    ],
-    featured: true,
-    cta: 'Em breve',
-    disabled: true,
-    badge: 'Em breve',
-  },
 ]
 
 type Package = { name: string; price: string; features: string[] }
 
 const anunciePackages: Package[] = [
   {
-    name: 'Básico',
-    price: 'R$ 99,00/mês',
+    name: 'Plano Profissional',
+    price: 'R$ 89,00/mês',
     features: [
       'Pin no mapa com sua localização',
       'Descrição completa do serviço',
       'Fotos do profissional/espaço',
       'Informações de contato visíveis',
-    ],
-  },
-  {
-    name: 'Completo',
-    price: 'R$ 179,00/mês',
-    features: [
-      'Tudo do Básico',
-      'Aparece como prioridade na lista',
-      'Destaque entre profissionais próximos',
-      'Selo de profissional verificado',
     ],
   },
 ]
@@ -175,29 +143,24 @@ export default function PlanosPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {anunciePackages.map((pkg) => (
                 <div key={pkg.name} style={{
-                  background: pkg.name === 'Completo' ? 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%)' : 'var(--bg)',
-                  border: pkg.name === 'Completo' ? '2px solid #a78bfa' : '1.5px solid var(--border)',
+                  background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%)',
+                  border: '2px solid #a78bfa',
                   borderRadius: 16,
                   padding: '18px 16px',
                   position: 'relative',
                 }}>
-                  {pkg.name === 'Completo' && (
-                    <div style={{ position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)', background: '#7c3aed', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 14px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-                      Mais popular
-                    </div>
-                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: pkg.name === 'Completo' ? '#5b21b6' : 'var(--text)' }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: '#5b21b6' }}>
                       {pkg.name}
                     </div>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: pkg.name === 'Completo' ? '#7c3aed' : 'var(--text)' }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: '#7c3aed' }}>
                       {pkg.price}
                     </div>
                   </div>
                   <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 7 }}>
                     {pkg.features.map((f, i) => (
                       <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14, color: 'var(--text-secondary)' }}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={pkg.name === 'Completo' ? '#7c3aed' : '#4caf85'} strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
                           <polyline points="20 6 9 17 4 12"/>
                         </svg>
                         {f}
@@ -206,7 +169,7 @@ export default function PlanosPage() {
                   </ul>
                   <button
                     className="btn-primary"
-                    style={{ marginTop: 14, background: pkg.name === 'Completo' ? '#7c3aed' : 'var(--green)' }}
+                    style={{ marginTop: 14, background: '#7c3aed' }}
                     onClick={() => alert('Em breve! Entre em contato via perfil para mais informações.')}
                   >
                     Quero o {pkg.name}

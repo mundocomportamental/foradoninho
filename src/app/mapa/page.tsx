@@ -1,11 +1,112 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import BottomNav from '@/components/BottomNav'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { Local } from '@/lib/types'
 import { FILTROS, TIPO_LABELS, AMENIDADES } from '@/lib/types'
+
+const FILTROS_INFO: Record<string, { title: string; desc: string; icon: string }> = {
+  fraldario: {
+    icon: '🧷',
+    title: 'Fraldário',
+    desc: 'Local equipado para troca de fraldas, incluindo trocador para bebês.',
+  },
+  espaco_familia: {
+    icon: '👨‍👩‍👧',
+    title: 'Espaço Família',
+    desc: 'Área dedicada às famílias, com local para amamentação ou banheiro família.',
+  },
+  espaco_kids: {
+    icon: '🛝',
+    title: 'Espaço Kids',
+    desc: 'Área de entretenimento infantil — inclui playground, brinquedoteca e similares.',
+  },
+  microondas: {
+    icon: '📡',
+    title: 'Microondas',
+    desc: 'Microondas disponível para aquecer mamadeiras e refeições dos pequenos.',
+  },
+  menu_kids: {
+    icon: '🍽️',
+    title: 'Menu Kids',
+    desc: 'Cardápio especial pensado para crianças.',
+  },
+  cadeirão: {
+    icon: '🪑',
+    title: 'Cadeirão',
+    desc: 'Cadeirão de bebê disponível para uso nas refeições.',
+  },
+  pet_friendly: {
+    icon: '🐾',
+    title: 'Pet-Friendly',
+    desc: 'Local que aceita animais de estimação.',
+  },
+}
+
+function FiltrosInfoButton() {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    if (open) document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  return (
+    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: 30, height: 30, borderRadius: '50%',
+          border: '1.5px solid var(--border)',
+          background: open ? 'var(--green-soft)' : 'rgba(255,255,255,0.92)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', flexShrink: 0,
+          boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
+          backdropFilter: 'blur(6px)',
+        }}
+        aria-label="Informações sobre os filtros"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={open ? 'var(--green-dark)' : 'var(--text-muted)'} strokeWidth="2.2" strokeLinecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="8"/>
+          <line x1="12" y1="12" x2="12" y2="16"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 36, right: 0, zIndex: 600,
+          background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)',
+          boxShadow: '0 8px 28px rgba(0,0,0,0.16)', padding: '14px 0',
+          width: 270, maxHeight: '70vh', overflowY: 'auto',
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', padding: '0 14px 10px', borderBottom: '1px solid var(--border)' }}>
+            O que significa cada filtro?
+          </div>
+          {FILTROS.map(f => {
+            const info = FILTROS_INFO[f.key]
+            if (!info) return null
+            return (
+              <div key={f.key} style={{ display: 'flex', gap: 10, padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>{info.icon}</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>{info.title}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.45 }}>{info.desc}</div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const MapView = dynamic(() => import('@/components/MapView'), { ssr: false })
 
@@ -84,9 +185,12 @@ export default function MapaPage() {
   const amenLabels = (l: Local) => {
     const items = []
     if (l.fraldario) items.push('Fraldário')
+    if (l.espaco_familia) items.push('Espaço Família')
+    if (l.espaco_kids) items.push('Espaço Kids')
     if (l.microondas) items.push('Microondas')
+    if (l.menu_kids) items.push('Menu Kids')
     if (l.cadeirão) items.push('Cadeirão')
-    if (l.amamentacao) items.push('Amamentação')
+    if (l.pet_friendly) items.push('Pet-Friendly')
     return items.slice(0, 3)
   }
 
@@ -118,26 +222,22 @@ export default function MapaPage() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div className="map-chips-row">
-          {FILTROS.map(f => {
-            const isProfissional = f.key === 'is_servico'
-            const isActive = filtro === f.key
-            return (
-              <button
-                key={f.key}
-                className={`filter-chip${isActive ? ' active' : ''}`}
-                onClick={() => setFiltro(filtro === f.key ? null : f.key)}
-                style={isProfissional ? {
-                  background: isActive ? '#7c3aed' : 'rgba(255,255,255,0.92)',
-                  color: isActive ? 'white' : '#7c3aed',
-                  borderColor: '#7c3aed',
-                } : undefined}
-              >
-                {isProfissional && <span style={{ marginRight: 4 }}>👩‍⚕️</span>}
-                {f.label}
-              </button>
-            )
-          })}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div className="map-chips-row" style={{ flex: 1, overflowX: 'auto' }}>
+            {FILTROS.map(f => {
+              const isActive = filtro === f.key
+              return (
+                <button
+                  key={f.key}
+                  className={`filter-chip${isActive ? ' active' : ''}`}
+                  onClick={() => setFiltro(filtro === f.key ? null : f.key)}
+                >
+                  {f.label}
+                </button>
+              )
+            })}
+          </div>
+          <FiltrosInfoButton />
         </div>
       </div>
 
@@ -220,10 +320,12 @@ export default function MapaPage() {
             {(() => {
               const all = [
                 selectedLocal.fraldario && 'Fraldário',
+                selectedLocal.espaco_familia && 'Espaço Família',
+                selectedLocal.espaco_kids && 'Espaço Kids',
                 selectedLocal.microondas && 'Microondas',
+                selectedLocal.menu_kids && 'Menu Kids',
                 selectedLocal.cadeirão && 'Cadeirão',
-                selectedLocal.amamentacao && 'Amamentação',
-                selectedLocal.playground && 'Playground',
+                selectedLocal.pet_friendly && 'Pet-Friendly',
               ].filter(Boolean)
               return all.length > 3 ? (
                 <span style={{ fontSize: 11, background: 'var(--bg)', color: 'var(--text-muted)', padding: '3px 10px', borderRadius: 20, border: '1px solid var(--border)' }}>
@@ -305,10 +407,12 @@ export default function MapaPage() {
                   {(() => {
                     const all = [
                       local.fraldario && 'Fraldário',
+                      local.espaco_familia && 'Espaço Família',
+                      local.espaco_kids && 'Espaço Kids',
                       local.microondas && 'Microondas',
+                      local.menu_kids && 'Menu Kids',
                       local.cadeirão && 'Cadeirão',
-                      local.amamentacao && 'Amamentação',
-                      local.playground && 'Playground',
+                      local.pet_friendly && 'Pet-Friendly',
                     ].filter(Boolean)
                     return all.length > 3 ? (
                       <span className="local-chip-tiny">+{all.length - 3}</span>
