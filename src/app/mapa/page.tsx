@@ -119,15 +119,25 @@ export default function MapaPage() {
           />
         </div>
         <div className="map-chips-row">
-          {FILTROS.map(f => (
-            <button
-              key={f.key}
-              className={`filter-chip${filtro === f.key ? ' active' : ''}`}
-              onClick={() => setFiltro(filtro === f.key ? null : f.key)}
-            >
-              {f.label}
-            </button>
-          ))}
+          {FILTROS.map(f => {
+            const isProfissional = f.key === 'is_servico'
+            const isActive = filtro === f.key
+            return (
+              <button
+                key={f.key}
+                className={`filter-chip${isActive ? ' active' : ''}`}
+                onClick={() => setFiltro(filtro === f.key ? null : f.key)}
+                style={isProfissional ? {
+                  background: isActive ? '#7c3aed' : 'rgba(255,255,255,0.92)',
+                  color: isActive ? 'white' : '#7c3aed',
+                  borderColor: '#7c3aed',
+                } : undefined}
+              >
+                {isProfissional && <span style={{ marginRight: 4 }}>👩‍⚕️</span>}
+                {f.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -230,7 +240,7 @@ export default function MapaPage() {
               className="btn-primary"
               style={{ flex: 1, padding: '11px 16px', fontSize: 14 }}
             >
-              Ver detalhes
+              Detalhes e Avaliar
             </button>
             <button
               onClick={() => {
@@ -309,6 +319,37 @@ export default function MapaPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* FAB — Adicionar local */}
+      {!selectedLocal && (
+        <button
+          onClick={() => router.push('/locais/novo')}
+          style={{
+            position: 'absolute',
+            bottom: 'calc(var(--nav-height) + 12px)',
+            right: 12,
+            zIndex: 450,
+            width: 52,
+            height: 52,
+            borderRadius: '50%',
+            background: 'var(--green)',
+            border: 'none',
+            boxShadow: '0 4px 16px rgba(76,175,133,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'transform 0.15s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.08)')}
+          onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+          title="Adicionar local"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
       )}
 
       <BottomNav />

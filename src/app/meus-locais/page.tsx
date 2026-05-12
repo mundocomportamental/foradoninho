@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react'
 import BottomNav from '@/components/BottomNav'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import type { Local } from '@/lib/types'
 
 function timeAgo(dateStr: string) {
@@ -21,19 +23,73 @@ export default function MeusLocaisPage() {
   const [tab, setTab] = useState<'recentes' | 'favoritos'>('recentes')
   const [recentes, setRecentes] = useState<(Local & { visitedAt?: string })[]>([])
   const [favoritos, setFavoritos] = useState<Local[]>([])
+  const [authState, setAuthState] = useState<'loading' | 'guest' | 'logged'>('loading')
+  const router = useRouter()
+  const supabase = createClient()
 
   useEffect(() => {
-    try {
-      setRecentes(JSON.parse(localStorage.getItem('recentes') || '[]'))
-      setFavoritos(JSON.parse(localStorage.getItem('favoritos') || '[]'))
-    } catch {}
-  }, [])
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setAuthState('guest')
+        return
+      }
+      // Check profile completion
+      const { data: profile } = await supabase.from('profiles').select('role, cidade').eq('id', user.id).single()
+      if (!profile?.role || !profile?.cidade) {
+        router.replace('/onboarding/completo')
+        return
+      }
+      setAuthState('logged')
+      try {
+        setRecentes(JSON.parse(localStorage.getItem('recentes') || '[]'))
+        setFavoritos(JSON.parse(localStorage.getItem('favoritos') || '[]'))
+      } catch {}
+    }
+    checkAuth()
+  }, [supabase, router])
 
   function removeFav(id: string) {
     const updated = favoritos.filter(f => f.id !== id)
     setFavoritos(updated)
     localStorage.setItem('favoritos', JSON.stringify(updated))
   }
+
+  if (authState === 'loading') return (
+    <div className="app-shell">
+      <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 80 }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>Carregando...</div>
+      </div>
+      <BottomNav />
+    </div>
+  )
+
+  if (authState === 'guest') return (
+    <div className="app-shell">
+      <div className="page" style={{ padding: '0 16px' }}>
+        <div className="page-header">
+          <div className="page-title">Meus Locais</div>
+          <div className="page-subtitle">Recentes e favoritos salvos</div>
+        </div>
+        <div style={{ marginTop: 32, padding: '28px 20px', background: 'var(--green-soft)', borderRadius: 20, border: '1.5px solid var(--green-light)', textAlign: 'center' }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--green-dark)', marginBottom: 8 }}>
+            Faça login para continuar
+          </div>
+          <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
+            Salve seus locais favoritos, veja seu histórico de visitas e muito mais com uma conta PitStop Baby.
+          </div>
+          <Link
+            href="/onboarding"
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'var(--green)', color: 'white', padding: '12px 28px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}
+          >
+            Entrar / Criar conta
+          </Link>
+        </div>
+      </div>
+      <BottomNav />
+    </div>
+  )
 
   return (
     <div className="app-shell">

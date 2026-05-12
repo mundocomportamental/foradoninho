@@ -155,10 +155,31 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
       ])
       if (localData) {
         setLocal(localData as Local)
-        // Inicializa amenidades com os valores atuais
-        const init: Record<string, boolean> = {}
-        AMENIDADES.forEach(a => { init[a.key] = !!(localData as any)[a.key] })
-        setAmenReportadas(init)
+        // Inicializa amenidades: preferir escolha do usuário (salva por 1 dia), senão valores do DB
+        try {
+          const stored = localStorage.getItem(`amen_${id}`)
+          if (stored) {
+            const parsed = JSON.parse(stored)
+            const savedAt = parsed.savedAt as number
+            const oneDayMs = 24 * 60 * 60 * 1000
+            if (Date.now() - savedAt < oneDayMs) {
+              setAmenReportadas(parsed.data)
+            } else {
+              localStorage.removeItem(`amen_${id}`)
+              const init: Record<string, boolean> = {}
+              AMENIDADES.forEach(a => { init[a.key] = !!(localData as any)[a.key] })
+              setAmenReportadas(init)
+            }
+          } else {
+            const init: Record<string, boolean> = {}
+            AMENIDADES.forEach(a => { init[a.key] = !!(localData as any)[a.key] })
+            setAmenReportadas(init)
+          }
+        } catch {
+          const init: Record<string, boolean> = {}
+          AMENIDADES.forEach(a => { init[a.key] = !!(localData as any)[a.key] })
+          setAmenReportadas(init)
+        }
       }
       if (mediasData) setMedias(mediasData as Medias)
       setLoading(false)
@@ -216,6 +237,11 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         amenidades_reportadas: amenReportadas,
         periodo_ref: new Date().toISOString(),
       })
+
+      // Salva amenidades no localStorage por 1 dia (o usuário vê sua própria seleção)
+      try {
+        localStorage.setItem(`amen_${id}`, JSON.stringify({ data: amenReportadas, savedAt: Date.now() }))
+      } catch {}
 
       setDone(true)
       setFlowStep(0)
@@ -371,8 +397,8 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         {/* Botão Check-in + Avaliar */}
         <div style={{ padding: '16px 16px 0' }}>
           {done ? (
-            <div style={{ background: 'var(--green-soft)', border: '1.5px solid var(--green)', borderRadius: 50, padding: '14px 20px', textAlign: 'center', fontWeight: 600, color: 'var(--green-dark)', fontSize: 14 }}>
-              ✓ Avaliação enviada! Obrigado pela contribuição.
+            <div style={{ background: '#fff1f0', border: '1.5px solid #ef4444', borderRadius: 50, padding: '14px 20px', textAlign: 'center', fontWeight: 600, color: '#dc2626', fontSize: 14 }}>
+              ❤️ Avaliação enviada! Obrigado pela contribuição.
             </div>
           ) : (
             <button

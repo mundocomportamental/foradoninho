@@ -16,6 +16,7 @@ export interface Local {
   carrinho: boolean
   agua_quente: boolean
   certificado_pitstop: boolean
+  is_servico?: boolean
   rating: number
   total_ratings: number
   total_checkins: number
@@ -46,4 +47,5 @@ export const FILTROS = [
   { key: 'fraldario', label: 'Fraldário' },
   { key: 'microondas', label: 'Microondas' },
   { key: 'cadeirão', label: 'Cadeirão' },
+  { key: 'is_servico', label: 'Profissionais' },
 ]

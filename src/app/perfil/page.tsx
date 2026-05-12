@@ -12,11 +12,37 @@ interface Profile {
   plano: string
 }
 
+function getBadge(total: number): { label: string; color: string; bg: string; icon: string } | null {
+  if (total >= 10) return { label: 'Contribuidor Master', color: '#7c3aed', bg: '#f3e8ff', icon: '🏆' }
+  if (total >= 5) return { label: 'Contribuidor Top', color: '#d97706', bg: '#fffbeb', icon: '⭐' }
+  return null
+}
+
+function BadgeProgress({ total }: { total: number }) {
+  const next = total < 5 ? 5 : total < 10 ? 10 : null
+  if (!next) return null
+  const progress = (total / next) * 100
+  const label = next === 5 ? 'Contribuidor Top' : 'Contribuidor Master'
+  return (
+    <div style={{ marginTop: 8, padding: '10px 14px', background: 'var(--bg-card)', borderRadius: 12, border: '1.5px solid var(--border)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>Próximo: {label}</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{total}/{next} este mês</span>
+      </div>
+      <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${progress}%`, background: next === 5 ? '#f59e0b' : '#7c3aed', borderRadius: 3, transition: 'width 0.4s' }} />
+      </div>
+    </div>
+  )
+}
+
 export default function PerfilPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [checkins, setCheckins] = useState(0)
   const [avaliacoes, setAvaliacoes] = useState(0)
+  const [monthlyTotal, setMonthlyTotal] = useState(0)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [showAnuncio, setShowAnuncio] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [editName, setEditName] = useState('')
   const [editUsername, setEditUsername] = useState('')
@@ -39,12 +65,20 @@ export default function PerfilPage() {
           setEditName(data.display_name || '')
           setEditUsername(data.username || '')
         }
-        const [c, a] = await Promise.all([
+        const startOfMonth = new Date()
+        startOfMonth.setDate(1)
+        startOfMonth.setHours(0, 0, 0, 0)
+        const monthISO = startOfMonth.toISOString()
+
+        const [c, a, cm, am] = await Promise.all([
           supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           supabase.from('avaliacoes').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+          supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', monthISO),
+          supabase.from('avaliacoes').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', monthISO),
         ])
         setCheckins(c.count || 0)
         setAvaliacoes(a.count || 0)
+        setMonthlyTotal((cm.count || 0) + (am.count || 0))
       } else {
         setProfile({ display_name: null, username: null, avatar_url: null, plano: 'gratis' })
       }
@@ -189,11 +223,23 @@ export default function PerfilPage() {
             )}
           </div>
 
-          {/* Stats */}
+          {/* Stats + Badge */}
           {isLoggedIn && (
-            <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-              <div className="stat-card"><div className="stat-value">{checkins}</div><div className="stat-label">Check-ins</div></div>
-              <div className="stat-card"><div className="stat-value">{avaliacoes}</div><div className="stat-label">Avaliações</div></div>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <div className="stat-card"><div className="stat-value">{checkins}</div><div className="stat-label">Check-ins</div></div>
+                <div className="stat-card"><div className="stat-value">{avaliacoes}</div><div className="stat-label">Avaliações</div></div>
+                {(() => {
+                  const badge = getBadge(monthlyTotal)
+                  return badge ? (
+                    <div className="stat-card" style={{ background: badge.bg, border: `1.5px solid ${badge.color}20`, flex: 1.5 }}>
+                      <div style={{ fontSize: 18 }}>{badge.icon}</div>
+                      <div className="stat-label" style={{ color: badge.color, fontWeight: 700, fontSize: 11 }}>{badge.label}</div>
+                    </div>
+                  ) : null
+                })()}
+              </div>
+              <BadgeProgress total={monthlyTotal} />
             </div>
           )}
 
@@ -265,6 +311,23 @@ export default function PerfilPage() {
           )}
         </div>
 
+        {/* Anuncie seu serviço */}
+        <div
+          onClick={() => setShowAnuncio(true)}
+          style={{ margin: '0 16px 12px', padding: '16px', background: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%)', borderRadius: 16, border: '1.5px solid #c4b5fd', cursor: 'pointer' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(124,58,237,0.12)' }}>
+              <span style={{ fontSize: 22 }}>👩‍⚕️</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#5b21b6', marginBottom: 2 }}>Anuncie seu serviço</div>
+              <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.4 }}>Doula, consultora, pediatra e mais — alcance famílias na sua cidade</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+
         {!isPro && (
           <div className="pro-banner">
             <div className="pro-banner-title">
@@ -280,6 +343,46 @@ export default function PerfilPage() {
           </div>
         )}
       </div>
+
+      {/* Modal Anuncie */}
+      {showAnuncio && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowAnuncio(false)}>
+          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', padding: '20px 20px 48px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
+            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Anuncie seu serviço</div>
+            <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
+              Alcance pais e mães que precisam de profissionais de confiança na sua cidade.
+            </div>
+
+            {[
+              { title: 'Básico', price: 'R$ 99/mês', desc: 'Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.', color: '#7c3aed', bg: '#f3e8ff' },
+              { title: 'Completo', price: 'R$ 179/mês', desc: 'Tudo do Básico + destaque no topo da lista, anúncio na tela inicial e badge verificado.', color: '#059669', bg: '#ecfdf5' },
+            ].map(plan => (
+              <div key={plan.title} style={{ padding: '16px', background: plan.bg, borderRadius: 16, border: `1.5px solid ${plan.color}30`, marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: plan.color }}>{plan.title}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: plan.color }}>{plan.price}</div>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{plan.desc}</div>
+              </div>
+            ))}
+
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', margin: '12px 0' }}>
+              Entre em contato para começar:
+            </div>
+            <a
+              href="mailto:anuncie@pitstopbaby.com.br"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7c3aed', color: 'white', padding: '13px 20px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              anuncie@pitstopbaby.com.br
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Modal offline */}
       {offlineMsg && (
