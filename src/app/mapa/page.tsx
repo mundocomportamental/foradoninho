@@ -305,7 +305,7 @@ export default function MapaPage() {
             {selectedLocal.certificado_pitstop && (
               <>
                 <span style={{ color: 'var(--border)' }}>·</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#059669' }}>✓ PitStop</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#059669' }}>✓ Verificado</span>
               </>
             )}
           </div>

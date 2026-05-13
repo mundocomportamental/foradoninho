@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'PitStop Baby',
+  title: 'Fora do Ninho',
   description: 'Encontre fraldários, microondas e locais baby-friendly em qualquer estrada do Brasil.',
 }
 

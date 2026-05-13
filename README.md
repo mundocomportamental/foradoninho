@@ -1,4 +1,4 @@
-# PitStop Baby 🍼
+# Fora do Ninho 🍼
 
 Encontre produtos para bebê nas paradas da estrada — Rodovia Fernão Dias (SP→MG).
 

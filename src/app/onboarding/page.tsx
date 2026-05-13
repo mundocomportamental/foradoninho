@@ -40,7 +40,7 @@ function Carrossel({ onDone }: { onDone: () => void }) {
             <path d="M12 0C7.03 0 3 4.03 3 9c0 6.75 9 16 9 16s9-9.25 9-16c0-4.97-4.03-9-9-9z" fill="#4caf85" stroke="white" strokeWidth="1"/>
             <circle cx="12" cy="9" r="3" fill="white" opacity="0.9"/>
           </svg>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--green-dark)' }}>PitStop Baby</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--green-dark)' }}>Fora do Ninho</span>
         </div>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', lineHeight: 1.25, whiteSpace: 'pre-line', marginBottom: 16 }}>{slide.title}</h1>
         <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 300 }}>{slide.desc}</p>

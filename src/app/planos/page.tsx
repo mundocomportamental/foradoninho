@@ -137,7 +137,7 @@ export default function PlanosPage() {
             <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Escolha seu pacote</div>
             <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20 }}>
-              Inclua seu serviço no mapa do PitStop Baby e seja encontrado pelas famílias em viagem.
+              Inclua seu serviço no mapa do Fora do Ninho e seja encontrado pelas famílias em viagem.
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
