@@ -145,6 +145,9 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState(false)
 
+  // Contagem reativa de check-ins (atualiza sem precisar recarregar a página)
+  const [checkinCount, setCheckinCount] = useState<number>(0)
+
   const supabase = createClient()
 
   useEffect(() => {
@@ -155,6 +158,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
       ])
       if (localData) {
         setLocal(localData as Local)
+        setCheckinCount((localData as any).total_checkins ?? 0)
         // Inicializa amenidades: preferir escolha do usuário (salva por 1 dia), senão valores do DB
         try {
           const stored = localStorage.getItem(`amen_${id}`)
@@ -195,7 +199,10 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
   async function startCheckinFlow() {
     setCheckinDone(true)
     setFlowStep(1)
-    try { await supabase.from('checkins').insert({ local_id: id }) } catch {}
+    try {
+      await supabase.from('checkins').insert({ local_id: id })
+      setCheckinCount(prev => prev + 1)
+    } catch {}
   }
 
   // ── Upload de fotos ─────────────────────────────────────────────────
@@ -224,16 +231,16 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         }
       }
 
-      // Insere avaliação (aprovado=false — aguarda moderação)
+      // Insere avaliação — ratings aprovados automaticamente, fotos ficam em imagens[] aguardando revisão manual
       await supabase.from('avaliacoes').insert({
         local_id: id,
         limpeza: rLimpeza || null,
         atendimento: rAtendimento || null,
         instalacoes: rInstalacoes || null,
         experiencia: rExperiencia || null,
-        comentario: comment || null,
-        imagens: uploadedUrls,
-        aprovado: false,
+        comentario: comment || null,   // armazenado mas não exibido publicamente
+        imagens: uploadedUrls,         // fotos ficam em avaliacoes.imagens — publicar manualmente via locais.fotos_metadata
+        aprovado: true,
         amenidades_reportadas: amenReportadas,
         periodo_ref: new Date().toISOString(),
       })
@@ -245,6 +252,14 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
 
       setDone(true)
       setFlowStep(0)
+
+      // Re-busca as médias para refletir a nova avaliação imediatamente
+      const { data: newMedias } = await supabase
+        .from('avaliacoes_medias')
+        .select('*')
+        .eq('local_id', id)
+        .single()
+      if (newMedias) setMedias(newMedias as Medias)
     } catch (err) {
       console.error(err)
     } finally {
@@ -496,8 +511,8 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         <div className="section-title">Check-ins da comunidade</div>
         <div style={{ padding: '0 16px 16px' }}>
           <div className="card" style={{ padding: 16, color: 'var(--text-muted)', fontSize: 14, textAlign: 'center' }}>
-            {local.total_checkins > 0
-              ? `${local.total_checkins} check-ins confirmados`
+            {checkinCount > 0
+              ? `${checkinCount} check-ins confirmados`
               : 'Nenhum check-in ainda. Seja o primeiro!'
             }
           </div>
