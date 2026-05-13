@@ -159,21 +159,9 @@ export default function NovoLocalPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/onboarding'); return }
 
-      // Upload fotos
-      const uploadedUrls: string[] = []
-      for (const foto of fotos) {
-        const ext = foto.name.split('.').pop()
-        const path = `novo/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
-        const { data: up } = await supabase.storage.from('locais-fotos').upload(path, foto, { upsert: false })
-        if (up) {
-          const { data: pub } = supabase.storage.from('locais-fotos').getPublicUrl(up.path)
-          if (pub) uploadedUrls.push(pub.publicUrl)
-        }
-      }
-
       const tipoFinal = tipo === 'outro' ? (tipoCustom.trim() || 'outro') : tipo
 
-      // Criar local (lat/lng opcionais — só preenchidos se GPS foi usado)
+      // 1. Criar local primeiro (sem fotos ainda) para obter o ID
       const { data: novoLocal, error: localError } = await supabase.from('locais').insert({
         nome: nome.trim(),
         tipo: tipoFinal,
@@ -185,13 +173,32 @@ export default function NovoLocalPage() {
         lng: lng,
         is_active: false,
         added_by: user.id,
-        fotos: uploadedUrls,
+        fotos: [],
         ...Object.fromEntries(AMENIDADES.map(a => [a.key, amenidades[a.key] ?? false])),
       }).select('id').single()
 
       if (localError || !novoLocal) throw localError || new Error('Erro ao criar local')
 
-      // Inserir primeira avaliação (com user_id para satisfazer RLS)
+      // 2. Upload fotos na pasta locais/{id}/ — organizada por estabelecimento
+      const uploadedUrls: string[] = []
+      for (const foto of fotos) {
+        const ext = (foto.name.split('.').pop() || 'jpg').toLowerCase()
+        const path = `locais/${novoLocal.id}/${Date.now()}.${ext}`
+        const { data: up } = await supabase.storage
+          .from('locais-fotos')
+          .upload(path, foto, { upsert: false, contentType: foto.type })
+        if (up) {
+          const { data: pub } = supabase.storage.from('locais-fotos').getPublicUrl(up.path)
+          if (pub?.publicUrl) uploadedUrls.push(pub.publicUrl)
+        }
+      }
+
+      // 3. Atualizar local com as URLs das fotos (se houver)
+      if (uploadedUrls.length > 0) {
+        await supabase.from('locais').update({ fotos: uploadedUrls }).eq('id', novoLocal.id)
+      }
+
+      // 4. Inserir primeira avaliação (com user_id para satisfazer RLS)
       if (rExperiencia > 0) {
         await supabase.from('avaliacoes').insert({
           local_id: novoLocal.id,
