@@ -44,7 +44,7 @@ export const AMENIDADES = [
   { key: 'fraldario', label: 'Fraldário', icon: '🧷' },
   { key: 'espaco_familia', label: 'Espaço Família', icon: '👨‍👩‍👧' },
   { key: 'espaco_kids', label: 'Espaço Kids', icon: '🛝' },
-  { key: 'microondas', label: 'Microondas', icon: '📡' },
+  { key: 'microondas', label: 'Microondas', icon: '🥣' },
   { key: 'menu_kids', label: 'Menu Kids', icon: '🍽️' },
   { key: 'cadeirão', label: 'Cadeirão', icon: '🪑' },
   { key: 'pet_friendly', label: 'Pet-Friendly', icon: '🐾' },

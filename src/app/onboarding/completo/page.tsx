@@ -5,18 +5,25 @@ import { createClient } from '@/lib/supabase/client'
 
 interface Bebe {
   id: string
-  genero: 'menino' | 'menina' | ''
+  genero: 'menino' | 'menina' | 'nao_informado' | ''
   nascimento: string
+  nome: string
 }
 
 const ROLES = [
-  { key: 'mamae', label: 'Mamãe', emoji: '👩' },
-  { key: 'papai', label: 'Papai', emoji: '👨' },
-  { key: 'outro', label: 'Outro', emoji: '🧑' },
+  { key: 'mamae', label: 'Mamãe', icon: '/eagle-head.png' },
+  { key: 'papai', label: 'Papai', icon: '/eagle.png' },
+  { key: 'outro', label: 'Outro tipo de cuidador(a)', icon: '/bird1.png' },
+]
+
+const GENEROS = [
+  { key: 'menino', label: 'Menino' },
+  { key: 'menina', label: 'Menina' },
+  { key: 'nao_informado', label: 'Prefiro não responder' },
 ]
 
 function newBebe(): Bebe {
-  return { id: Math.random().toString(36).slice(2), genero: '', nascimento: '' }
+  return { id: Math.random().toString(36).slice(2), genero: '', nascimento: '', nome: '' }
 }
 
 export default function CompletarPerfilPage() {
@@ -26,11 +33,11 @@ export default function CompletarPerfilPage() {
   const [bebes, setBebes] = useState<Bebe[]>([newBebe()])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [saved, setSaved] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
-    // Pre-fill if user already has some data
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/onboarding'); return }
@@ -66,8 +73,7 @@ export default function CompletarPerfilPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/onboarding'); return }
 
-      // Filter out empty bebes
-      const bebesFilled = bebes.filter(b => b.genero || b.nascimento)
+      const bebesFilled = bebes.filter(b => b.genero || b.nascimento || b.nome)
 
       await supabase.from('profiles').upsert({
         id: user.id,
@@ -78,22 +84,60 @@ export default function CompletarPerfilPage() {
         updated_at: new Date().toISOString(),
       })
 
-      router.replace('/meus-locais')
-    } catch (e) {
+      setSaved(true)
+    } catch {
       setError('Erro ao salvar. Tente novamente.')
     } finally {
       setSaving(false)
     }
   }
 
+  // ── Tela de sucesso ──────────────────────────────────────────────────────────
+  if (saved) {
+    return (
+      <div className="app-shell" style={{ background: 'var(--bg)' }}>
+        <div className="page" style={{
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          padding: '40px 28px', textAlign: 'center',
+        }}>
+          <img
+            src="/love-birds.png"
+            alt="Ninho pronto"
+            style={{ width: 140, height: 140, objectFit: 'contain', marginBottom: 24 }}
+          />
+          <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 10, color: 'var(--text)' }}>
+            Seu ninho está pronto! 🎉
+          </div>
+          <div style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 36, maxWidth: 300 }}>
+            Bem-vindo(a) ao Fora do Ninho. Agora você pode explorar, salvar locais favoritos e contribuir com a comunidade.
+          </div>
+          <button
+            className="btn-primary"
+            onClick={() => router.replace('/meus-locais')}
+            style={{ maxWidth: 320, width: '100%', fontSize: 16, padding: '14px 20px' }}
+          >
+            Ir para Meus Locais
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Formulário ───────────────────────────────────────────────────────────────
   return (
     <div className="app-shell" style={{ background: 'var(--bg)' }}>
       <div className="page" style={{ padding: '0 0 40px' }}>
 
         {/* Header */}
         <div style={{ padding: '32px 20px 20px', textAlign: 'center' }}>
-          <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--green-soft)', border: '2px solid var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 28 }}>
-            👶
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'var(--green-soft)', border: '2px solid var(--green-light)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 16px', fontSize: 28,
+          }}>
+            🐣
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginBottom: 6 }}>
             Complete seu perfil
@@ -125,13 +169,22 @@ export default function CompletarPerfilPage() {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: 6,
+                    gap: 8,
                     transition: 'all 0.15s',
-                    transform: role === r.key ? 'scale(1.03)' : 'scale(1)',
                   }}
                 >
-                  <span style={{ fontSize: 24 }}>{r.emoji}</span>
-                  <span style={{ fontSize: 13, fontWeight: role === r.key ? 700 : 500, color: role === r.key ? 'var(--green-dark)' : 'var(--text)' }}>
+                  <img
+                    src={r.icon}
+                    alt={r.label}
+                    style={{ width: 40, height: 40, objectFit: 'contain' }}
+                  />
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: role === r.key ? 700 : 500,
+                    color: role === r.key ? 'var(--green-dark)' : 'var(--text)',
+                    lineHeight: 1.3,
+                    textAlign: 'center',
+                  }}>
                     {r.label}
                   </span>
                 </button>
@@ -149,16 +202,10 @@ export default function CompletarPerfilPage() {
               onChange={e => setCidade(e.target.value)}
               placeholder="Ex: São Paulo, Campinas..."
               style={{
-                width: '100%',
-                padding: '13px 16px',
-                borderRadius: 14,
-                border: '1.5px solid var(--border)',
-                background: 'var(--bg-card)',
-                fontFamily: 'var(--font)',
-                fontSize: 15,
-                color: 'var(--text)',
-                outline: 'none',
-                boxSizing: 'border-box',
+                width: '100%', padding: '13px 16px', borderRadius: 14,
+                border: '1.5px solid var(--border)', background: 'var(--bg-card)',
+                fontFamily: 'var(--font)', fontSize: 15, color: 'var(--text)',
+                outline: 'none', boxSizing: 'border-box',
               }}
               onFocus={e => e.target.style.borderColor = 'var(--green)'}
               onBlur={e => e.target.style.borderColor = 'var(--border)'}
@@ -178,15 +225,9 @@ export default function CompletarPerfilPage() {
               min="16"
               max="99"
               style={{
-                width: '50%',
-                padding: '13px 16px',
-                borderRadius: 14,
-                border: '1.5px solid var(--border)',
-                background: 'var(--bg-card)',
-                fontFamily: 'var(--font)',
-                fontSize: 15,
-                color: 'var(--text)',
-                outline: 'none',
+                width: '50%', padding: '13px 16px', borderRadius: 14,
+                border: '1.5px solid var(--border)', background: 'var(--bg-card)',
+                fontFamily: 'var(--font)', fontSize: 15, color: 'var(--text)', outline: 'none',
               }}
               onFocus={e => e.target.style.borderColor = 'var(--green)'}
               onBlur={e => e.target.style.borderColor = 'var(--border)'}
@@ -204,7 +245,10 @@ export default function CompletarPerfilPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {bebes.map((bebe, idx) => (
-                <div key={bebe.id} style={{ background: 'var(--bg-card)', borderRadius: 16, padding: '14px 16px', border: '1.5px solid var(--border)' }}>
+                <div key={bebe.id} style={{
+                  background: 'var(--bg-card)', borderRadius: 16,
+                  padding: '14px 16px', border: '1.5px solid var(--border)',
+                }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>
                       Bebê {idx + 1}
@@ -212,7 +256,11 @@ export default function CompletarPerfilPage() {
                     {bebes.length > 1 && (
                       <button
                         onClick={() => removeBebe(bebe.id)}
-                        style={{ width: 24, height: 24, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        style={{
+                          width: 24, height: 24, borderRadius: '50%',
+                          border: '1px solid var(--border)', background: 'var(--bg)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                        }}
                       >
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -221,33 +269,54 @@ export default function CompletarPerfilPage() {
                     )}
                   </div>
 
-                  {/* Gênero */}
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                    {[
-                      { key: 'menino', label: '👦 Menino' },
-                      { key: 'menina', label: '👧 Menina' },
-                    ].map(g => (
+                  {/* Gênero — sem emojis, com "Prefiro não responder" */}
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                    {GENEROS.map(g => (
                       <button
                         key={g.key}
                         onClick={() => updateBebe(bebe.id, 'genero', g.key)}
                         style={{
                           flex: 1,
-                          padding: '9px 0',
+                          padding: '9px 4px',
                           borderRadius: 10,
                           border: bebe.genero === g.key ? '2px solid var(--green)' : '1.5px solid var(--border)',
                           background: bebe.genero === g.key ? 'var(--green-soft)' : 'var(--bg)',
                           color: bebe.genero === g.key ? 'var(--green-dark)' : 'var(--text)',
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: bebe.genero === g.key ? 700 : 400,
                           cursor: 'pointer',
                           fontFamily: 'var(--font)',
                           transition: 'all 0.12s',
+                          lineHeight: 1.3,
+                          textAlign: 'center',
                         }}
                       >
                         {g.label}
                       </button>
                     ))}
                   </div>
+
+                  {/* Nome do passarinho — aparece ao selecionar gênero */}
+                  {bebe.genero && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
+                        Qual o nome desse(a) passarinho(a)?
+                      </div>
+                      <input
+                        value={bebe.nome}
+                        onChange={e => updateBebe(bebe.id, 'nome', e.target.value)}
+                        placeholder="Nome do bebê"
+                        style={{
+                          width: '100%', padding: '10px 14px', borderRadius: 10,
+                          border: '1.5px solid var(--border)', background: 'var(--bg)',
+                          fontFamily: 'var(--font)', fontSize: 14, color: 'var(--text)',
+                          outline: 'none', boxSizing: 'border-box',
+                        }}
+                        onFocus={e => e.target.style.borderColor = 'var(--green)'}
+                        onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                      />
+                    </div>
+                  )}
 
                   {/* Data de nascimento */}
                   <div>
@@ -258,16 +327,10 @@ export default function CompletarPerfilPage() {
                       onChange={e => updateBebe(bebe.id, 'nascimento', e.target.value)}
                       max={new Date().toISOString().split('T')[0]}
                       style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        borderRadius: 10,
-                        border: '1.5px solid var(--border)',
-                        background: 'var(--bg)',
-                        fontFamily: 'var(--font)',
-                        fontSize: 14,
-                        color: 'var(--text)',
-                        outline: 'none',
-                        boxSizing: 'border-box',
+                        width: '100%', padding: '10px 14px', borderRadius: 10,
+                        border: '1.5px solid var(--border)', background: 'var(--bg)',
+                        fontFamily: 'var(--font)', fontSize: 14, color: 'var(--text)',
+                        outline: 'none', boxSizing: 'border-box',
                       }}
                     />
                   </div>
@@ -278,21 +341,11 @@ export default function CompletarPerfilPage() {
             <button
               onClick={addBebe}
               style={{
-                marginTop: 12,
-                width: '100%',
-                padding: '11px 0',
-                borderRadius: 50,
-                border: '1.5px dashed var(--green)',
-                background: 'transparent',
-                color: 'var(--green-dark)',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: 'var(--font)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
+                marginTop: 12, width: '100%', padding: '11px 0', borderRadius: 50,
+                border: '1.5px dashed var(--green)', background: 'transparent',
+                color: 'var(--green-dark)', fontSize: 14, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'var(--font)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -302,9 +355,13 @@ export default function CompletarPerfilPage() {
             </button>
           </div>
 
-          {/* Error */}
+          {/* Erro */}
           {error && (
-            <div style={{ padding: '10px 14px', background: '#fff1f0', border: '1px solid #fecaca', borderRadius: 10, color: '#dc2626', fontSize: 13, marginBottom: 16 }}>
+            <div style={{
+              padding: '10px 14px', background: '#fff1f0',
+              border: '1px solid #fecaca', borderRadius: 10,
+              color: '#dc2626', fontSize: 13, marginBottom: 16,
+            }}>
               {error}
             </div>
           )}
