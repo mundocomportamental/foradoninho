@@ -35,6 +35,9 @@ export const TIPO_LABELS: Record<string, string> = {
   shopping: 'Shopping',
   farmacia: 'Farmácia',
   lanchonete: 'Lanchonete',
+  supermercado: 'Supermercado',
+  parque: 'Parque',
+  outro: 'Outro',
 }
 
 export const AMENIDADES = [
