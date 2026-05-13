@@ -155,6 +155,10 @@ export default function NovoLocalPage() {
     setSubmitting(true)
     setError('')
     try {
+      // Buscar usuário logado
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.replace('/onboarding'); return }
+
       // Upload fotos
       const uploadedUrls: string[] = []
       for (const foto of fotos) {
@@ -169,27 +173,29 @@ export default function NovoLocalPage() {
 
       const tipoFinal = tipo === 'outro' ? (tipoCustom.trim() || 'outro') : tipo
 
-      // Criar local
+      // Criar local (lat/lng opcionais — só preenchidos se GPS foi usado)
       const { data: novoLocal, error: localError } = await supabase.from('locais').insert({
         nome: nome.trim(),
         tipo: tipoFinal,
         is_servico: isServico,
-        endereco: endereco.trim(),
+        endereco: endereco.trim() || null,
         cidade: cidade.trim(),
         estado: estado.trim(),
-        lat: lat!,
-        lng: lng!,
+        lat: lat,
+        lng: lng,
         is_active: false,
+        added_by: user.id,
         fotos: uploadedUrls,
         ...Object.fromEntries(AMENIDADES.map(a => [a.key, amenidades[a.key] ?? false])),
       }).select('id').single()
 
       if (localError || !novoLocal) throw localError || new Error('Erro ao criar local')
 
-      // Inserir primeira avaliação
+      // Inserir primeira avaliação (com user_id para satisfazer RLS)
       if (rExperiencia > 0) {
         await supabase.from('avaliacoes').insert({
           local_id: novoLocal.id,
+          user_id: user.id,
           experiencia: rExperiencia,
           limpeza: rLimpeza || null,
           atendimento: rAtendimento || null,
@@ -204,7 +210,6 @@ export default function NovoLocalPage() {
 
       // Buscar total mensal atualizado para mostrar na tela de sucesso
       try {
-        const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           const startOfMonth = new Date()
           startOfMonth.setDate(1)
@@ -435,7 +440,7 @@ export default function NovoLocalPage() {
 
               <button
                 className="btn-primary"
-                disabled={!lat || !cidade.trim() || !estado.trim()}
+                disabled={!cidade.trim() || !estado.trim()}
                 onClick={() => { setError(''); setStep(1) }}
                 style={{ marginTop: 8 }}
               >
