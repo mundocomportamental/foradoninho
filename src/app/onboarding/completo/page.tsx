@@ -75,7 +75,7 @@ export default function CompletarPerfilPage() {
 
       const bebesFilled = bebes.filter(b => b.genero || b.nascimento || b.nome)
 
-      await supabase.from('profiles').upsert({
+      const { error: saveError } = await supabase.from('profiles').upsert({
         id: user.id,
         role,
         cidade: cidade.trim(),
@@ -84,9 +84,16 @@ export default function CompletarPerfilPage() {
         updated_at: new Date().toISOString(),
       })
 
+      if (saveError) {
+        console.error('Erro ao salvar perfil:', saveError)
+        setError(`Erro ao salvar: ${saveError.message}`)
+        return
+      }
+
       setSaved(true)
-    } catch {
-      setError('Erro ao salvar. Tente novamente.')
+    } catch (e: unknown) {
+      console.error('Exceção ao salvar perfil:', e)
+      setError('Erro inesperado. Tente novamente.')
     } finally {
       setSaving(false)
     }
