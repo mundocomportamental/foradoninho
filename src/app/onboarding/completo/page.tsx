@@ -99,7 +99,7 @@ export default function CompletarPerfilPage() {
             Complete seu perfil
           </div>
           <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            Essas informações ajudam a personalizar sua experiência no PitStop Baby
+            Essas informações ajudam a personalizar sua experiência no Fora do Ninho
           </div>
         </div>
 

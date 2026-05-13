@@ -358,14 +358,14 @@ export default function PerfilPage() {
               Entre em contato para começar:
             </div>
             <a
-              href="mailto:anuncie@pitstopbaby.com.br"
+              href="mailto:foradoninho.app@gmail.com"
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7c3aed', color: 'white', padding: '13px 20px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>
               </svg>
-              anuncie@pitstopbaby.com.br
+              foradoninho.app@gmail.com
             </a>
           </div>
         </div>
@@ -391,7 +391,7 @@ export default function PerfilPage() {
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Termos e Privacidade</div>
 
             {[
-              { title: '📋 Termos de Uso', body: 'O PitStop Baby é um aplicativo colaborativo para pais, mães e cuidadores compartilharem e avaliarem locais baby-friendly em viagens. Ao usar o app, você concorda em fornecer informações verdadeiras, respeitar outros usuários e contribuir de forma construtiva.\n\nAvaliações e fotos passam por moderação. Não são permitidos conteúdos ofensivos, irrelevantes ou imagens de pessoas. O PitStop Baby pode remover conteúdo que viole estes termos.' },
+              { title: '📋 Termos de Uso', body: 'O Fora do Ninho é um aplicativo colaborativo para pais, mães e cuidadores compartilharem e avaliarem locais baby-friendly em viagens. Ao usar o app, você concorda em fornecer informações verdadeiras, respeitar outros usuários e contribuir de forma construtiva.\n\nAvaliações e fotos passam por moderação. Não são permitidos conteúdos ofensivos, irrelevantes ou imagens de pessoas. O Fora do Ninho pode remover conteúdo que viole estes termos.' },
               { title: '🔒 Privacidade', body: 'Coletamos apenas o necessário para o funcionamento do app: nome de perfil, email de autenticação e localização (para exibir locais próximos). Não vendemos seus dados a terceiros.\n\nSua localização é usada exclusivamente para ordenar locais por proximidade e não é armazenada permanentemente. Você pode excluir sua conta a qualquer momento pelo Perfil.' },
               { title: '📸 Fotos e Conteúdo', body: 'Fotos enviadas devem retratar o espaço físico do estabelecimento. Imagens com rostos ou pessoas identificáveis serão removidas. Ao enviar uma foto, você confirma que tem o direito de compartilhá-la.' },
             ].map(sec => (
@@ -420,13 +420,13 @@ export default function PerfilPage() {
                 </svg>
               </div>
               <div>
-                <div style={{ fontSize: 20, fontWeight: 800 }}>Sobre o PitStop Baby</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>Sobre o Fora do Ninho</div>
                 <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Nossa história e missão</div>
               </div>
             </div>
 
             <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
-              O PitStop Baby nasceu de uma necessidade real: a de quem já esteve na estrada com um bebê no colo e não sabia onde parar com segurança. Fraldário limpo, um lugar tranquilo para amamentar, um restaurante com cadeirão — coisas simples que fazem toda a diferença.
+              O Fora do Ninho nasceu de uma necessidade real: a de quem já esteve na estrada com um bebê no colo e não sabia onde parar com segurança. Fraldário limpo, um lugar tranquilo para amamentar, um restaurante com cadeirão — coisas simples que fazem toda a diferença.
             </div>
 
             <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>

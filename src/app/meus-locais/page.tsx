@@ -77,7 +77,7 @@ export default function MeusLocaisPage() {
             Faça login para continuar
           </div>
           <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
-            Salve seus locais favoritos, veja seu histórico de visitas e muito mais com uma conta PitStop Baby.
+            Salve seus locais favoritos, veja seu histórico de visitas e muito mais com uma conta Fora do Ninho.
           </div>
           <Link
             href="/onboarding"
