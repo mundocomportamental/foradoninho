@@ -145,9 +145,9 @@ export default function NovoLocalPage() {
 
   function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])
-    setFotos(prev => [...prev, ...files].slice(0, 5))
+    setFotos(prev => [...prev, ...files].slice(0, 10))
     files.forEach(f => {
-      setFotoURLs(prev => [...prev, URL.createObjectURL(f)].slice(0, 5))
+      setFotoURLs(prev => [...prev, URL.createObjectURL(f)].slice(0, 10))
     })
   }
 
@@ -181,21 +181,32 @@ export default function NovoLocalPage() {
 
       // 2. Upload fotos na pasta locais/{id}/ — organizada por estabelecimento
       const uploadedUrls: string[] = []
+      // fotos_metadata guarda: quem enviou + quando — facilita rastrear no backend
+      const fotosMetadata: { url: string; user_id: string; uploaded_at: string }[] = []
+
       for (const foto of fotos) {
         const ext = (foto.name.split('.').pop() || 'jpg').toLowerCase()
+        const uploadedAt = new Date().toISOString()
         const path = `locais/${novoLocal.id}/${Date.now()}.${ext}`
         const { data: up } = await supabase.storage
           .from('locais-fotos')
           .upload(path, foto, { upsert: false, contentType: foto.type })
         if (up) {
           const { data: pub } = supabase.storage.from('locais-fotos').getPublicUrl(up.path)
-          if (pub?.publicUrl) uploadedUrls.push(pub.publicUrl)
+          if (pub?.publicUrl) {
+            uploadedUrls.push(pub.publicUrl)
+            fotosMetadata.push({ url: pub.publicUrl, user_id: user.id, uploaded_at: uploadedAt })
+          }
         }
       }
 
-      // 3. Atualizar local com as URLs das fotos (se houver)
+      // 3. Atualizar local com as URLs das fotos + foto_principal + metadata
       if (uploadedUrls.length > 0) {
-        await supabase.from('locais').update({ fotos: uploadedUrls }).eq('id', novoLocal.id)
+        await supabase.from('locais').update({
+          fotos: uploadedUrls,
+          foto_principal: uploadedUrls[0],   // Q2: 1ª foto = capa do card
+          fotos_metadata: fotosMetadata,     // Q1: rastreio de quem enviou e quando
+        }).eq('id', novoLocal.id)
       }
 
       // 4. Inserir primeira avaliação (com user_id para satisfazer RLS)
@@ -673,13 +684,16 @@ export default function NovoLocalPage() {
                 </div>
               )}
 
-              {fotos.length < 5 && (
+              {fotos.length < 10 && (
                 <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', border: '1.5px dashed var(--border)', borderRadius: 12, cursor: 'pointer', marginBottom: 20 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round">
                     <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
                     <polyline points="21 15 16 10 5 21"/>
                   </svg>
-                  <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>Adicionar fotos ({fotos.length}/5)</span>
+                  <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+                    Adicionar fotos ({fotos.length}/10)
+                    {fotos.length === 0 && <span style={{ color: '#888', fontSize: 12 }}> · 1ª foto vira capa do local</span>}
+                  </span>
                   <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleFotoSelect} />
                 </label>
               )}
