@@ -26,6 +26,8 @@ export interface Local {
   total_ratings: number
   total_checkins: number
   distancia_metros?: number
+  foto_principal?: string
+  fotos_metadata?: Array<{ url: string; ordem?: number }>
 }
 
 export const TIPO_LABELS: Record<string, string> = {
