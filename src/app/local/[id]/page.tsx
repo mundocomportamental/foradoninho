@@ -32,7 +32,7 @@ function RatingBar({ label, value }: { label: string; value: number | null }) {
         </span>
       </div>
       <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${v * 10}%`, background: v >= 8 ? '#4caf85' : v >= 5 ? '#f59e0b' : '#ef4444', borderRadius: 3, transition: 'width 0.4s' }} />
+        <div style={{ height: '100%', width: `${v * 10}%`, background: v >= 8 ? '#33cccc' : v >= 5 ? '#f59e0b' : '#ef4444', borderRadius: 3, transition: 'width 0.4s' }} />
       </div>
     </div>
   )
@@ -56,7 +56,7 @@ function ScorePicker({ label, value, onChange }: { label: string; value: number;
             style={{
               flex: 1, height: 36, borderRadius: 8, border: 'none',
               background: n <= value
-                ? (value >= 8 ? '#4caf85' : value >= 5 ? '#f59e0b' : '#ef4444')
+                ? (value >= 8 ? '#33cccc' : value >= 5 ? '#f59e0b' : '#ef4444')
                 : 'var(--border)',
               cursor: 'pointer', transition: 'background 0.1s',
               fontSize: 12, fontWeight: 700,
@@ -307,7 +307,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           </Link>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={toggleFav} style={{ width: 36, height: 36, borderRadius: '50%', border: '1.5px solid var(--border)', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill={isFav ? '#4caf85' : 'none'} stroke={isFav ? '#4caf85' : 'currentColor'} strokeWidth="2" strokeLinecap="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill={isFav ? '#33cccc' : 'none'} stroke={isFav ? '#33cccc' : 'currentColor'} strokeWidth="2" strokeLinecap="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </button>
@@ -353,7 +353,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
 
           {local.certificado_pitstop && (
             <div className="certified-badge">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4caf85" strokeWidth="2.5" strokeLinecap="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2.5" strokeLinecap="round">
                 <circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/>
               </svg>
               Certificado PitStop Baby
@@ -375,45 +375,80 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         )}
 
         {/* Comodidades */}
-        <div className="section-title">Comodidades</div>
-        <div className="amenities-grid">
-          {AMENIDADES.map(a => {
-            const has = !!local[a.key as keyof Local]
-            return (
-              <div key={a.key} className={`amenity-chip${has ? ' has' : ''}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  {has
-                    ? <><circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/></>
-                    : <><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></>
-                  }
-                </svg>
-                {a.label}
-                {has && <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600 }}>✓</span>}
-              </div>
-            )
-          })}
-        </div>
+        {(() => {
+          const hasAnyAmenity = AMENIDADES.some(a => !!local[a.key as keyof Local])
+          return (
+            <>
+              <div className="section-title">Comodidades</div>
+              {hasAnyAmenity ? (
+                <div className="amenities-grid">
+                  {AMENIDADES.map(a => {
+                    const has = !!local[a.key as keyof Local]
+                    return (
+                      <div key={a.key} className={`amenity-chip${has ? ' has' : ''}`}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          {has
+                            ? <><circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/></>
+                            : <><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></>
+                          }
+                        </svg>
+                        {a.label}
+                        {has && <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600 }}>✓</span>}
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                /* Nenhuma amenidade ainda — convite a avaliar */
+                <div style={{ margin: '0 16px', background: 'var(--green-soft)', border: '1.5px solid var(--green-light)', borderRadius: 16, padding: '20px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 28, marginBottom: 8 }}>✨</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
+                    Seja o primeiro a avaliar
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
+                    Ainda não temos informações sobre as comodidades deste local. Faça seu check-in e ajude outras famílias!
+                  </div>
+                  {!done && (
+                    <button
+                      className="btn-primary"
+                      onClick={startCheckinFlow}
+                      disabled={checkinDone && flowStep === 0}
+                      style={{ opacity: (checkinDone && flowStep === 0) ? 0.7 : 1, maxWidth: 260, margin: '0 auto' }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                        <circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/>
+                      </svg>
+                      {checkinDone ? 'Check-in feito!' : 'Fazer check-in e avaliar'}
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
+          )
+        })()}
 
-        {/* Botão Check-in + Avaliar */}
-        <div style={{ padding: '16px 16px 0' }}>
-          {done ? (
-            <div style={{ background: '#fff1f0', border: '1.5px solid #ef4444', borderRadius: 50, padding: '14px 20px', textAlign: 'center', fontWeight: 600, color: '#dc2626', fontSize: 14 }}>
-              ❤️ Avaliação enviada! Obrigado pela contribuição.
-            </div>
-          ) : (
-            <button
-              className="btn-primary"
-              onClick={startCheckinFlow}
-              disabled={checkinDone && flowStep === 0}
-              style={{ opacity: (checkinDone && flowStep === 0) ? 0.7 : 1 }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/>
-              </svg>
-              {checkinDone ? 'Check-in feito!' : 'Realizar Check-in e Avaliar'}
-            </button>
-          )}
-        </div>
+        {/* Botão Check-in + Avaliar (quando já há amenidades) */}
+        {AMENIDADES.some(a => !!local[a.key as keyof Local]) && (
+          <div style={{ padding: '16px 16px 0' }}>
+            {done ? (
+              <div style={{ background: '#fff1f0', border: '1.5px solid #ef4444', borderRadius: 50, padding: '14px 20px', textAlign: 'center', fontWeight: 600, color: '#dc2626', fontSize: 14 }}>
+                ❤️ Avaliação enviada! Obrigado pela contribuição.
+              </div>
+            ) : (
+              <button
+                className="btn-primary"
+                onClick={startCheckinFlow}
+                disabled={checkinDone && flowStep === 0}
+                style={{ opacity: (checkinDone && flowStep === 0) ? 0.7 : 1 }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/>
+                </svg>
+                {checkinDone ? 'Check-in feito!' : 'Realizar Check-in e Avaliar'}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Direções */}
         <div className="action-row">
