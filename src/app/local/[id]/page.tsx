@@ -361,6 +361,38 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           )}
         </div>
 
+        {/* Galeria de fotos */}
+        {(() => {
+          const fotoPrincipal = local.foto_principal
+          const fotosSecundarias = (local.fotos_metadata ?? []).map(f => f.url).filter(Boolean)
+          const todasFotos = [
+            ...(fotoPrincipal ? [fotoPrincipal] : []),
+            ...fotosSecundarias.filter(u => u !== fotoPrincipal),
+          ]
+          if (todasFotos.length === 0) return null
+          return (
+            <div style={{ margin: '0 16px 4px', overflowX: 'auto' }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {todasFotos.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`Foto ${i + 1} de ${local.nome}`}
+                    style={{
+                      width: todasFotos.length === 1 ? '100%' : 200,
+                      height: 160,
+                      objectFit: 'cover',
+                      borderRadius: 14,
+                      flexShrink: 0,
+                      border: '1px solid var(--border)',
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Médias de avaliação */}
         {totalRatings > 0 && (
           <div style={{ margin: '0 16px 4px' }}>
