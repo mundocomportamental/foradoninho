@@ -82,9 +82,9 @@ export default function MapView({ locais, userPos, center, onMarkerClick }: Prop
         const userIcon = L.divIcon({
           html: `<div style="
             width:16px;height:16px;border-radius:50%;
-            background:#4caf85;
+            background:#33cccc;
             border:3px solid white;
-            box-shadow:0 0 0 4px rgba(76,175,133,0.25);
+            box-shadow:0 0 0 4px rgba(51,204,204,0.25);
           "></div>`,
           iconSize: [16, 16],
           iconAnchor: [8, 8],
@@ -96,7 +96,7 @@ export default function MapView({ locais, userPos, center, onMarkerClick }: Prop
       // Todos os locais com pin simples
       locais.forEach(local => {
         const isProfissional = !!local.is_servico
-        const pinColor = isProfissional ? '#7c3aed' : local.certificado_pitstop ? '#4caf85' : '#e05b4e'
+        const pinColor = isProfissional ? '#7c3aed' : local.certificado_pitstop ? '#33cccc' : '#e05b4e'
         const size = local.certificado_pitstop ? 32 : 28
         const icon = L.divIcon({
           html: pinSVG(pinColor, size, isProfissional),

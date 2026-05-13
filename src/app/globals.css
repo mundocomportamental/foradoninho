@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  --green: #4caf85;
-  --green-dark: #3a9a6e;
-  --green-light: #e8f5ef;
-  --green-soft: #f0faf4;
+  --green: #33cccc;
+  --green-dark: #1aabab;
+  --green-light: #d4f4f4;
+  --green-soft: #eafafb;
   --bg: #f5f5f3;
   --bg-card: #ffffff;
   --text: #1a1a1a;
