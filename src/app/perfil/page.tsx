@@ -21,16 +21,35 @@ function getBadge(total: number): { label: string; color: string; bg: string; ic
 function BadgeProgress({ total }: { total: number }) {
   const next = total < 5 ? 5 : total < 10 ? 10 : null
   if (!next) return null
+
   const progress = (total / next) * 100
   const label = next === 5 ? 'Contribuidor Top' : 'Contribuidor Master'
+
+  // Estrelas exibidas: sempre 5 (representando a meta atual)
+  const earnedInRange = next === 5 ? total : Math.max(total - 5, 0)
+  const starsArr = Array.from({ length: 5 }, (_, i) => i < earnedInRange)
+
   return (
-    <div style={{ marginTop: 8, padding: '10px 14px', background: 'var(--bg-card)', borderRadius: 12, border: '1.5px solid var(--border)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+    <div style={{ marginTop: 8, padding: '12px 14px', background: 'var(--bg-card)', borderRadius: 12, border: '1.5px solid var(--border)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>Próximo: {label}</span>
         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{total}/{next} este mês</span>
       </div>
-      <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+
+      {/* Estrelas visuais */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+        {starsArr.map((earned, i) => (
+          <span key={i} style={{ fontSize: 20, opacity: earned ? 1 : 0.2 }}>⭐</span>
+        ))}
+      </div>
+
+      <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }}>
         <div style={{ height: '100%', width: `${progress}%`, background: next === 5 ? '#f59e0b' : '#7c3aed', borderRadius: 3, transition: 'width 0.4s' }} />
+      </div>
+
+      {/* Explicação do sistema */}
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+        Ganhe ⭐ ao <strong>avaliar um local</strong> ou <strong>adicionar um novo local</strong> ao mapa. Com <strong>5 ⭐ no mês</strong>, você recebe o selo <strong style={{ color: '#d97706' }}>Contribuidor Top</strong>!
       </div>
     </div>
   )
