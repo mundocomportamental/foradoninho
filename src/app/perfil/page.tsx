@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import BottomNav from '@/components/BottomNav'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -110,7 +110,6 @@ export default function PerfilPage() {
   const [editName, setEditName] = useState('')
   const [editUsername, setEditUsername] = useState('')
   const [saving, setSaving] = useState(false)
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [offlineMsg, setOfflineMsg] = useState(false)
   const [showTermos, setShowTermos] = useState(false)
 
@@ -128,7 +127,6 @@ export default function PerfilPage() {
   const [savingNinho, setSavingNinho] = useState(false)
   const [ninhoError, setNinhoError] = useState('')
 
-  const fileRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -219,26 +217,6 @@ export default function PerfilPage() {
       setEditMode(false)
     } finally {
       setSaving(false)
-    }
-  }
-
-  async function uploadAvatar(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setUploadingAvatar(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const ext = file.name.split('.').pop()
-      const path = `avatars/${user.id}.${ext}`
-      await supabase.storage.from('locais-fotos').upload(path, file, { upsert: true })
-      const { data: pub } = supabase.storage.from('locais-fotos').getPublicUrl(path)
-      if (pub?.publicUrl) {
-        await supabase.from('profiles').upsert({ id: user.id, avatar_url: pub.publicUrl })
-        setProfile(p => p ? { ...p, avatar_url: pub.publicUrl } : p)
-      }
-    } finally {
-      setUploadingAvatar(false)
     }
   }
 
@@ -351,29 +329,22 @@ export default function PerfilPage() {
                 }
               </div>
               {isLoggedIn && (
-                <>
-                  {/* Botão passarinho */}
-                  <button
-                    onClick={() => setShowBirdPicker(true)}
-                    style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: '50%', background: 'var(--green)', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                    title="Escolher passarinho"
-                  >
-                    <span style={{ fontSize: 12, lineHeight: 1 }}>🐦</span>
-                  </button>
-                  {/* Botão câmera — fica no canto inferior esquerdo */}
-                  <button
-                    onClick={() => fileRef.current?.click()}
-                    disabled={uploadingAvatar}
-                    style={{ position: 'absolute', bottom: 0, left: 0, width: 24, height: 24, borderRadius: '50%', background: '#6b7280', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                    title="Enviar foto"
-                  >
-                    {uploadingAvatar
-                      ? <div style={{ width: 10, height: 10, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%' }} />
-                      : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    }
-                  </button>
-                  <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={uploadAvatar} />
-                </>
+                <button
+                  onClick={() => setShowBirdPicker(true)}
+                  style={{
+                    position: 'absolute', bottom: 0, right: 0,
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: 'white', border: '2px solid #33cccc',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                  title="Escolher avatar"
+                >
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#33cccc" strokeWidth="2.2" strokeLinecap="round">
+                    <line x1="6" y1="1" x2="6" y2="11"/>
+                    <line x1="1" y1="6" x2="11" y2="6"/>
+                  </svg>
+                </button>
               )}
             </div>
 
@@ -462,22 +433,6 @@ export default function PerfilPage() {
         {isLoggedIn && (
           <div style={{ margin: '0 16px 12px' }}>
 
-            {/* Aviso de privacidade */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '9px 14px', marginBottom: 8,
-              background: '#f0fdf4', borderRadius: 10,
-              border: '1px solid #bbf7d0',
-            }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <span style={{ fontSize: 12, color: '#15803d', lineHeight: 1.4 }}>
-                <strong>Informações privadas</strong> — visíveis apenas para você, nunca compartilhadas com outros usuários.
-              </span>
-            </div>
-
             {/* Card Meu Ninho */}
             <div className="card" style={{ overflow: 'hidden' }}>
 
@@ -485,7 +440,7 @@ export default function PerfilPage() {
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '14px 16px',
-                borderBottom: ninhoMode === 'edit' ? '1px solid var(--border)' : 'none',
+                borderBottom: '1px solid var(--border)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 18 }}>🪺</span>
@@ -503,6 +458,22 @@ export default function PerfilPage() {
                     Editar
                   </button>
                 )}
+              </div>
+
+              {/* Aviso de privacidade — dentro do card */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 16px',
+                background: '#f0fdf4',
+                borderBottom: ninhoMode === 'view' ? 'none' : '1px solid var(--border)',
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <span style={{ fontSize: 11, color: '#15803d', lineHeight: 1.4 }}>
+                  Informações privadas — visíveis apenas para você, nunca compartilhadas.
+                </span>
               </div>
 
               {/* Modo visualização */}
@@ -555,7 +526,6 @@ export default function PerfilPage() {
                   {filhos.length > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {filhos.map(f => {
-                        const generoEmoji = f.genero === 'menino' ? '👦' : f.genero === 'menina' ? '👧' : '🧒'
                         const idadeStr = formatarIdade(f.data_nascimento)
                         return (
                           <div key={f.id || f.localId} style={{
@@ -563,7 +533,7 @@ export default function PerfilPage() {
                             padding: '10px 12px', borderRadius: 12,
                             background: 'var(--bg)', border: '1px solid var(--border)',
                           }}>
-                            <span style={{ fontSize: 20 }}>{generoEmoji}</span>
+                            <img src="/egg-in-nest.png" alt="filho" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                             <div>
                               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
                                 {f.nome || 'Sem nome'}
@@ -593,14 +563,13 @@ export default function PerfilPage() {
                           key={r.key}
                           onClick={() => setEditRole(r.key)}
                           style={{
-                            flex: 1, padding: '10px 6px', borderRadius: 14,
+                            flex: 1, padding: '12px 6px', borderRadius: 14,
                             border: editRole === r.key ? '2px solid var(--green)' : '1.5px solid var(--border)',
                             background: editRole === r.key ? 'var(--green-soft)' : 'var(--bg)',
                             cursor: 'pointer', display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', gap: 6, transition: 'all 0.12s',
+                            alignItems: 'center', justifyContent: 'center', transition: 'all 0.12s', minHeight: 48,
                           }}
                         >
-                          <img src={r.icon} alt={r.label} style={{ width: 32, height: 32, objectFit: 'contain' }} />
                           <span style={{ fontSize: 10, fontWeight: editRole === r.key ? 700 : 500, color: editRole === r.key ? 'var(--green-dark)' : 'var(--text)', lineHeight: 1.3, textAlign: 'center' }}>
                             {r.label}
                           </span>
