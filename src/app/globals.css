@@ -223,12 +223,12 @@ html, body {
 .amenity-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 8px 13px;
+  gap: 6px;
+  padding: 10px 16px;
   border-radius: 50px;
   border: 1.5px solid var(--border);
   background: var(--bg-card);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
   font-family: var(--font);
   color: var(--text-secondary);
@@ -450,12 +450,12 @@ html, body {
 }
 
 .local-chip-tiny {
-  font-size: 11px;
-  padding: 3px 8px;
+  font-size: 15px;
+  padding: 5px 13px;
   background: var(--green-soft);
   border-radius: 20px;
   color: var(--green-dark);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* Page header */
