@@ -20,7 +20,7 @@ interface Medias {
   total_3m: number
 }
 
-// ── Componente RatingBar ───────────────────────────────────────────────
+// ── Componente RatingBar (escala 1-10, exibe número) ──────────────────
 function RatingBar({ label, value }: { label: string; value: number | null }) {
   const v = value ?? 0
   return (
@@ -33,6 +33,31 @@ function RatingBar({ label, value }: { label: string; value: number | null }) {
       </div>
       <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${v * 10}%`, background: v >= 8 ? '#33cccc' : v >= 5 ? '#f59e0b' : '#ef4444', borderRadius: 3, transition: 'width 0.4s' }} />
+      </div>
+    </div>
+  )
+}
+
+// ── Componente SmileBar (escala 1-5, exibe carinha sem número) ─────────
+const SMILE_ICONS = ['😞', '😕', '😐', '🙂', '😄']
+function smileForValue(v: number): string {
+  const idx = Math.min(Math.max(Math.round(v) - 1, 0), 4)
+  return SMILE_ICONS[idx]
+}
+function SmileBar({ label, value }: { label: string; value: number | null }) {
+  const v = value ?? 0
+  const pct = v > 0 ? (v / 5) * 100 : 0
+  const color = v >= 4 ? '#33cccc' : v >= 3 ? '#f59e0b' : '#ef4444'
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{label}</span>
+        <span style={{ fontSize: 17, lineHeight: 1 }}>
+          {value != null && v > 0 ? smileForValue(v) : '—'}
+        </span>
+      </div>
+      <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 3, transition: 'width 0.4s' }} />
       </div>
     </div>
   )
@@ -152,13 +177,14 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
 
   useEffect(() => {
     async function load() {
-      const [{ data: localData }, { data: mediasData }] = await Promise.all([
+      const [{ data: localData }, { data: mediasData }, { count: realCheckinCount }] = await Promise.all([
         supabase.from('locais').select('*').eq('id', id).single(),
         supabase.from('avaliacoes_medias').select('*').eq('local_id', id).single(),
+        supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('local_id', id),
       ])
       if (localData) {
         setLocal(localData as Local)
-        setCheckinCount((localData as any).total_checkins ?? 0)
+        setCheckinCount(realCheckinCount ?? 0)
         // Inicializa amenidades: preferir escolha do usuário (salva por 1 dia), senão valores do DB
         try {
           const stored = localStorage.getItem(`amen_${id}`)
@@ -200,8 +226,8 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     setCheckinDone(true)
     setFlowStep(1)
     try {
-      await supabase.from('checkins').insert({ local_id: id })
-      setCheckinCount(prev => prev + 1)
+      const { error } = await supabase.from('checkins').insert({ local_id: id })
+      if (!error) setCheckinCount(prev => prev + 1)
     } catch {}
   }
 
@@ -413,9 +439,9 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           <div style={{ margin: '0 16px 4px' }}>
             <div className="card" style={{ padding: 16 }}>
               <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Avaliações da comunidade</div>
-              <RatingBar label="Limpeza" value={m('limpeza')} />
-              <RatingBar label="Atendimento" value={m('atendimento')} />
-              <RatingBar label="Instalações" value={m('instalacoes')} />
+              <SmileBar label="Limpeza" value={m('limpeza')} />
+              <SmileBar label="Atendimento" value={m('atendimento')} />
+              <SmileBar label="Instalações" value={m('instalacoes')} />
               <RatingBar label="Experiência geral" value={m('experiencia')} />
             </div>
           </div>
