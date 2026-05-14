@@ -24,7 +24,7 @@ const FILTROS_INFO: Record<string, { title: string; desc: string; icon: string }
     desc: 'Área de entretenimento infantil — playground, brinquedoteca e similares.',
   },
   microondas: {
-    icon: '📡',
+    icon: '🥣',
     title: 'Microondas',
     desc: 'Microondas disponível para aquecer mamadeiras e refeições.',
   },
@@ -49,7 +49,7 @@ const AMENIDADES_POPUP = [
   { icon: '🧷', label: 'Fraldário / Trocador', desc: 'Trocador de fraldas e espaço adequado para higiene do bebê' },
   { icon: '👨‍👩‍👧', label: 'Espaço Família', desc: 'Área reservada para amamentação e conforto da família' },
   { icon: '🛝', label: 'Espaço Kids / Playground', desc: 'Área de entretenimento e recreação infantil' },
-  { icon: '📡', label: 'Microondas', desc: 'Para aquecer mamadeiras, papinhas e refeições' },
+  { icon: '🥣', label: 'Microondas', desc: 'Para aquecer mamadeiras, papinhas e refeições' },
   { icon: '🍽️', label: 'Menu Kids', desc: 'Cardápio especial e adequado para crianças' },
   { icon: '🪑', label: 'Cadeirão', desc: 'Cadeirão de bebê disponível nas refeições' },
   { icon: '🐾', label: 'Pet-Friendly', desc: 'Estabelecimento que aceita seus animais de estimação' },
@@ -424,22 +424,22 @@ export default function MapaPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <span style={{ color: '#f5a623', fontSize: 14 }}>★</span>
-              <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--text)' }}>{Number(selectedLocal.rating).toFixed(1)}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>({selectedLocal.total_ratings})</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ color: '#f5a623', fontSize: 16 }}>★</span>
+              <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)' }}>{Number(selectedLocal.rating ?? 0).toFixed(1)}</span>
+              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({selectedLocal.total_ratings ?? 0})</span>
             </div>
             <span style={{ color: 'var(--border)' }}>·</span>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ display: 'inline', marginRight: 3, verticalAlign: 'middle' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="12" cy="12" r="9"/><polyline points="12,7 12,12 15,15"/>
               </svg>
-              {selectedLocal.total_checkins} check-ins
+              {selectedLocal.total_checkins ?? 0} check-ins
             </span>
             {selectedLocal.certificado_pitstop && (
               <>
                 <span style={{ color: 'var(--border)' }}>·</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#059669' }}>✓ Verificado</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#059669' }}>✓ Verificado</span>
               </>
             )}
           </div>
@@ -466,12 +466,12 @@ export default function MapaPage() {
             return (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
                 {all.slice(0, 3).map(a => (
-                  <span key={String(a)} style={{ fontSize: 11, background: 'var(--green-soft)', color: 'var(--green-dark)', padding: '3px 10px', borderRadius: 20, fontWeight: 600 }}>
+                  <span key={String(a)} style={{ fontSize: 15, background: 'var(--green-soft)', color: 'var(--green-dark)', padding: '5px 14px', borderRadius: 20, fontWeight: 600 }}>
                     {String(a)}
                   </span>
                 ))}
                 {all.length > 3 && (
-                  <span style={{ fontSize: 11, background: 'var(--bg)', color: 'var(--text-muted)', padding: '3px 10px', borderRadius: 20, border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 15, background: 'var(--bg)', color: 'var(--text-muted)', padding: '5px 14px', borderRadius: 20, border: '1px solid var(--border)' }}>
                     +{all.length - 3}
                   </span>
                 )}
@@ -485,7 +485,7 @@ export default function MapaPage() {
               className="btn-primary"
               style={{ flex: 1, padding: '11px 16px', fontSize: 14 }}
             >
-              Detalhes e Avaliar
+              Check-in / Avaliar
             </button>
             <button
               onClick={() => {
