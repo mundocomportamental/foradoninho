@@ -10,6 +10,44 @@ interface Profile {
   username: string | null
   avatar_url: string | null
   plano: string
+  role: string | null
+  cidade: string | null
+  idade: number | null
+}
+
+interface Filho {
+  id: string           // UUID do banco
+  localId: string      // ID local para controle de UI
+  nome: string
+  genero: 'menino' | 'menina' | 'nao_informado' | ''
+  data_nascimento: string
+}
+
+const ROLES = [
+  { key: 'mamae', label: 'Mamãe', icon: '/eagle-head.png' },
+  { key: 'papai', label: 'Papai', icon: '/eagle.png' },
+  { key: 'outro', label: 'Outro cuidador(a)', icon: '/bird1.png' },
+]
+
+const GENEROS = [
+  { key: 'menino', label: 'Menino' },
+  { key: 'menina', label: 'Menina' },
+  { key: 'nao_informado', label: 'Prefiro não responder' },
+]
+
+function newFilho(): Filho {
+  return { id: '', localId: Math.random().toString(36).slice(2), nome: '', genero: '', data_nascimento: '' }
+}
+
+function formatarIdade(data_nascimento: string): string {
+  if (!data_nascimento) return ''
+  const nasc = new Date(data_nascimento)
+  const hoje = new Date()
+  const meses = (hoje.getFullYear() - nasc.getFullYear()) * 12 + (hoje.getMonth() - nasc.getMonth())
+  if (meses < 1) return 'recém-nascido(a)'
+  if (meses < 24) return `${meses} ${meses === 1 ? 'mês' : 'meses'}`
+  const anos = Math.floor(meses / 12)
+  return `${anos} ${anos === 1 ? 'ano' : 'anos'}`
 }
 
 function getBadge(total: number): { label: string; color: string; bg: string; icon: string } | null {
@@ -24,8 +62,6 @@ function BadgeProgress({ total }: { total: number }) {
 
   const progress = (total / next) * 100
   const label = next === 5 ? 'Contribuidor Top' : 'Contribuidor Master'
-
-  // Estrelas exibidas: sempre 5 (representando a meta atual)
   const earnedInRange = next === 5 ? total : Math.max(total - 5, 0)
   const starsArr = Array.from({ length: 5 }, (_, i) => i < earnedInRange)
 
@@ -35,19 +71,14 @@ function BadgeProgress({ total }: { total: number }) {
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>Próximo: {label}</span>
         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{total}/{next} este mês</span>
       </div>
-
-      {/* Estrelas visuais */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
         {starsArr.map((earned, i) => (
           <span key={i} style={{ fontSize: 20, opacity: earned ? 1 : 0.2 }}>⭐</span>
         ))}
       </div>
-
       <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }}>
         <div style={{ height: '100%', width: `${progress}%`, background: next === 5 ? '#f59e0b' : '#7c3aed', borderRadius: 3, transition: 'width 0.4s' }} />
       </div>
-
-      {/* Explicação do sistema */}
       <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
         Ganhe ⭐ ao <strong>avaliar um local</strong> ou <strong>adicionar um novo local</strong> ao mapa. Com <strong>5 ⭐ no mês</strong>, você recebe o selo <strong style={{ color: '#d97706' }}>Contribuidor Top</strong>!
       </div>
@@ -61,6 +92,8 @@ export default function PerfilPage() {
   const [avaliacoes, setAvaliacoes] = useState(0)
   const [monthlyTotal, setMonthlyTotal] = useState(0)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  // Estados do perfil público
   const [showAnuncio, setShowAnuncio] = useState(false)
   const [showSobreNos, setShowSobreNos] = useState(false)
   const [editMode, setEditMode] = useState(false)
@@ -70,6 +103,17 @@ export default function PerfilPage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [offlineMsg, setOfflineMsg] = useState(false)
   const [showTermos, setShowTermos] = useState(false)
+
+  // Estados do "Meu Ninho" (informações privadas)
+  const [ninhoMode, setNinhoMode] = useState<'view' | 'edit'>('view')
+  const [editRole, setEditRole] = useState('')
+  const [editCidade, setEditCidade] = useState('')
+  const [editIdade, setEditIdade] = useState('')
+  const [filhos, setFilhos] = useState<Filho[]>([])
+  const [editFilhos, setEditFilhos] = useState<Filho[]>([])
+  const [savingNinho, setSavingNinho] = useState(false)
+  const [ninhoError, setNinhoError] = useState('')
+
   const fileRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -84,12 +128,33 @@ export default function PerfilPage() {
           setProfile(data as Profile)
           setEditName(data.display_name || '')
           setEditUsername(data.username || '')
+          setEditRole(data.role || '')
+          setEditCidade(data.cidade || '')
+          setEditIdade(data.idade ? String(data.idade) : '')
         }
-        const startOfMonth = new Date()
-        startOfMonth.setDate(1)
-        startOfMonth.setHours(0, 0, 0, 0)
-        const monthISO = startOfMonth.toISOString()
 
+        // Carrega filhos
+        const { data: filhosData } = await supabase
+          .from('filhos')
+          .select('id, nome, genero, data_nascimento')
+          .eq('user_id', user.id)
+          .order('data_nascimento', { ascending: true })
+
+        if (filhosData) {
+          const mapped = filhosData.map(f => ({
+            id: f.id,
+            localId: Math.random().toString(36).slice(2),
+            nome: f.nome || '',
+            genero: (f.genero || '') as Filho['genero'],
+            data_nascimento: f.data_nascimento || '',
+          }))
+          setFilhos(mapped)
+          setEditFilhos(mapped.map(f => ({ ...f })))
+        }
+
+        const startOfMonth = new Date()
+        startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0)
+        const monthISO = startOfMonth.toISOString()
         const [c, a, cm, am] = await Promise.all([
           supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           supabase.from('avaliacoes').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
@@ -100,7 +165,7 @@ export default function PerfilPage() {
         setAvaliacoes(a.count || 0)
         setMonthlyTotal((cm.count || 0) + (am.count || 0))
       } else {
-        setProfile({ display_name: null, username: null, avatar_url: null, plano: 'gratis' })
+        setProfile({ display_name: null, username: null, avatar_url: null, plano: 'gratis', role: null, cidade: null, idade: null })
       }
     }
     load()
@@ -110,6 +175,7 @@ export default function PerfilPage() {
     ? profile.display_name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
     : '?'
 
+  // ── Perfil público ───────────────────────────────────────────────────────────
   async function saveProfile() {
     setSaving(true)
     try {
@@ -148,12 +214,99 @@ export default function PerfilPage() {
     }
   }
 
+  // ── Meu Ninho ───────────────────────────────────────────────────────────────
+  function addEditFilho() {
+    setEditFilhos(f => [...f, newFilho()])
+  }
+
+  function updateEditFilho(localId: string, field: keyof Filho, value: string) {
+    setEditFilhos(f => f.map(filho => filho.localId === localId ? { ...filho, [field]: value } : filho))
+  }
+
+  function removeEditFilho(localId: string) {
+    setEditFilhos(f => f.filter(filho => filho.localId !== localId))
+  }
+
+  function openNinhoEdit() {
+    setEditRole(profile?.role || '')
+    setEditCidade(profile?.cidade || '')
+    setEditIdade(profile?.idade ? String(profile.idade) : '')
+    setEditFilhos(filhos.map(f => ({ ...f })))
+    setNinhoError('')
+    setNinhoMode('edit')
+  }
+
+  function cancelNinhoEdit() {
+    setNinhoMode('view')
+    setNinhoError('')
+  }
+
+  async function saveNinho() {
+    if (!editCidade.trim()) { setNinhoError('Informe sua cidade'); return }
+    setSavingNinho(true)
+    setNinhoError('')
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Salva perfil
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: user.id,
+        role: editRole || null,
+        cidade: editCidade.trim(),
+        idade: editIdade ? parseInt(editIdade) : null,
+        updated_at: new Date().toISOString(),
+      })
+      if (profileError) { setNinhoError(`Erro: ${profileError.message}`); return }
+
+      // Salva filhos: apaga e re-insere
+      const filhosValidos = editFilhos.filter(f => f.genero || f.data_nascimento || f.nome)
+      await supabase.from('filhos').delete().eq('user_id', user.id)
+
+      let novoFilhos: Filho[] = []
+      if (filhosValidos.length > 0) {
+        const { data: inserted, error: filhosError } = await supabase
+          .from('filhos')
+          .insert(filhosValidos.map(f => ({
+            user_id: user.id,
+            nome: f.nome.trim() || null,
+            genero: f.genero || null,
+            data_nascimento: f.data_nascimento || null,
+          })))
+          .select('id, nome, genero, data_nascimento')
+
+        if (filhosError) { setNinhoError(`Erro ao salvar filhos: ${filhosError.message}`); return }
+        if (inserted) {
+          novoFilhos = inserted.map(f => ({
+            id: f.id,
+            localId: Math.random().toString(36).slice(2),
+            nome: f.nome || '',
+            genero: (f.genero || '') as Filho['genero'],
+            data_nascimento: f.data_nascimento || '',
+          }))
+        }
+      }
+
+      // Atualiza estado local
+      setProfile(p => p ? { ...p, role: editRole || null, cidade: editCidade.trim(), idade: editIdade ? parseInt(editIdade) : null } : p)
+      setFilhos(novoFilhos)
+      setNinhoMode('view')
+    } catch (e) {
+      console.error(e)
+      setNinhoError('Erro inesperado. Tente novamente.')
+    } finally {
+      setSavingNinho(false)
+    }
+  }
+
   async function signOut() {
     await supabase.auth.signOut()
     router.push('/onboarding')
   }
 
   if (!profile) return null
+
+  const roleLabel = ROLES.find(r => r.key === profile.role)?.label
 
   return (
     <div className="app-shell">
@@ -267,6 +420,295 @@ export default function PerfilPage() {
           )}
         </div>
 
+        {/* ── Meu Ninho (informações privadas) ─────────────────────── */}
+        {isLoggedIn && (
+          <div style={{ margin: '0 16px 12px' }}>
+
+            {/* Aviso de privacidade */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '9px 14px', marginBottom: 8,
+              background: '#f0fdf4', borderRadius: 10,
+              border: '1px solid #bbf7d0',
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <span style={{ fontSize: 12, color: '#15803d', lineHeight: 1.4 }}>
+                <strong>Informações privadas</strong> — visíveis apenas para você, nunca compartilhadas com outros usuários.
+              </span>
+            </div>
+
+            {/* Card Meu Ninho */}
+            <div className="card" style={{ overflow: 'hidden' }}>
+
+              {/* Header do card */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '14px 16px',
+                borderBottom: ninhoMode === 'edit' ? '1px solid var(--border)' : 'none',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>🪺</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Meu Ninho</span>
+                </div>
+                {ninhoMode === 'view' && (
+                  <button
+                    onClick={openNinhoEdit}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--green-dark)', fontSize: 13, fontWeight: 600 }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Editar
+                  </button>
+                )}
+              </div>
+
+              {/* Modo visualização */}
+              {ninhoMode === 'view' && (
+                <div style={{ padding: '12px 16px 16px' }}>
+                  {/* Role + cidade + idade */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: filhos.length > 0 ? 14 : 0 }}>
+                    {roleLabel && (
+                      <span style={{
+                        padding: '5px 12px', borderRadius: 20,
+                        background: 'var(--green-soft)', color: 'var(--green-dark)',
+                        fontSize: 13, fontWeight: 600,
+                      }}>
+                        {roleLabel}
+                      </span>
+                    )}
+                    {profile.cidade && (
+                      <span style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '5px 12px', borderRadius: 20,
+                        background: 'var(--bg)', border: '1px solid var(--border)',
+                        color: 'var(--text)', fontSize: 13,
+                      }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        {profile.cidade}
+                      </span>
+                    )}
+                    {profile.idade && (
+                      <span style={{
+                        padding: '5px 12px', borderRadius: 20,
+                        background: 'var(--bg)', border: '1px solid var(--border)',
+                        color: 'var(--text)', fontSize: 13,
+                      }}>
+                        {profile.idade} anos
+                      </span>
+                    )}
+                    {!roleLabel && !profile.cidade && !profile.idade && filhos.length === 0 && (
+                      <button
+                        onClick={openNinhoEdit}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 13, padding: 0, textDecoration: 'underline' }}
+                      >
+                        Completar informações do ninho →
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filhos */}
+                  {filhos.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {filhos.map(f => {
+                        const generoEmoji = f.genero === 'menino' ? '👦' : f.genero === 'menina' ? '👧' : '🧒'
+                        const idadeStr = formatarIdade(f.data_nascimento)
+                        return (
+                          <div key={f.id || f.localId} style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '10px 12px', borderRadius: 12,
+                            background: 'var(--bg)', border: '1px solid var(--border)',
+                          }}>
+                            <span style={{ fontSize: 20 }}>{generoEmoji}</span>
+                            <div>
+                              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+                                {f.nome || 'Sem nome'}
+                              </div>
+                              {idadeStr && (
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{idadeStr}</div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Modo edição */}
+              {ninhoMode === 'edit' && (
+                <div style={{ padding: '16px' }}>
+
+                  {/* Quem é você */}
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: 'var(--text)' }}>Quem é você?</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {ROLES.map(r => (
+                        <button
+                          key={r.key}
+                          onClick={() => setEditRole(r.key)}
+                          style={{
+                            flex: 1, padding: '10px 6px', borderRadius: 14,
+                            border: editRole === r.key ? '2px solid var(--green)' : '1.5px solid var(--border)',
+                            background: editRole === r.key ? 'var(--green-soft)' : 'var(--bg)',
+                            cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                            alignItems: 'center', gap: 6, transition: 'all 0.12s',
+                          }}
+                        >
+                          <img src={r.icon} alt={r.label} style={{ width: 32, height: 32, objectFit: 'contain' }} />
+                          <span style={{ fontSize: 10, fontWeight: editRole === r.key ? 700 : 500, color: editRole === r.key ? 'var(--green-dark)' : 'var(--text)', lineHeight: 1.3, textAlign: 'center' }}>
+                            {r.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Cidade */}
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 6, color: 'var(--text)' }}>
+                      Cidade <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input
+                      value={editCidade}
+                      onChange={e => setEditCidade(e.target.value)}
+                      placeholder="Ex: São Paulo, Campinas..."
+                      style={{ width: '100%', padding: '11px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontFamily: 'var(--font)', fontSize: 14, color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
+                      onFocus={e => e.target.style.borderColor = 'var(--green)'}
+                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                    />
+                  </div>
+
+                  {/* Idade */}
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={{ fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 6, color: 'var(--text)' }}>Sua idade</label>
+                    <input
+                      type="number"
+                      value={editIdade}
+                      onChange={e => setEditIdade(e.target.value)}
+                      placeholder="Ex: 32"
+                      min="16" max="99"
+                      style={{ width: '45%', padding: '11px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontFamily: 'var(--font)', fontSize: 14, color: 'var(--text)', outline: 'none' }}
+                      onFocus={e => e.target.style.borderColor = 'var(--green)'}
+                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                    />
+                  </div>
+
+                  {/* Filhos */}
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: 'var(--text)' }}>Meus filhos</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {editFilhos.map((filho, idx) => (
+                        <div key={filho.localId} style={{ background: 'var(--bg)', borderRadius: 14, padding: '12px 14px', border: '1.5px solid var(--border)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>Filho(a) {idx + 1}</span>
+                            {editFilhos.length > 1 && (
+                              <button onClick={() => removeEditFilho(filho.localId)} style={{ width: 22, height: 22, borderRadius: '50%', border: '1px solid var(--border)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Gênero */}
+                          <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
+                            {GENEROS.map(g => (
+                              <button
+                                key={g.key}
+                                onClick={() => updateEditFilho(filho.localId, 'genero', g.key)}
+                                style={{
+                                  flex: 1, padding: '7px 3px', borderRadius: 9,
+                                  border: filho.genero === g.key ? '2px solid var(--green)' : '1.5px solid var(--border)',
+                                  background: filho.genero === g.key ? 'var(--green-soft)' : 'var(--bg-card)',
+                                  color: filho.genero === g.key ? 'var(--green-dark)' : 'var(--text)',
+                                  fontSize: 11, fontWeight: filho.genero === g.key ? 700 : 400,
+                                  cursor: 'pointer', fontFamily: 'var(--font)', lineHeight: 1.3, textAlign: 'center',
+                                }}
+                              >
+                                {g.label}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Nome */}
+                          {filho.genero && (
+                            <div style={{ marginBottom: 10 }}>
+                              <input
+                                value={filho.nome}
+                                onChange={e => updateEditFilho(filho.localId, 'nome', e.target.value)}
+                                placeholder="Nome do filho(a)"
+                                style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
+                                onFocus={e => e.target.style.borderColor = 'var(--green)'}
+                                onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                              />
+                            </div>
+                          )}
+
+                          {/* Data de nascimento */}
+                          <div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 5 }}>Data de nascimento</div>
+                            <input
+                              type="date"
+                              value={filho.data_nascimento}
+                              onChange={e => updateEditFilho(filho.localId, 'data_nascimento', e.target.value)}
+                              max={new Date().toISOString().split('T')[0]}
+                              style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={addEditFilho}
+                      style={{ marginTop: 10, width: '100%', padding: '10px 0', borderRadius: 50, border: '1.5px dashed var(--green)', background: 'transparent', color: 'var(--green-dark)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                      Adicionar filho(a)
+                    </button>
+                  </div>
+
+                  {/* Erro */}
+                  {ninhoError && (
+                    <div style={{ padding: '9px 13px', background: '#fff1f0', border: '1px solid #fecaca', borderRadius: 9, color: '#dc2626', fontSize: 12, marginBottom: 14 }}>
+                      {ninhoError}
+                    </div>
+                  )}
+
+                  {/* Botões */}
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button
+                      onClick={saveNinho}
+                      disabled={savingNinho}
+                      className="btn-primary"
+                      style={{ flex: 1, padding: '11px 0', fontSize: 14 }}
+                    >
+                      {savingNinho ? 'Salvando...' : 'Salvar'}
+                    </button>
+                    <button
+                      onClick={cancelNinhoEdit}
+                      className="btn-outline"
+                      style={{ flex: 1, padding: '11px 0', fontSize: 14 }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Menu */}
         <div className="card" style={{ margin: '0 16px 12px', overflow: 'hidden' }}>
           <Link href="/meus-locais" className="menu-item">
@@ -293,10 +735,8 @@ export default function PerfilPage() {
           <button className="menu-item" style={{ width: '100%', border: 'none', background: 'none', fontFamily: 'var(--font)', cursor: 'pointer', textAlign: 'left' }} onClick={() => setShowSobreNos(true)}>
             <div className="menu-item-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
             </div>
             <span className="menu-item-text">Sobre nós</span>
@@ -364,7 +804,6 @@ export default function PerfilPage() {
             <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
               Alcance pais, mães e cuidadores que precisam de profissionais de confiança na sua cidade.
             </div>
-
             <div style={{ padding: '16px', background: '#f3e8ff', borderRadius: 16, border: '1.5px solid #7c3aed30', marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <div style={{ fontSize: 16, fontWeight: 700, color: '#7c3aed' }}>Plano Profissional</div>
@@ -372,14 +811,8 @@ export default function PerfilPage() {
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.</div>
             </div>
-
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', margin: '12px 0' }}>
-              Entre em contato para começar:
-            </div>
-            <a
-              href="mailto:foradoninho.app@gmail.com"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7c3aed', color: 'white', padding: '13px 20px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}
-            >
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', margin: '12px 0' }}>Entre em contato para começar:</div>
+            <a href="mailto:foradoninho.app@gmail.com" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7c3aed', color: 'white', padding: '13px 20px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>
@@ -408,7 +841,6 @@ export default function PerfilPage() {
           <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '85vh', overflowY: 'auto', padding: '20px 20px 40px' }}>
             <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Termos e Privacidade</div>
-
             {[
               { title: '📋 Termos de Uso', body: 'O Fora do Ninho é um aplicativo colaborativo para pais, mães e cuidadores compartilharem e avaliarem locais baby-friendly em viagens. Ao usar o app, você concorda em fornecer informações verdadeiras, respeitar outros usuários e contribuir de forma construtiva.\n\nAvaliações e fotos passam por moderação. Não são permitidos conteúdos ofensivos, irrelevantes ou imagens de pessoas. O Fora do Ninho pode remover conteúdo que viole estes termos.' },
               { title: '🔒 Privacidade', body: 'Coletamos apenas o necessário para o funcionamento do app: nome de perfil, email de autenticação e localização (para exibir locais próximos). Não vendemos seus dados a terceiros.\n\nSua localização é usada exclusivamente para ordenar locais por proximidade e não é armazenada permanentemente. Você pode excluir sua conta a qualquer momento pelo Perfil.' },
@@ -419,7 +851,6 @@ export default function PerfilPage() {
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65, whiteSpace: 'pre-line' }}>{sec.body}</div>
               </div>
             ))}
-
             <button className="btn-primary" onClick={() => setShowTermos(false)}>Entendi</button>
           </div>
         </div>
@@ -430,7 +861,6 @@ export default function PerfilPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }}>
           <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '85vh', overflowY: 'auto', padding: '20px 20px 48px' }}>
             <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
-
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <div style={{ width: 48, height: 48, borderRadius: 14, background: 'var(--green-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="22" height="29" viewBox="0 0 24 32" fill="none">
@@ -443,19 +873,15 @@ export default function PerfilPage() {
                 <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Nossa história e missão</div>
               </div>
             </div>
-
             <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
               O Fora do Ninho nasceu de uma necessidade real: a de quem já esteve na estrada com um bebê no colo e não sabia onde parar com segurança. Fraldário limpo, um lugar tranquilo para amamentar, um restaurante com cadeirão — coisas simples que fazem toda a diferença.
             </div>
-
             <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
               Mais do que um app de mapas, queremos construir uma <strong style={{ color: 'var(--green-dark)' }}>comunidade</strong> — de pais, mães e cuidadores que se ajudam nos momentos que mais precisam. Cada avaliação, cada check-in, cada foto compartilhada é um presente para quem ainda não conhece aquele local.
             </div>
-
             <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
               Porque viajar com crianças pequenas não precisa ser estressante. Com as informações certas — e com a ajuda uns dos outros — cada parada pode ser um bom momento.
             </div>
-
             <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
               {[
                 { icon: '🗺️', label: 'Locais mapeados\npela comunidade' },
@@ -468,7 +894,6 @@ export default function PerfilPage() {
                 </div>
               ))}
             </div>
-
             <button className="btn-primary" onClick={() => setShowSobreNos(false)}>Fechar</button>
           </div>
         </div>

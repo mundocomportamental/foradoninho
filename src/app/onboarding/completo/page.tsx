@@ -3,10 +3,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-interface Bebe {
-  id: string
+interface Filho {
+  id: string           // ID local temporário para controle de UI
+  dbId?: string        // UUID do banco (undefined se ainda não salvo)
   genero: 'menino' | 'menina' | 'nao_informado' | ''
-  nascimento: string
+  data_nascimento: string
   nome: string
 }
 
@@ -22,15 +23,15 @@ const GENEROS = [
   { key: 'nao_informado', label: 'Prefiro não responder' },
 ]
 
-function newBebe(): Bebe {
-  return { id: Math.random().toString(36).slice(2), genero: '', nascimento: '', nome: '' }
+function newFilho(): Filho {
+  return { id: Math.random().toString(36).slice(2), genero: '', data_nascimento: '', nome: '' }
 }
 
 export default function CompletarPerfilPage() {
   const [role, setRole] = useState('')
   const [cidade, setCidade] = useState('')
   const [idade, setIdade] = useState('')
-  const [bebes, setBebes] = useState<Bebe[]>([newBebe()])
+  const [filhos, setFilhos] = useState<Filho[]>([newFilho()])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -41,27 +42,50 @@ export default function CompletarPerfilPage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/onboarding'); return }
-      const { data } = await supabase.from('profiles').select('role, cidade, idade, bebes').eq('id', user.id).single()
-      if (data) {
-        if (data.role) setRole(data.role)
-        if (data.cidade) setCidade(data.cidade)
-        if (data.idade) setIdade(String(data.idade))
-        if (data.bebes && Array.isArray(data.bebes) && data.bebes.length > 0) setBebes(data.bebes)
+
+      // Carrega dados do perfil
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('role, cidade, idade')
+        .eq('id', user.id)
+        .single()
+
+      if (profileData) {
+        if (profileData.role) setRole(profileData.role)
+        if (profileData.cidade) setCidade(profileData.cidade)
+        if (profileData.idade) setIdade(String(profileData.idade))
+      }
+
+      // Carrega filhos da tabela dedicada
+      const { data: filhosData } = await supabase
+        .from('filhos')
+        .select('id, nome, genero, data_nascimento')
+        .eq('user_id', user.id)
+        .order('created_at')
+
+      if (filhosData && filhosData.length > 0) {
+        setFilhos(filhosData.map(f => ({
+          id: Math.random().toString(36).slice(2),
+          dbId: f.id,
+          genero: (f.genero || '') as Filho['genero'],
+          data_nascimento: f.data_nascimento || '',
+          nome: f.nome || '',
+        })))
       }
     }
     load()
   }, [supabase, router])
 
-  function addBebe() {
-    setBebes(b => [...b, newBebe()])
+  function addFilho() {
+    setFilhos(f => [...f, newFilho()])
   }
 
-  function updateBebe(id: string, field: keyof Bebe, value: string) {
-    setBebes(b => b.map(bebe => bebe.id === id ? { ...bebe, [field]: value } : bebe))
+  function updateFilho(id: string, field: keyof Filho, value: string) {
+    setFilhos(f => f.map(filho => filho.id === id ? { ...filho, [field]: value } : filho))
   }
 
-  function removeBebe(id: string) {
-    setBebes(b => b.filter(bebe => bebe.id !== id))
+  function removeFilho(id: string) {
+    setFilhos(f => f.filter(filho => filho.id !== id))
   }
 
   async function handleSave() {
@@ -73,21 +97,38 @@ export default function CompletarPerfilPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/onboarding'); return }
 
-      const bebesFilled = bebes.filter(b => b.genero || b.nascimento || b.nome)
-
-      const { error: saveError } = await supabase.from('profiles').upsert({
+      // 1. Salva dados do perfil
+      const { error: profileError } = await supabase.from('profiles').upsert({
         id: user.id,
         role,
         cidade: cidade.trim(),
         idade: idade ? parseInt(idade) : null,
-        bebes: bebesFilled,
         updated_at: new Date().toISOString(),
       })
 
-      if (saveError) {
-        console.error('Erro ao salvar perfil:', saveError)
-        setError(`Erro ao salvar: ${saveError.message}`)
+      if (profileError) {
+        setError(`Erro ao salvar: ${profileError.message}`)
         return
+      }
+
+      // 2. Salva filhos: apaga os existentes e re-insere
+      const filhosValidos = filhos.filter(f => f.genero || f.data_nascimento || f.nome)
+
+      await supabase.from('filhos').delete().eq('user_id', user.id)
+
+      if (filhosValidos.length > 0) {
+        const { error: filhosError } = await supabase.from('filhos').insert(
+          filhosValidos.map(f => ({
+            user_id: user.id,
+            nome: f.nome.trim() || null,
+            genero: f.genero || null,
+            data_nascimento: f.data_nascimento || null,
+          }))
+        )
+        if (filhosError) {
+          setError(`Erro ao salvar filhos: ${filhosError.message}`)
+          return
+        }
       }
 
       setSaved(true)
@@ -241,28 +282,28 @@ export default function CompletarPerfilPage() {
             />
           </div>
 
-          {/* Meus bebês */}
+          {/* Meus filhos */}
           <div style={{ marginBottom: 28 }}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, color: 'var(--text)' }}>
-              Meus bebês
+              Meus filhos
             </div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.4 }}>
               Adicione seus filhos para personalizarmos dicas e locais para a idade deles 🍼
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {bebes.map((bebe, idx) => (
-                <div key={bebe.id} style={{
+              {filhos.map((filho, idx) => (
+                <div key={filho.id} style={{
                   background: 'var(--bg-card)', borderRadius: 16,
                   padding: '14px 16px', border: '1.5px solid var(--border)',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>
-                      Bebê {idx + 1}
+                      Filho(a) {idx + 1}
                     </div>
-                    {bebes.length > 1 && (
+                    {filhos.length > 1 && (
                       <button
-                        onClick={() => removeBebe(bebe.id)}
+                        onClick={() => removeFilho(filho.id)}
                         style={{
                           width: 24, height: 24, borderRadius: '50%',
                           border: '1px solid var(--border)', background: 'var(--bg)',
@@ -276,21 +317,21 @@ export default function CompletarPerfilPage() {
                     )}
                   </div>
 
-                  {/* Gênero — sem emojis, com "Prefiro não responder" */}
+                  {/* Gênero */}
                   <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
                     {GENEROS.map(g => (
                       <button
                         key={g.key}
-                        onClick={() => updateBebe(bebe.id, 'genero', g.key)}
+                        onClick={() => updateFilho(filho.id, 'genero', g.key)}
                         style={{
                           flex: 1,
                           padding: '9px 4px',
                           borderRadius: 10,
-                          border: bebe.genero === g.key ? '2px solid var(--green)' : '1.5px solid var(--border)',
-                          background: bebe.genero === g.key ? 'var(--green-soft)' : 'var(--bg)',
-                          color: bebe.genero === g.key ? 'var(--green-dark)' : 'var(--text)',
+                          border: filho.genero === g.key ? '2px solid var(--green)' : '1.5px solid var(--border)',
+                          background: filho.genero === g.key ? 'var(--green-soft)' : 'var(--bg)',
+                          color: filho.genero === g.key ? 'var(--green-dark)' : 'var(--text)',
                           fontSize: 12,
-                          fontWeight: bebe.genero === g.key ? 700 : 400,
+                          fontWeight: filho.genero === g.key ? 700 : 400,
                           cursor: 'pointer',
                           fontFamily: 'var(--font)',
                           transition: 'all 0.12s',
@@ -303,16 +344,16 @@ export default function CompletarPerfilPage() {
                     ))}
                   </div>
 
-                  {/* Nome do passarinho — aparece ao selecionar gênero */}
-                  {bebe.genero && (
+                  {/* Nome — aparece ao selecionar gênero */}
+                  {filho.genero && (
                     <div style={{ marginBottom: 12 }}>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
                         Qual o nome desse(a) passarinho(a)?
                       </div>
                       <input
-                        value={bebe.nome}
-                        onChange={e => updateBebe(bebe.id, 'nome', e.target.value)}
-                        placeholder="Nome do bebê"
+                        value={filho.nome}
+                        onChange={e => updateFilho(filho.id, 'nome', e.target.value)}
+                        placeholder="Nome do filho(a)"
                         style={{
                           width: '100%', padding: '10px 14px', borderRadius: 10,
                           border: '1.5px solid var(--border)', background: 'var(--bg)',
@@ -330,8 +371,8 @@ export default function CompletarPerfilPage() {
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Data de nascimento</div>
                     <input
                       type="date"
-                      value={bebe.nascimento}
-                      onChange={e => updateBebe(bebe.id, 'nascimento', e.target.value)}
+                      value={filho.data_nascimento}
+                      onChange={e => updateFilho(filho.id, 'data_nascimento', e.target.value)}
                       max={new Date().toISOString().split('T')[0]}
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: 10,
@@ -346,7 +387,7 @@ export default function CompletarPerfilPage() {
             </div>
 
             <button
-              onClick={addBebe}
+              onClick={addFilho}
               style={{
                 marginTop: 12, width: '100%', padding: '11px 0', borderRadius: 50,
                 border: '1.5px dashed var(--green)', background: 'transparent',
@@ -358,7 +399,7 @@ export default function CompletarPerfilPage() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Adicionar bebê
+              Adicionar filho(a)
             </button>
           </div>
 
