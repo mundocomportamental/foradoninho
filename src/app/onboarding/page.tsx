@@ -32,12 +32,24 @@ function Carrossel({ onDone }: { onDone: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '48px 32px 32px' }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+        {/* Primeiro slide: brand em destaque acima do ícone */}
+        {step === 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+            <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 84, height: 84, objectFit: 'contain' }} />
+            <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--green-dark)', lineHeight: 1.3 }}>
+              Bem-vindo à comunidade<br />Fora do Ninho
+            </span>
+          </div>
+        )}
+        {/* Outros slides: logo pequeno */}
+        {step > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+            <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--green-dark)' }}>Fora do Ninho</span>
+          </div>
+        )}
         <div style={{ width: 96, height: 96, borderRadius: 28, background: slide.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44, marginBottom: 32, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
           {slide.emoji}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-          <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 28, height: 28, objectFit: 'contain' }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--green-dark)' }}>Fora do Ninho</span>
         </div>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', lineHeight: 1.25, whiteSpace: 'pre-line', marginBottom: 16 }}>{slide.title}</h1>
         <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 300 }}>{slide.desc}</p>

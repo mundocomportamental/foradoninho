@@ -20,7 +20,7 @@ const FILTROS_INFO: Record<string, { title: string; desc: string; icon: string }
   },
   espaco_kids: {
     icon: '🛝',
-    title: 'Espaço Kids / Playground',
+    title: 'Área Kids / Playground',
     desc: 'Área de entretenimento infantil — playground, brinquedoteca e similares.',
   },
   microondas: {
@@ -48,7 +48,7 @@ const FILTROS_INFO: Record<string, { title: string; desc: string; icon: string }
 const AMENIDADES_POPUP = [
   { icon: '🧷', label: 'Fraldário / Trocador', desc: 'Trocador de fraldas e espaço adequado para higiene do bebê' },
   { icon: '👨‍👩‍👧', label: 'Espaço Família', desc: 'Área reservada para amamentação e conforto da família' },
-  { icon: '🛝', label: 'Espaço Kids / Playground', desc: 'Área de entretenimento e recreação infantil' },
+  { icon: '🛝', label: 'Área Kids / Playground', desc: 'Área de entretenimento e recreação infantil' },
   { icon: '🥣', label: 'Microondas', desc: 'Para aquecer mamadeiras, papinhas e refeições' },
   { icon: '🍽️', label: 'Menu Kids', desc: 'Cardápio especial e adequado para crianças' },
   { icon: '🪑', label: 'Cadeirão', desc: 'Cadeirão de bebê disponível nas refeições' },
@@ -303,7 +303,7 @@ export default function MapaPage() {
     const items = []
     if (l.fraldario) items.push('Fraldário')
     if (l.espaco_familia) items.push('Espaço Família')
-    if (l.espaco_kids) items.push('Espaço Kids')
+    if (l.espaco_kids) items.push('Área Kids')
     if (l.microondas) items.push('Microondas')
     if (l.menu_kids) items.push('Menu Kids')
     if (l.cadeirão) items.push('Cadeirão')
@@ -337,7 +337,7 @@ export default function MapaPage() {
           </svg>
           <input
             className="search-bar"
-            placeholder="Buscar causas perto de você..."
+            placeholder="Buscar locais baby-friendly perto de você..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -449,7 +449,7 @@ export default function MapaPage() {
             const all = [
               selectedLocal.fraldario && 'Fraldário',
               selectedLocal.espaco_familia && 'Espaço Família',
-              selectedLocal.espaco_kids && 'Espaço Kids',
+              selectedLocal.espaco_kids && 'Área Kids',
               selectedLocal.microondas && 'Microondas',
               selectedLocal.menu_kids && 'Menu Kids',
               selectedLocal.cadeirão && 'Cadeirão',
@@ -579,25 +579,32 @@ export default function MapaPage() {
             bottom: 'calc(var(--nav-height) + 12px)',
             right: 12,
             zIndex: 450,
-            width: 52,
-            height: 52,
-            borderRadius: '50%',
+            height: 46,
+            paddingLeft: 16,
+            paddingRight: 20,
+            borderRadius: 23,
             background: 'var(--green)',
             border: 'none',
             boxShadow: '0 4px 16px rgba(51,204,204,0.4)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            gap: 8,
             cursor: 'pointer',
             transition: 'transform 0.15s',
+            fontFamily: 'var(--font)',
+            fontSize: 14,
+            fontWeight: 700,
+            color: 'white',
           }}
-          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.08)')}
+          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
           title="Adicionar local"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
+          Adicionar
         </button>
       )}
 

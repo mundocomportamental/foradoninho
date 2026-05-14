@@ -71,7 +71,6 @@ export default function NovoLocalPage() {
   const [nome, setNome] = useState('')
   const [tipo, setTipo] = useState('')
   const [tipoCustom, setTipoCustom] = useState('')
-  const [isServico, setIsServico] = useState(false)
 
   // Step 2: avaliação
   const [rExperiencia, setRExperiencia] = useState(0)
@@ -165,13 +164,13 @@ export default function NovoLocalPage() {
       const { data: novoLocal, error: localError } = await supabase.from('locais').insert({
         nome: nome.trim(),
         tipo: tipoFinal,
-        is_servico: isServico,
         endereco: endereco.trim() || null,
         cidade: cidade.trim(),
         estado: estado.trim(),
         lat: lat,
         lng: lng,
-        is_active: false,
+        is_active: true,
+        aprovado: false,
         added_by: user.id,
         fotos: [],
         ...Object.fromEntries(AMENIDADES.map(a => [a.key, amenidades[a.key] ?? false])),
@@ -272,7 +271,7 @@ export default function NovoLocalPage() {
           <div style={{ fontSize: 72, marginBottom: 12 }}>🎉</div>
           <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Parabéns!</div>
           <div style={{ fontSize: 15, color: 'var(--text-muted)', marginBottom: 28, lineHeight: 1.6, maxWidth: 320 }}>
-            Você adicionou um novo local ao mapa! Ele será revisado pela nossa equipe antes de aparecer para todos. Agradecemos sua contribuição!
+            Você adicionou um novo local ao mapa! Ele aparece com um pin cinza enquanto nossa equipe valida. Agradecemos sua contribuição!
           </div>
 
           {/* +1 estrela */}
@@ -335,7 +334,7 @@ export default function NovoLocalPage() {
       <div className="page" style={{ padding: '0 0 40px' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 8px' }}>
           <button
             onClick={() => step > 0 ? setStep(s => s - 1) : router.back()}
             style={{
@@ -354,6 +353,14 @@ export default function NovoLocalPage() {
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{STEP_LABELS[step]} · Etapa {step + 1} de 5</div>
           </div>
         </div>
+        {step === 0 && (
+          <div style={{ padding: '0 20px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>🪺</span>
+            <span style={{ fontSize: 13, color: 'var(--green-dark)', fontWeight: 500, lineHeight: 1.4 }}>
+              Ajude a comunidade de papais e mamães compartilhando lugares baby-friendly!
+            </span>
+          </div>
+        )}
 
         {/* Barra de progresso */}
         <div style={{ display: 'flex', gap: 4, padding: '0 20px 20px' }}>
@@ -523,29 +530,6 @@ export default function NovoLocalPage() {
                     }}
                   />
                 )}
-              </div>
-
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
-                  <div
-                    onClick={() => setIsServico(!isServico)}
-                    style={{
-                      width: 22, height: 22, borderRadius: 6, marginTop: 2, flexShrink: 0,
-                      background: isServico ? '#7c3aed' : 'var(--bg)',
-                      border: isServico ? '2px solid #7c3aed' : '2px solid var(--border)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    {isServico && (
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                    )}
-                  </div>
-                  <span style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5 }}>
-                    👩‍⚕️ É um serviço profissional infantil (consultoria de amamentação, especialista em sono do bebê, pediatra, enfermeira obstétrica, doula, osteopata infantil, musicalização para bebês, narração de histórias...)
-                  </span>
-                </label>
               </div>
 
               <button

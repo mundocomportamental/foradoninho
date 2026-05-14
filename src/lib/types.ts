@@ -22,6 +22,7 @@ export interface Local {
   agua_quente?: boolean
   certificado_pitstop: boolean
   is_servico?: boolean
+  aprovado?: boolean
   rating: number
   total_ratings: number
   total_checkins: number
@@ -45,7 +46,7 @@ export const TIPO_LABELS: Record<string, string> = {
 export const AMENIDADES = [
   { key: 'fraldario', label: 'Fraldário', icon: '🧷' },
   { key: 'espaco_familia', label: 'Espaço Família', icon: '👨‍👩‍👧' },
-  { key: 'espaco_kids', label: 'Espaço Kids', icon: '🛝' },
+  { key: 'espaco_kids', label: 'Área Kids', icon: '🛝' },
   { key: 'microondas', label: 'Microondas', icon: '🥣' },
   { key: 'menu_kids', label: 'Menu Kids', icon: '🍽️' },
   { key: 'cadeirão', label: 'Cadeirão', icon: '🪑' },
@@ -55,7 +56,7 @@ export const AMENIDADES = [
 export const FILTROS = [
   { key: 'fraldario', label: 'Fraldário' },
   { key: 'espaco_familia', label: 'Espaço Família' },
-  { key: 'espaco_kids', label: 'Espaço Kids' },
+  { key: 'espaco_kids', label: 'Área Kids' },
   { key: 'microondas', label: 'Microondas' },
   { key: 'menu_kids', label: 'Menu Kids' },
   { key: 'cadeirão', label: 'Cadeirão' },
