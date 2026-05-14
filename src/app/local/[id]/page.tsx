@@ -397,7 +397,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2.5" strokeLinecap="round">
                 <circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/>
               </svg>
-              Certificado PitStop Baby
+              Certificado Fora do Ninho
             </div>
           )}
         </div>
