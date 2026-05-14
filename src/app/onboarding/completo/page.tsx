@@ -212,22 +212,17 @@ export default function CompletarPerfilPage() {
               {ROLES.map(r => (
                 <button
                   key={r.key}
-                  onClick={() => {
-                    setRole(r.key)
-                    // pré-seleciona o ícone do papel como avatar se não houver nenhum
-                    if (!avatar) setAvatar(r.icon)
-                  }}
+                  onClick={() => setRole(r.key)}
                   style={{
                     flex: 1, padding: '14px 8px', borderRadius: 16,
                     border: role === r.key ? '2px solid var(--green)' : '1.5px solid var(--border)',
                     background: role === r.key ? 'var(--green-soft)' : 'var(--bg-card)',
                     cursor: 'pointer', display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', gap: 8, transition: 'all 0.15s',
+                    alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', minHeight: 56,
                   }}
                 >
-                  <img src={r.icon} alt={r.label} style={{ width: 40, height: 40, objectFit: 'contain' }} />
                   <span style={{
-                    fontSize: 11, fontWeight: role === r.key ? 700 : 500,
+                    fontSize: 13, fontWeight: role === r.key ? 700 : 500,
                     color: role === r.key ? 'var(--green-dark)' : 'var(--text)',
                     lineHeight: 1.3, textAlign: 'center',
                   }}>
