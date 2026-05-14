@@ -29,6 +29,16 @@ const ROLES = [
   { key: 'outro', label: 'Outro cuidador(a)', icon: '/bird1.png' },
 ]
 
+// Todos os passarinhos disponíveis como avatar
+const AVES = [
+  '/love-birds.png', '/eagle-head.png', '/eagle.png', '/bird1.png',
+  '/bullfinch.png', '/duck.png', '/eagle (1).png', '/eagle (2).png', '/eagle (3).png',
+  '/flamingo.png', '/flamingo (1).png', '/owl.png', '/owl (1).png',
+  '/owl (2).png', '/owl (3).png', '/parrot (2).png', '/parrot (3).png',
+  '/penguin.png', '/penguin (1).png', '/seagull.png', '/toucan.png', '/toucan (1).png',
+  '/float.png',
+]
+
 const GENEROS = [
   { key: 'menino', label: 'Menino' },
   { key: 'menina', label: 'Menina' },
@@ -104,6 +114,10 @@ export default function PerfilPage() {
   const [offlineMsg, setOfflineMsg] = useState(false)
   const [showTermos, setShowTermos] = useState(false)
 
+  // Avatar / passarinho picker
+  const [showBirdPicker, setShowBirdPicker] = useState(false)
+  const [savingBird, setSavingBird] = useState(false)
+
   // Estados do "Meu Ninho" (informações privadas)
   const [ninhoMode, setNinhoMode] = useState<'view' | 'edit'>('view')
   const [editRole, setEditRole] = useState('')
@@ -174,6 +188,20 @@ export default function PerfilPage() {
   const initials = profile?.display_name
     ? profile.display_name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
     : '?'
+
+  // ── Selecionar passarinho ────────────────────────────────────────────────────
+  async function selectBird(src: string) {
+    setSavingBird(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      await supabase.from('profiles').upsert({ id: user.id, avatar_url: src, updated_at: new Date().toISOString() })
+      setProfile(p => p ? { ...p, avatar_url: src } : p)
+      setShowBirdPicker(false)
+    } finally {
+      setSavingBird(false)
+    }
+  }
 
   // ── Perfil público ───────────────────────────────────────────────────────────
   async function saveProfile() {
@@ -324,10 +352,20 @@ export default function PerfilPage() {
               </div>
               {isLoggedIn && (
                 <>
+                  {/* Botão passarinho */}
+                  <button
+                    onClick={() => setShowBirdPicker(true)}
+                    style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: '50%', background: 'var(--green)', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    title="Escolher passarinho"
+                  >
+                    <span style={{ fontSize: 12, lineHeight: 1 }}>🐦</span>
+                  </button>
+                  {/* Botão câmera — fica no canto inferior esquerdo */}
                   <button
                     onClick={() => fileRef.current?.click()}
                     disabled={uploadingAvatar}
-                    style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: '50%', background: 'var(--green)', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    style={{ position: 'absolute', bottom: 0, left: 0, width: 24, height: 24, borderRadius: '50%', background: '#6b7280', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    title="Enviar foto"
                   >
                     {uploadingAvatar
                       ? <div style={{ width: 10, height: 10, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%' }} />
@@ -794,6 +832,45 @@ export default function PerfilPage() {
         </div>
 
       </div>
+
+      {/* Modal Passarinho */}
+      {showBirdPicker && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowBirdPicker(false)}>
+          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', padding: '20px 20px 48px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 16px' }} />
+            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Escolha seu passarinho</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Toque para selecionar seu avatar</div>
+
+            {savingBird && (
+              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)', fontSize: 14 }}>Salvando...</div>
+            )}
+
+            {!savingBird && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                {AVES.map(ave => {
+                  const selected = profile?.avatar_url === ave
+                  return (
+                    <button
+                      key={ave}
+                      onClick={() => selectBird(ave)}
+                      style={{
+                        aspectRatio: '1', borderRadius: 14, padding: 8,
+                        border: selected ? '2.5px solid var(--green)' : '2px solid transparent',
+                        background: selected ? 'var(--green-soft)' : 'var(--bg)',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.12s',
+                        boxShadow: selected ? '0 0 0 3px var(--green-light)' : 'none',
+                      }}
+                    >
+                      <img src={ave} alt="passarinho" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Modal Anuncie */}
       {showAnuncio && (

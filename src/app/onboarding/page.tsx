@@ -35,11 +35,8 @@ function Carrossel({ onDone }: { onDone: () => void }) {
         <div style={{ width: 96, height: 96, borderRadius: 28, background: slide.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44, marginBottom: 32, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
           {slide.emoji}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20 }}>
-          <svg width="16" height="21" viewBox="0 0 24 32" fill="none">
-            <path d="M12 0C7.03 0 3 4.03 3 9c0 6.75 9 16 9 16s9-9.25 9-16c0-4.97-4.03-9-9-9z" fill="#4caf85" stroke="white" strokeWidth="1"/>
-            <circle cx="12" cy="9" r="3" fill="white" opacity="0.9"/>
-          </svg>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 28, height: 28, objectFit: 'contain' }} />
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--green-dark)' }}>Fora do Ninho</span>
         </div>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', lineHeight: 1.25, whiteSpace: 'pre-line', marginBottom: 16 }}>{slide.title}</h1>
@@ -122,7 +119,7 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
       <div style={{ fontSize: 52, marginBottom: 16 }}>📬</div>
       <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 10 }}>Verifique seu email</div>
       <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 24 }}>
-        Enviamos um link para <strong>{email}</strong>. Clique nele para acessar o PitStop Baby.
+        Enviamos um link para <strong>{email}</strong>. Clique nele para acessar o Fora do Ninho.
       </div>
       <button className="btn-secondary" onClick={() => setMagicSent(false)}>Tentar novamente</button>
       <button className="btn-secondary" onClick={onSkip}>Continuar sem conta</button>
@@ -134,13 +131,10 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '40px 24px 32px', overflowY: 'auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div style={{ width: 64, height: 64, background: 'var(--green-soft)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-          <svg width="28" height="37" viewBox="0 0 24 32" fill="none">
-            <path d="M12 0C7.03 0 3 4.03 3 9c0 6.75 9 16 9 16s9-9.25 9-16c0-4.97-4.03-9-9-9z" fill="#4caf85" stroke="white" strokeWidth="1.2"/>
-            <circle cx="12" cy="9" r="3.5" fill="white" opacity="0.9"/>
-          </svg>
+        <div style={{ width: 72, height: 72, background: 'var(--green-soft)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+          <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 52, height: 52, objectFit: 'contain' }} />
         </div>
-        <div style={{ fontSize: 22, fontWeight: 800 }}>PitStop Baby</div>
+        <div style={{ fontSize: 22, fontWeight: 800 }}>Fora do Ninho</div>
         <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
           {mode === 'email' ? (isLogin ? 'Entrar na sua conta' : 'Criar conta gratuita') : 'Entre para salvar seus locais favoritos'}
         </div>
