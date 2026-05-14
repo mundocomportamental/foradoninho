@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro de Profissional — Fora do Ninho</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #7C3AED;
+    --primary-light: #EDE9FE;
+    --primary-dark: #5B21B6;
+    --success: #059669;
+    --success-light: #D1FAE5;
+    --text: #1F2937;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --border-focus: #7C3AED;
+    --bg: #FAFAFA;
+    --white: #FFFFFF;
+    --error: #DC2626;
+    --error-light: #FEE2E2;
+    --warning: #D97706;
+    --warning-light: #FEF3C7;
+    --warning-border: #FCD34D;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 620px; margin: 0 auto; }
+  .logo-area { text-align: center; margin-bottom: 2rem; }
+  .logo-area .emoji { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+  .logo-area h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+  .logo-area p { font-size: 0.95rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+  /* Progress */
+  .progress-wrap { margin-bottom: 2rem; }
+  .step-labels { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+  .step-label { font-size: 0.7rem; color: var(--text-muted); text-align: center; flex: 1; transition: color 0.3s; }
+  .step-label.active { color: var(--primary); font-weight: 600; }
+  .step-label.done { color: var(--success); }
+  .progress-bar-bg { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.4s ease; }
+  .step-dots { display: flex; justify-content: space-between; margin-top: 0.5rem; padding: 0 2px; }
+  .step-dot {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 700; color: var(--text-muted); transition: all 0.3s;
+  }
+  .step-dot.active { background: var(--primary); color: white; }
+  .step-dot.done { background: var(--success); color: white; }
+
+  /* Card */
+  .card { background: var(--white); border-radius: 16px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 1.5rem; }
+  .step-section { display: none; }
+  .step-section.visible { display: block; }
+
+  .step-header { margin-bottom: 1.5rem; }
+  .step-header .step-num { font-size: 0.75rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+  .step-header h2 { font-size: 1.25rem; font-weight: 700; }
+  .step-header p { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+  /* Form elements */
+  .field-group { margin-bottom: 1.25rem; }
+  .field-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text); }
+  .field-group label .optional { font-weight: 400; color: var(--text-muted); font-size: 0.8rem; margin-left: 4px; }
+  input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], select, textarea {
+    width: 100%; padding: 0.6rem 0.85rem; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.9rem; font-family: inherit; color: var(--text); background: var(--white);
+    transition: border-color 0.2s; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+  textarea { resize: vertical; min-height: 90px; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+  /* Service checkboxes */
+  .service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; }
+  .service-option {
+    display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+    transition: all 0.2s; font-size: 0.82rem; color: var(--text); background: var(--white); user-select: none;
+  }
+  .service-option:hover { border-color: var(--primary); background: var(--primary-light); }
+  .service-option input[type="checkbox"] { display: none; }
+  .service-option.checked { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); font-weight: 600; }
+  .service-option .check-icon {
+    width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
+  }
+  .service-option.checked .check-icon { background: var(--primary); border-color: var(--primary); color: white; font-size: 10px; }
+
+  /* Toggle buttons */
+  .toggle-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .toggle-btn {
+    padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 99px;
+    font-size: 0.85rem; cursor: pointer; background: var(--white); color: var(--text);
+    transition: all 0.2s; font-weight: 500;
+  }
+  .toggle-btn:hover { border-color: var(--primary); }
+  .toggle-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+  /* Photo upload */
+  .photo-area { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 0.5rem; }
+  .photo-slot {
+    aspect-ratio: 1; border: 2px dashed var(--border); border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; background: var(--bg); position: relative; overflow: hidden;
+  }
+  .photo-slot:hover { border-color: var(--primary); background: var(--primary-light); }
+  .photo-slot .plus { font-size: 1.5rem; color: var(--text-muted); }
+  .photo-slot .photo-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+  .photo-slot input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+  .photo-slot .remove-photo {
+    position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.5); color: white;
+    border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+  }
+  .photo-slot:hover .remove-photo { display: flex; }
+
+  /* Social inputs */
+  .social-input-wrap {
+    display: flex; align-items: center; border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; transition: border-color 0.2s;
+  }
+  .social-input-wrap:focus-within { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+  .social-prefix { padding: 0.6rem 0.75rem; background: var(--bg); border-right: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+  .social-input-wrap input { border: none; border-radius: 0; box-shadow: none; flex: 1; }
+  .social-input-wrap input:focus { box-shadow: none; border-color: transparent; }
+
+  /* Credit card preview */
+  .card-preview {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 14px; padding: 1.5rem; color: white; margin-bottom: 1.5rem;
+    position: relative; min-height: 130px;
+  }
+  .card-preview .card-num { font-size: 1.1rem; letter-spacing: 0.2em; font-family: 'Courier New', monospace; margin-top: 1.5rem; }
+  .card-preview .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 1rem; font-size: 0.8rem; }
+  .card-preview .card-holder { text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; }
+
+  /* Plan box */
+  .plan-box {
+    background: var(--primary-light); border: 1px solid #C4B5FD; border-radius: 10px;
+    padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;
+  }
+  .plan-box .plan-name { font-weight: 700; color: var(--primary-dark); }
+  .plan-box .plan-price { font-size: 1.25rem; font-weight: 800; color: var(--primary); white-space: nowrap; }
+  .plan-box .plan-desc { font-size: 0.8rem; color: var(--primary-dark); opacity: 0.8; }
+
+  /* Coupon */
+  .coupon-row { display: flex; gap: 0.5rem; }
+  .coupon-row input { flex: 1; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .btn-coupon {
+    padding: 0.6rem 1rem; background: var(--primary); color: white; border: none;
+    border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .btn-coupon:hover { background: var(--primary-dark); }
+  .coupon-msg { margin-top: 0.5rem; font-size: 0.82rem; padding: 0.5rem 0.75rem; border-radius: 7px; display: none; line-height: 1.5; }
+  .coupon-msg.success { display: block; background: var(--success-light); color: #065F46; border: 1px solid #6EE7B7; }
+  .coupon-msg.warning { display: block; background: var(--warning-light); color: #92400E; border: 1px solid var(--warning-border); }
+  .coupon-msg.error { display: block; background: var(--error-light); color: #991B1B; border: 1px solid #FCA5A5; }
+
+  /* Card fields section */
+  #card-fields { transition: opacity 0.3s; }
+  #card-fields.hidden { display: none; }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: space-between; }
+  .btn { padding: 0.75rem 1.75rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: white; flex: 1; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: var(--white); color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn-success { background: var(--success); color: white; flex: 1; }
+  .btn-success:hover { filter: brightness(0.9); }
+
+  /* Success screen */
+  .success-screen { display: none; text-align: center; padding: 3rem 2rem; }
+  .success-screen.visible { display: block; }
+  .success-icon { width: 64px; height: 64px; background: var(--success-light); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem; }
+  .success-screen h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+  .success-screen p { color: var(--text-muted); font-size: 0.95rem; }
+
+  .hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem; }
+  .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+  .cnpj-toggle { font-size: 0.82rem; color: var(--primary); cursor: pointer; text-decoration: underline; margin-bottom: 1rem; display: inline-block; }
+  #cnpj-section { display: none; }
+
+  @media (max-width: 480px) {
+    .row-2, .row-3 { grid-template-columns: 1fr; }
+    .card { padding: 1.25rem; }
+    .service-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo-area">
+    <span class="emoji">🐣</span>
+    <h1>Fora do Ninho</h1>
+    <p>Cadastro de profissional</p>
+  </div>
+
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="step-labels">
+      <span class="step-label active">Dados</span>
+      <span class="step-label">Negócio</span>
+      <span class="step-label">Endereço</span>
+      <span class="step-label">Serviços</span>
+      <span class="step-label">Presença</span>
+      <span class="step-label">Pagamento</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill" style="width: 8%"></div>
+    </div>
+    <div class="step-dots">
+      <div class="step-dot active">1</div>
+      <div class="step-dot">2</div>
+      <div class="step-dot">3</div>
+      <div class="step-dot">4</div>
+      <div class="step-dot">5</div>
+      <div class="step-dot">6</div>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <!-- STEP 1 -->
+    <div class="step-section visible" id="step-1">
+      <div class="step-header">
+        <div class="step-num">Passo 1 de 6</div>
+        <h2>👤 Seus dados pessoais</h2>
+        <p>Precisamos identificar você como responsável pelo cadastro.</p>
+      </div>
+      <div class="field-group">
+        <label>Nome completo</label>
+        <input type="text" id="nome" placeholder="Ex.: Maria da Silva" />
+      </div>
+      <div class="row-2">
+        <div class="field-group">
+          <label>CPF do responsável</label>
+          <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" />
+        </div>
+        <div class="field-group">
+          <label>Data de nascimento</label>
+          <input type="text" id="nascimento" placeholder="DD/MM/AAAA" maxlength="10" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label>E-mail</label>
+        <input type="email" id="email" placeholder="seu@email.com" />
+      </div>
+      <div class="row-2">
+        <div class="field-group">
+          <label>Telefone / WhatsApp <span class="optional">(principal)</span></label>
+          <input type="tel" id="telefone" placeholder="(11) 99999-9999" />
+        </div>
+        <div class="field-group">
+          <label>Gênero <span class="optional">(opcional)</span></label>
+          <select id="genero">
+            <option value="">Prefiro não dizer</option>
+            <option>Feminino</option>
+            <option>Masculino</option>
+            <option>Não-binário</option>
+            <option>Outro</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goTo(2)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-section" id="step-2">
+      <div class="step-header">
+        <div class="step-num">Passo 2 de 6</div>
+        <h2>🏢 Dados do negócio</h2>
+        <p>Como você vai aparecer para as famílias? Pode ser seu nome ou o nome do seu negócio.</p>
+      </div>
+      <div class="field-group">
+        <label>Nome profissional / nome do negócio</label>
+        <input type="text" id="nome-negocio" placeholder="Ex.: Dra. Ana Costa — Lactação" />
+        <div class="hint">Este é o nome que aparecerá no app para as famílias.</div>
+      </div>
+      <div class="field-group">
+        <label>Tipo de perfil</label>
+        <select id="tipo-perfil">
+          <option value="pf">Profissional autônomo (pessoa física)</option>
+          <option value="pj">Empresa / Clínica (pessoa jurídica)</option>
+        </select>
+      </div>
+      <span class="cnpj-toggle" onclick="toggleCNPJ()">+ Adicionar CNPJ</span>
+      <div id="cnpj-section">
+        <div class="row-2">
+          <div class="field-group">
+            <label>CNPJ <span class="optional">(opcional)</span></label>
+            <input type="text" id="cnpj" placeholder="00.000.000/0001-00" maxlength="18" />
+          </div>
+          <div class="field-group">
+            <label>Razão social <span class="optional">(opcional)</span></label>
+            <input type="text" id="razao-social" placeholder="Razão social da empresa" />
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p style="font-size: 0.82rem; color: var(--text-muted);">💡 Mesmo sem CNPJ, você pode se cadastrar para divulgar seus serviços no app normalmente.</p>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo(1)">← Voltar</button>
+        <button class="btn btn-primary" onclick="goTo(3)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-section" id="step-3">
+      <div class="step-header">
+        <div class="step-num">Passo 3 de 6</div>
+        <h2>📍 Endereço e local de atendimento</h2>
+        <p>Onde as famílias podem te encontrar — ou até onde você vai.</p>
+      </div>
+      <div class="row-2">
+        <div class="field-group">
+          <label>CEP</label>
+          <input type="text" id="cep" placeholder="00000-000" maxlength="9" onblur="buscaCep()" />
+        </div>
+        <div class="field-group">
+          <label>Estado (UF)</label>
+          <select id="uf">
+            <option value="">Selecione</option>
+            <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+            <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+            <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+            <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+            <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+            <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+            <option>SP</option><option>SE</option><option>TO</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Cidade</label>
+        <input type="text" id="cidade" placeholder="Ex.: São Paulo" />
+      </div>
+      <div class="row-2">
+        <div class="field-group">
+          <label>Rua / Avenida</label>
+          <input type="text" id="rua" placeholder="Nome da rua" />
+        </div>
+        <div class="field-group">
+          <label>Número</label>
+          <input type="text" id="numero" placeholder="123" />
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field-group">
+          <label>Complemento <span class="optional">(opcional)</span></label>
+          <input type="text" id="complemento" placeholder="Apto, Sala, Bloco..." />
+        </div>
+        <div class="field-group">
+          <label>Bairro</label>
+          <input type="text" id="bairro" placeholder="Ex.: Centro" />
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="field-group">
+        <label>Como você atende?</label>
+        <div class="toggle-group" id="atendimento-toggle">
+          <button class="toggle-btn" onclick="toggleAtend(this)">🏠 No meu estabelecimento</button>
+          <button class="toggle-btn" onclick="toggleAtend(this)">🚗 Em domicílio</button>
+          <button class="toggle-btn" onclick="toggleAtend(this)">💻 Online / Remoto</button>
+        </div>
+        <div class="hint">Selecione quantas opções quiser.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo(2)">← Voltar</button>
+        <button class="btn btn-primary" onclick="goTo(4)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step-section" id="step-4">
+      <div class="step-header">
+        <div class="step-num">Passo 4 de 6</div>
+        <h2>🌟 Seus serviços</h2>
+        <p>O que você oferece para as famílias? Selecione todas as opções que se aplicam.</p>
+      </div>
+      <div class="field-group">
+        <label>Categoria(s) de serviço</label>
+        <div class="service-grid" id="service-grid"></div>
+        <div class="hint">Selecionados: <span id="selected-count">0</span></div>
+      </div>
+      <div class="divider"></div>
+      <div class="field-group">
+        <label>Outros serviços <span class="optional">(opcional)</span></label>
+        <input type="text" id="outros-servicos" placeholder="Ex.: Terapia ocupacional pediátrica..." />
+        <div class="hint">Caso seu serviço não esteja na lista acima.</div>
+      </div>
+      <div class="field-group">
+        <label>Resumo dos seus serviços</label>
+        <textarea id="resumo" placeholder="Conte em poucas palavras o que você oferece, sua experiência e diferenciais. As famílias vão ver este texto no seu perfil." maxlength="500"></textarea>
+        <div class="hint"><span id="char-count">0</span>/500 caracteres</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo(3)">← Voltar</button>
+        <button class="btn btn-primary" onclick="goTo(5)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step-section" id="step-5">
+      <div class="step-header">
+        <div class="step-num">Passo 5 de 6</div>
+        <h2>📸 Fotos e presença digital</h2>
+        <p>Tudo opcional — mas ajuda as famílias a te conhecerem melhor!</p>
+      </div>
+      <div class="field-group">
+        <label>Fotos do negócio <span class="optional">(opcional, até 3 fotos)</span></label>
+        <div class="photo-area">
+          <div class="photo-slot" id="slot-1">
+            <span class="plus">+</span><span class="photo-label">Foto 1</span>
+            <input type="file" accept="image/*" onchange="previewPhoto(this, 'slot-1')" />
+            <button class="remove-photo" onclick="removePhoto(event, 'slot-1')">×</button>
+          </div>
+          <div class="photo-slot" id="slot-2">
+            <span class="plus">+</span><span class="photo-label">Foto 2</span>
+            <input type="file" accept="image/*" onchange="previewPhoto(this, 'slot-2')" />
+            <button class="remove-photo" onclick="removePhoto(event, 'slot-2')">×</button>
+          </div>
+          <div class="photo-slot" id="slot-3">
+            <span class="plus">+</span><span class="photo-label">Foto 3</span>
+            <input type="file" accept="image/*" onchange="previewPhoto(this, 'slot-3')" />
+            <button class="remove-photo" onclick="removePhoto(event, 'slot-3')">×</button>
+          </div>
+        </div>
+        <div class="hint">JPG ou PNG, máx. 5 MB cada.</div>
+      </div>
+      <div class="divider"></div>
+      <div class="field-group">
+        <label>Instagram <span class="optional">(opcional)</span></label>
+        <div class="social-input-wrap">
+          <span class="social-prefix">instagram.com/</span>
+          <input type="text" id="instagram" placeholder="seuperfil" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Facebook <span class="optional">(opcional)</span></label>
+        <div class="social-input-wrap">
+          <span class="social-prefix">facebook.com/</span>
+          <input type="text" id="facebook" placeholder="seuperfil" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Site oficial <span class="optional">(opcional)</span></label>
+        <div class="social-input-wrap">
+          <span class="social-prefix">https://</span>
+          <input type="text" id="site" placeholder="www.seusite.com.br" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label>WhatsApp de contato <span class="optional">(opcional)</span></label>
+        <input type="tel" id="whatsapp" placeholder="(11) 99999-9999" />
+        <div class="hint">Caso diferente do telefone principal cadastrado no passo 1.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo(4)">← Voltar</button>
+        <button class="btn btn-primary" onclick="goTo(6)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="step-section" id="step-6">
+      <div class="step-header">
+        <div class="step-num">Passo 6 de 6</div>
+        <h2>💳 Plano e pagamento</h2>
+        <p>Você está quase lá! Finalize seu cadastro.</p>
+      </div>
+
+      <div class="plan-box" id="plan-box">
+        <div>
+          <div class="plan-name">Plano Profissional</div>
+          <div class="plan-desc">Perfil público + visibilidade no app</div>
+        </div>
+        <div class="plan-price" id="plan-price">R$89<span style="font-size:0.75rem;font-weight:400">/mês</span></div>
+      </div>
+
+      <!-- Cupom -->
+      <div class="field-group">
+        <label>Possui cupom de desconto? <span class="optional">(opcional)</span></label>
+        <div class="coupon-row">
+          <input type="text" id="coupon-input" placeholder="Digite seu cupom" maxlength="20" oninput="this.value=this.value.toUpperCase()" />
+          <button class="btn-coupon" onclick="applyCoupon()">Aplicar</button>
+        </div>
+        <div class="coupon-msg" id="coupon-msg"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Card preview + fields -->
+      <div id="card-fields">
+        <div class="card-preview" id="card-visual">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div style="font-size:0.75rem;opacity:0.7;">Fora do Ninho</div>
+            <div style="font-size:1.5rem;">💳</div>
+          </div>
+          <div class="card-num" id="preview-num">•••• •••• •••• ••••</div>
+          <div class="card-bottom">
+            <div>
+              <div style="font-size:0.65rem;opacity:0.7;">TITULAR</div>
+              <div class="card-holder" id="preview-holder">SEU NOME</div>
+            </div>
+            <div>
+              <div style="font-size:0.65rem;opacity:0.7;text-align:right">VALIDADE</div>
+              <div id="preview-exp">MM/AA</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Nome no cartão</label>
+          <input type="text" id="card-name" placeholder="NOME COMO ESTÁ NO CARTÃO"
+            oninput="document.getElementById('preview-holder').textContent=this.value.toUpperCase()||'SEU NOME'" />
+        </div>
+        <div class="field-group">
+          <label>Número do cartão</label>
+          <input type="text" id="card-num-input" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCard(this)" />
+        </div>
+        <div class="row-2">
+          <div class="field-group">
+            <label>Validade</label>
+            <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5" oninput="formatExp(this)" />
+          </div>
+          <div class="field-group">
+            <label>CVV</label>
+            <input type="text" id="card-cvv" placeholder="000" maxlength="4" />
+          </div>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.6;">
+          🔒 Seus dados são protegidos por criptografia SSL. O pagamento é processado pelo <strong>Asaas</strong>, plataforma certificada pelo Banco Central. O Fora do Ninho não armazena dados do seu cartão.
+        </p>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo(5)">← Voltar</button>
+        <button class="btn btn-success" id="submit-btn" onclick="submitForm()">✓ Finalizar cadastro</button>
+      </div>
+    </div>
+
+  </div><!-- /card -->
+
+  <!-- Success -->
+  <div class="card success-screen" id="success-screen">
+    <div class="success-icon">🎉</div>
+    <h2 id="success-title">Cadastro enviado!</h2>
+    <p style="margin-top:0.75rem;" id="success-msg">Recebemos seu cadastro com sucesso. Nossa equipe vai revisar suas informações e você receberá um e-mail de confirmação em até <strong>24 horas</strong>.</p>
+    <p style="margin-top:1rem;">Assim que aprovado, seu perfil estará visível para as famílias no app. 🐣</p>
+    <button class="btn btn-primary" style="margin-top:2rem;width:100%;" onclick="location.reload()">Cadastrar outro profissional</button>
+  </div>
+
+</div>
+
+<script>
+const SERVICES = [
+  "Acupuntura",
+  "Consultora de amamentação",
+  "Doula",
+  "Enfermeira obstétrica",
+  "Especialista em sono do bebê",
+  "Fisioterapia pediátrica",
+  "Fisioterapia pélvica",
+  "Fonoaudiologia infantil",
+  "Introdução alimentar / método BLW",
+  "Massagem infantil (Shantala)",
+  "Método Canguru",
+  "Musicalização para bebês",
+  "Narração de histórias",
+  "Nutricionista pediátrico",
+  "Odontopediatria",
+  "Osteopata infantil",
+  "Pediatra",
+  "Psicólogo infantil",
+  "Puericultora",
+  "Yoga para gestantes",
+];
+
+const COUPONS = {
+  'NINHO00': { type: 'free', label: '🎉 Cupom aplicado! Seu cadastro está gratuito — nenhum dado de cartão é necessário.' },
+  'NINHO29': { type: 'discount', label: '🎉 Cupom aplicado! Você pagará R$29/mês nos primeiros 3 meses, depois o valor normal de R$89/mês. Os dados do cartão são obrigatórios para ativar o desconto.' },
+};
+
+let currentStep = 1;
+let selectedServices = new Set();
+let appliedCoupon = null;
+
+function init() {
+  const grid = document.getElementById('service-grid');
+  SERVICES.forEach(s => {
+    const label = document.createElement('label');
+    label.className = 'service-option';
+    label.innerHTML = `<input type="checkbox" value="${s}" /><span class="check-icon"></span><span>${s}</span>`;
+    label.addEventListener('click', function(e) {
+      e.preventDefault();
+      toggleService(label, s);
+    });
+    grid.appendChild(label);
+  });
+  document.getElementById('resumo').addEventListener('input', function() {
+    document.getElementById('char-count').textContent = this.value.length;
+  });
+  document.getElementById('cep').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '');
+    if (v.length > 5) v = v.substring(0,5) + '-' + v.substring(5,8);
+    this.value = v;
+  });
+  document.getElementById('cpf').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '');
+    if (v.length > 3) v = v.substring(0,3) + '.' + v.substring(3);
+    if (v.length > 7) v = v.substring(0,7) + '.' + v.substring(7);
+    if (v.length > 11) v = v.substring(0,11) + '-' + v.substring(11,13);
+    this.value = v;
+  });
+  document.getElementById('nascimento').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '');
+    if (v.length > 2) v = v.substring(0,2) + '/' + v.substring(2);
+    if (v.length > 5) v = v.substring(0,5) + '/' + v.substring(5,9);
+    this.value = v;
+  });
+}
+
+function toggleService(el, name) {
+  el.classList.toggle('checked');
+  if (selectedServices.has(name)) selectedServices.delete(name);
+  else selectedServices.add(name);
+  el.querySelector('.check-icon').textContent = el.classList.contains('checked') ? '✓' : '';
+  document.getElementById('selected-count').textContent = selectedServices.size;
+}
+
+function toggleAtend(btn) {
+  btn.classList.toggle('active');
+}
+
+function goTo(n) {
+  document.getElementById('step-' + currentStep).classList.remove('visible');
+  currentStep = n;
+  document.getElementById('step-' + currentStep).classList.add('visible');
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress() {
+  const pct = Math.round(((currentStep - 1) / 5) * 92) + 8;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.querySelectorAll('.step-label').forEach((l, i) => {
+    l.className = 'step-label' + (i+1===currentStep?' active':i+1<currentStep?' done':'');
+  });
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.className = 'step-dot' + (i+1===currentStep?' active':i+1<currentStep?' done':'');
+    d.textContent = i+1 < currentStep ? '✓' : (i+1);
+  });
+}
+
+function toggleCNPJ() {
+  const sec = document.getElementById('cnpj-section');
+  const toggle = document.querySelector('.cnpj-toggle');
+  const open = sec.style.display === 'block';
+  sec.style.display = open ? 'none' : 'block';
+  toggle.textContent = open ? '+ Adicionar CNPJ' : '− Remover CNPJ';
+}
+
+function buscaCep() {
+  const cep = document.getElementById('cep').value.replace(/\D/g, '');
+  if (cep.length === 8) {
+    fetch('https://viacep.com.br/ws/' + cep + '/json/')
+      .then(r => r.json())
+      .then(d => {
+        if (!d.erro) {
+          document.getElementById('rua').value = d.logradouro || '';
+          document.getElementById('bairro').value = d.bairro || '';
+          document.getElementById('cidade').value = d.localidade || '';
+          document.getElementById('uf').value = d.uf || '';
+        }
+      }).catch(() => {});
+  }
+}
+
+function applyCoupon() {
+  const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+  const msgEl = document.getElementById('coupon-msg');
+  const cardFields = document.getElementById('card-fields');
+  const submitBtn = document.getElementById('submit-btn');
+  const planPrice = document.getElementById('plan-price');
+
+  msgEl.className = 'coupon-msg';
+  msgEl.textContent = '';
+
+  if (!code) {
+    msgEl.className = 'coupon-msg error';
+    msgEl.textContent = 'Digite um cupom antes de aplicar.';
+    return;
+  }
+
+  const coupon = COUPONS[code];
+  if (!coupon) {
+    msgEl.className = 'coupon-msg error';
+    msgEl.textContent = '❌ Cupom inválido. Verifique o código e tente novamente.';
+    appliedCoupon = null;
+    cardFields.classList.remove('hidden');
+    planPrice.innerHTML = 'R$89<span style="font-size:0.75rem;font-weight:400">/mês</span>';
+    submitBtn.textContent = '✓ Finalizar cadastro';
+    return;
+  }
+
+  appliedCoupon = code;
+
+  if (coupon.type === 'free') {
+    msgEl.className = 'coupon-msg success';
+    msgEl.textContent = coupon.label;
+    cardFields.classList.add('hidden');
+    planPrice.innerHTML = '<span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$89</span> <span style="color:var(--success)">Grátis</span>';
+    submitBtn.textContent = '✓ Finalizar cadastro (gratuito)';
+    submitBtn.style.background = 'var(--success)';
+  } else if (coupon.type === 'discount') {
+    msgEl.className = 'coupon-msg warning';
+    msgEl.textContent = coupon.label;
+    cardFields.classList.remove('hidden');
+    planPrice.innerHTML = '<span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$89</span> <span style="color:var(--warning)">R$29</span><span style="font-size:0.75rem;font-weight:400;color:var(--warning)"> /mês (3 meses)</span>';
+    submitBtn.textContent = '✓ Finalizar cadastro com desconto';
+    submitBtn.style.background = '';
+  }
+}
+
+function previewPhoto(input, slotId) {
+  const slot = document.getElementById(slotId);
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      slot.querySelector('.plus').style.display = 'none';
+      slot.querySelector('.photo-label').style.display = 'none';
+      let img = slot.querySelector('img');
+      if (!img) { img = document.createElement('img'); slot.appendChild(img); }
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removePhoto(e, slotId) {
+  e.stopPropagation();
+  const slot = document.getElementById(slotId);
+  const img = slot.querySelector('img');
+  if (img) img.remove();
+  slot.querySelector('.plus').style.display = '';
+  slot.querySelector('.photo-label').style.display = '';
+  slot.querySelector('input[type="file"]').value = '';
+}
+
+function formatCard(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 16);
+  input.value = v.replace(/(.{4})/g, '$1 ').trim();
+  document.getElementById('preview-num').textContent = input.value || '•••• •••• •••• ••••';
+}
+
+function formatExp(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2,4);
+  input.value = v;
+  document.getElementById('preview-exp').textContent = v || 'MM/AA';
+}
+
+async function submitForm() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Enviando...';
+
+  try {
+    // Coletar modalidades de atendimento
+    const modalidades = Array.from(
+      document.querySelectorAll('#atendimento-toggle .toggle-btn.active')
+    ).map(b => b.textContent.trim());
+
+    const payload = {
+      // Dados pessoais
+      nome: document.getElementById('nome').value,
+      cpf: document.getElementById('cpf').value,
+      dataNascimento: document.getElementById('nascimento').value || null,
+      email: document.getElementById('email').value,
+      telefone: document.getElementById('telefone').value,
+      genero: document.getElementById('genero').value || null,
+      // Negócio
+      nomeNegocio: document.getElementById('nome-negocio').value || null,
+      tipoPerfil: document.getElementById('tipo-perfil').value,
+      cnpj: document.getElementById('cnpj').value || null,
+      razaoSocial: document.getElementById('razao-social').value || null,
+      // Endereço
+      cep: document.getElementById('cep').value,
+      uf: document.getElementById('uf').value,
+      cidade: document.getElementById('cidade').value,
+      rua: document.getElementById('rua').value,
+      numero: document.getElementById('numero').value,
+      complemento: document.getElementById('complemento').value || null,
+      bairro: document.getElementById('bairro').value,
+      // Atendimento & serviços
+      modalidadesAtendimento: modalidades,
+      servicos: Array.from(selectedServices),
+      outrosServicos: document.getElementById('outros-servicos').value || null,
+      resumo: document.getElementById('resumo').value || null,
+      // Presença digital
+      instagram: document.getElementById('instagram').value || null,
+      facebook: document.getElementById('facebook').value || null,
+      site: document.getElementById('site').value || null,
+      whatsapp: document.getElementById('whatsapp').value || null,
+      fotos: [],
+      // Cupom
+      cupom: appliedCoupon || null,
+    };
+
+    // Cartão (apenas se não for cupom gratuito)
+    if (appliedCoupon !== 'NINHO00') {
+      payload.cartao = {
+        nome: document.getElementById('card-name').value,
+        numero: document.getElementById('card-num-input').value,
+        validade: document.getElementById('card-exp').value,
+        cvv: document.getElementById('card-cvv').value,
+      };
+    }
+
+    const res = await fetch(
+      'https://ndyujambnaskelklulwa.supabase.co/functions/v1/cadastrar-profissional',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const result = await res.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Erro ao processar o cadastro.');
+    }
+
+    // Sucesso
+    const isFree = appliedCoupon === 'NINHO00';
+    document.querySelector('.card').style.display = 'none';
+    document.getElementById('progress-wrap').style.display = 'none';
+    if (isFree) {
+      document.getElementById('success-title').textContent = 'Cadastro enviado gratuitamente!';
+      document.getElementById('success-msg').innerHTML =
+        'Recebemos seu cadastro com sucesso. Seu cupom de acesso gratuito foi aplicado.<br><br>' +
+        'Nossa equipe vai revisar suas informações e você receberá um e-mail de confirmação em até <strong>24 horas</strong>.';
+    }
+    document.getElementById('success-screen').classList.add('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '✓ Finalizar cadastro';
+    // Mostrar erro inline
+    let errDiv = document.getElementById('submit-error');
+    if (!errDiv) {
+      errDiv = document.createElement('p');
+      errDiv.id = 'submit-error';
+      errDiv.style.cssText = 'margin-top:1rem;font-size:0.85rem;color:var(--error);background:var(--error-light);padding:0.6rem 0.85rem;border-radius:8px;border:1px solid #FCA5A5;';
+      btn.parentElement.parentElement.appendChild(errDiv);
+    }
+    errDiv.textContent = '❌ ' + (err.message || 'Erro ao enviar. Tente novamente.');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
