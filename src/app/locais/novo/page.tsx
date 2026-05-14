@@ -6,8 +6,8 @@ import { AMENIDADES, TIPO_LABELS } from '@/lib/types'
 
 const TIPOS = Object.entries(TIPO_LABELS)
 
-// Steps: 0=localização, 1=info básica, 2=avaliação, 3=amenidades, 4=fotos
-const STEP_LABELS = ['Localização', 'Sobre o local', 'Avaliação', 'Comodidades', 'Fotos']
+// Steps: 0=localização, 1=info básica, 2=amenidades, 3=avaliação, 4=fotos
+const STEP_LABELS = ['Localização', 'Sobre o local', 'Comodidades', 'Avaliação', 'Fotos']
 
 const SMILES = ['😞', '😕', '😐', '🙂', '😄']
 const SMILE_LABELS = ['Ruim', 'Regular', 'Ok', 'Bom', 'Ótimo']
@@ -558,8 +558,48 @@ export default function NovoLocalPage() {
             </>
           )}
 
-          {/* ── Step 2: Avaliação ───────────────────────────────────────────── */}
+          {/* ── Step 2: Comodidades ─────────────────────────────────────────── */}
           {step === 2 && (
+            <>
+              <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Comodidades disponíveis</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Marque o que você encontrou no local</div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+                {AMENIDADES.map(a => (
+                  <label key={a.key} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+                    <div
+                      onClick={() => setAmenidades(p => ({ ...p, [a.key]: !p[a.key] }))}
+                      style={{
+                        width: 22, height: 22, borderRadius: 6,
+                        background: amenidades[a.key] ? 'var(--green)' : 'var(--bg)',
+                        border: amenidades[a.key] ? '2px solid var(--green)' : '2px solid var(--border)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.15s', flexShrink: 0,
+                      }}
+                    >
+                      {amenidades[a.key] && (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 14 }}>{a.icon} {a.label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <button
+                className="btn-primary"
+                onClick={() => setStep(3)}
+                style={{ fontSize: 15, padding: '14px 20px' }}
+              >
+                Próximo
+              </button>
+            </>
+          )}
+
+          {/* ── Step 3: Avaliação ───────────────────────────────────────────── */}
+          {step === 3 && (
             <>
               <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Sua avaliação</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Como é este local para famílias?</div>
@@ -608,48 +648,8 @@ export default function NovoLocalPage() {
               <button
                 className="btn-primary"
                 disabled={!rExperiencia}
-                onClick={() => setStep(3)}
-                style={{ marginTop: 12 }}
-              >
-                Próximo
-              </button>
-            </>
-          )}
-
-          {/* ── Step 3: Comodidades ─────────────────────────────────────────── */}
-          {step === 3 && (
-            <>
-              <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Comodidades disponíveis</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Marque o que você encontrou no local</div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-                {AMENIDADES.map(a => (
-                  <label key={a.key} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                    <div
-                      onClick={() => setAmenidades(p => ({ ...p, [a.key]: !p[a.key] }))}
-                      style={{
-                        width: 22, height: 22, borderRadius: 6,
-                        background: amenidades[a.key] ? 'var(--green)' : 'var(--bg)',
-                        border: amenidades[a.key] ? '2px solid var(--green)' : '2px solid var(--border)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        transition: 'all 0.15s', flexShrink: 0,
-                      }}
-                    >
-                      {amenidades[a.key] && (
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      )}
-                    </div>
-                    <span style={{ fontSize: 14 }}>{a.icon} {a.label}</span>
-                  </label>
-                ))}
-              </div>
-
-              <button
-                className="btn-primary"
                 onClick={() => setStep(4)}
-                style={{ fontSize: 15, padding: '14px 20px' }}
+                style={{ marginTop: 12 }}
               >
                 Próximo
               </button>
