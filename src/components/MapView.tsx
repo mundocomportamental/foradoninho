@@ -97,8 +97,8 @@ export default function MapView({ locais, userPos, center, onMarkerClick }: Prop
       locais.forEach(local => {
         const isProfissional = !!local.is_servico
         const isPending = local.aprovado === false
-        const pinColor = isPending ? '#aaaaaa' : isProfissional ? '#7c3aed' : local.certificado_pitstop ? '#33cccc' : '#e05b4e'
-        const size = local.certificado_pitstop ? 32 : 28
+        const pinColor = isPending ? '#aaaaaa' : isProfissional ? '#7c3aed' : '#33cccc'
+        const size = 28
         const icon = L.divIcon({
           html: pinSVG(pinColor, size, isProfissional),
           iconSize: [size, size],
