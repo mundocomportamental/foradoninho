@@ -646,7 +646,71 @@ function toggleAtend(btn) {
   btn.classList.toggle('active');
 }
 
+function showFieldError(id, msg) {
+  const el = document.getElementById(id);
+  el.style.borderColor = 'var(--error)';
+  let hint = el.parentElement.querySelector('.field-error');
+  if (!hint) {
+    hint = document.createElement('div');
+    hint.className = 'field-error';
+    hint.style.cssText = 'font-size:0.78rem;color:var(--error);margin-top:4px;';
+    el.parentElement.appendChild(hint);
+  }
+  hint.textContent = msg;
+  return el;
+}
+
+function clearFieldErrors() {
+  document.querySelectorAll('.field-error').forEach(e => e.remove());
+  document.querySelectorAll('input,select,textarea').forEach(e => e.style.borderColor = '');
+}
+
+function validateStep(n) {
+  clearFieldErrors();
+  let firstErr = null;
+
+  if (n === 1) {
+    const nome = document.getElementById('nome').value.trim();
+    const cpf = document.getElementById('cpf').value.replace(/\D/g,'');
+    const email = document.getElementById('email').value.trim();
+    const tel = document.getElementById('telefone').value.replace(/\D/g,'');
+    const nasc = document.getElementById('nascimento').value.trim();
+
+    if (!nome) firstErr = firstErr || showFieldError('nome', 'Nome obrigatório.');
+    if (cpf.length < 11) firstErr = firstErr || showFieldError('cpf', 'CPF inválido — preencha todos os dígitos.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) firstErr = firstErr || showFieldError('email', 'E-mail inválido.');
+    if (tel.length < 10) firstErr = firstErr || showFieldError('telefone', 'Telefone inválido.');
+    if (nasc && !parseBRDate(nasc)) firstErr = firstErr || showFieldError('nascimento', 'Data inválida — use DD/MM/AAAA.');
+  }
+
+  if (n === 6 && appliedCoupon !== 'NINHO00') {
+    const cardName = document.getElementById('card-name').value.trim();
+    const cardNum = document.getElementById('card-num-input').value.replace(/\s/g,'');
+    const cardExp = document.getElementById('card-exp').value.trim();
+    const cardCvv = document.getElementById('card-cvv').value.trim();
+
+    if (!cardName) firstErr = firstErr || showFieldError('card-name', 'Nome no cartão obrigatório.');
+    if (cardNum.length < 16) firstErr = firstErr || showFieldError('card-num-input', 'Número do cartão inválido.');
+    if (!/^\d{2}\/\d{2}$/.test(cardExp)) firstErr = firstErr || showFieldError('card-exp', 'Validade inválida — use MM/AA.');
+    if (cardCvv.length < 3) firstErr = firstErr || showFieldError('card-cvv', 'CVV inválido.');
+  }
+
+  if (firstErr) { firstErr.focus(); return false; }
+  return true;
+}
+
+function parseBRDate(str) {
+  if (!str || str.length < 10) return null;
+  const parts = str.split('/');
+  if (parts.length !== 3 || parts[2].length !== 4) return null;
+  const [d, m, y] = parts;
+  if (isNaN(Number(d)) || isNaN(Number(m)) || isNaN(Number(y))) return null;
+  return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+}
+
 function goTo(n) {
+  // Validate before moving forward
+  if (n > currentStep && !validateStep(currentStep)) return;
   document.getElementById('step-' + currentStep).classList.remove('visible');
   currentStep = n;
   document.getElementById('step-' + currentStep).classList.add('visible');
@@ -775,6 +839,7 @@ function formatExp(input) {
 }
 
 async function submitForm() {
+  if (!validateStep(6)) return;
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Enviando...';
@@ -788,8 +853,8 @@ async function submitForm() {
     const payload = {
       // Dados pessoais
       nome: document.getElementById('nome').value,
-      cpf: document.getElementById('cpf').value,
-      dataNascimento: document.getElementById('nascimento').value || null,
+      cpf: document.getElementById('cpf').value.replace(/\D/g, ''),
+      dataNascimento: parseBRDate(document.getElementById('nascimento').value),
       email: document.getElementById('email').value,
       telefone: document.getElementById('telefone').value,
       genero: document.getElementById('genero').value || null,
