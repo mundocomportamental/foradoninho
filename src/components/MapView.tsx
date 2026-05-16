@@ -7,29 +7,19 @@ interface Props {
   userPos: { lat: number; lng: number } | null
   center: { lat: number; lng: number }
   onMarkerClick: (id: string) => void
-  recenterKey?: number
+  onMapClick?: () => void
 }
 
-// Ícone do Fora do Ninho como marcador de localização do usuário
-const USER_BIRD_HTML = `
-  <div style="
-    width:42px;height:42px;
-    border-radius:50%;
-    background:white;
-    border:2.5px solid #33CCCC;
-    box-shadow:0 3px 10px rgba(51,204,204,0.35),0 1px 4px rgba(0,0,0,0.15);
-    display:flex;align-items:center;justify-content:center;
-    animation:birdPop 0.35s cubic-bezier(.34,1.56,.64,1);
-  ">
-    <img src="/love-birds.png" width="28" height="28" style="object-fit:contain;display:block;" />
-  </div>
-`
-
+// SVG de pin de geolocalização simples com efeito hover/touch
 function pinSVG(color: string, size: number, isProfissional = false) {
   return `<div class="map-pin-wrapper" style="
-    width:${size}px;height:${size}px;
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;transition:transform 0.15s cubic-bezier(.34,1.56,.64,1);
+    width:${size}px;
+    height:${size}px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:transform 0.15s cubic-bezier(.34,1.56,.64,1);
     transform-origin:center bottom;
   ">
     <svg width="${size}" height="${size}" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -41,14 +31,13 @@ function pinSVG(color: string, size: number, isProfissional = false) {
   </div>`
 }
 
-export default function MapView({ locais, userPos, center, onMarkerClick, recenterKey }: Props) {
+export default function MapView({ locais, userPos, center, onMarkerClick, onMapClick }: Props) {
   const mapRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const markersRef = useRef<any[]>([])
-  const userMarkerRef = useRef<any>(null)
-  const prevRecenterKey = useRef(0)
+  const onMapClickRef = useRef(onMapClick)
+  onMapClickRef.current = onMapClick
 
-  // Init map once
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return
 
@@ -63,10 +52,12 @@ export default function MapView({ locais, userPos, center, onMarkerClick, recent
         attributionControl: false,
       })
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© CartoDB',
-      }).addTo(map)
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        { attribution: '© CartoDB' }
+      ).addTo(map)
 
+      map.on('click', () => onMapClickRef.current?.())
       mapRef.current = map
     }
 
@@ -80,7 +71,6 @@ export default function MapView({ locais, userPos, center, onMarkerClick, recent
     }
   }, [])
 
-  // Update location markers when locais or userPos changes
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
@@ -88,28 +78,28 @@ export default function MapView({ locais, userPos, center, onMarkerClick, recent
     async function updateMarkers() {
       const L = (await import('leaflet')).default
 
-      // Remove all location markers
       markersRef.current.forEach(m => m.remove())
       markersRef.current = []
 
-      // Remove previous user marker
-      if (userMarkerRef.current) {
-        userMarkerRef.current.remove()
-        userMarkerRef.current = null
-      }
-
-      // Pássaro do usuário
+      // Ponto do usuário — ícone do app com anel
       if (userPos) {
         const userIcon = L.divIcon({
-          html: USER_BIRD_HTML,
-          iconSize: [42, 42],
-          iconAnchor: [21, 21],
+          html: `<div style="
+            width:40px;height:40px;border-radius:50%;
+            overflow:hidden;
+            border:3px solid white;
+            box-shadow:0 2px 8px rgba(0,0,0,0.22),0 0 0 4px rgba(51,204,204,0.30);
+          ">
+            <img src="/icon-192.png" style="width:100%;height:100%;object-fit:cover;" alt="você" />
+          </div>`,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
           className: '',
         })
-        userMarkerRef.current = L.marker([userPos.lat, userPos.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map)
+        L.marker([userPos.lat, userPos.lng], { icon: userIcon }).addTo(map)
       }
 
-      // Pins dos locais
+      // Todos os locais com pin simples
       locais.forEach(local => {
         const isProfissional = !!local.is_servico
         const isPending = local.aprovado === false
@@ -124,15 +114,15 @@ export default function MapView({ locais, userPos, center, onMarkerClick, recent
         const marker = L.marker([local.lat, local.lng], { icon })
           .addTo(map)
           .on('click', () => onMarkerClick(local.id))
-          .on('mouseover', function (this: any) {
+          .on('mouseover', function(this: any) {
             const el = this.getElement()?.querySelector('.map-pin-wrapper') as HTMLElement | null
             if (el) el.style.transform = 'scale(1.3)'
           })
-          .on('mouseout', function (this: any) {
+          .on('mouseout', function(this: any) {
             const el = this.getElement()?.querySelector('.map-pin-wrapper') as HTMLElement | null
             if (el) el.style.transform = 'scale(1)'
           })
-          .on('touchstart', function (this: any) {
+          .on('touchstart', function(this: any) {
             const el = this.getElement()?.querySelector('.map-pin-wrapper') as HTMLElement | null
             if (el) el.style.transform = 'scale(1.3)'
             setTimeout(() => { if (el) el.style.transform = 'scale(1)' }, 300)
@@ -143,19 +133,6 @@ export default function MapView({ locais, userPos, center, onMarkerClick, recent
 
     updateMarkers()
   }, [locais, userPos])
-
-  // Fly to user position when recenterKey changes
-  useEffect(() => {
-    if (
-      recenterKey &&
-      recenterKey !== prevRecenterKey.current &&
-      mapRef.current &&
-      userPos
-    ) {
-      prevRecenterKey.current = recenterKey
-      mapRef.current.flyTo([userPos.lat, userPos.lng], 15, { animate: true, duration: 0.8 })
-    }
-  }, [recenterKey, userPos])
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%' }} />

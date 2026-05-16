@@ -164,7 +164,7 @@ function FiltrosInfoButton() {
       </button>
       {open && (
         <div style={{
-          position: 'absolute', top: 36, left: 0, zIndex: 600,
+          position: 'absolute', top: 36, right: 0, zIndex: 600,
           background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)',
           boxShadow: '0 8px 28px rgba(0,0,0,0.16)', padding: '14px 0',
           width: 270, maxHeight: '70vh', overflowY: 'auto',
@@ -283,9 +283,6 @@ function NavModal({ local, onClose }: { local: Local; onClose: () => void }) {
 
 const MapView = dynamic(() => import('@/components/MapView'), { ssr: false })
 
-const SNAP_COLLAPSED = 64
-const SNAP_PARTIAL = 210
-
 export default function MapaPage() {
   const [locais, setLocais] = useState<Local[]>([])
   const [filtro, setFiltro] = useState<string | null>(null)
@@ -297,28 +294,7 @@ export default function MapaPage() {
   const [selectedLocal, setSelectedLocal] = useState<Local | null>(null)
   const [showWelcome, setShowWelcome] = useState(false)
   const [showNavModal, setShowNavModal] = useState(false)
-  const [recenterKey, setRecenterKey] = useState(0)
-
-  // Draggable bottom sheet
-  const [sheetH, setSheetH] = useState(SNAP_PARTIAL)
-  const dragRef = useRef({ startY: 0, startH: 0 })
-
-  function onHandleTouchStart(e: React.TouchEvent) {
-    dragRef.current = { startY: e.touches[0].clientY, startH: sheetH }
-  }
-  function onHandleTouchMove(e: React.TouchEvent) {
-    const dy = dragRef.current.startY - e.touches[0].clientY
-    const snapExp = typeof window !== 'undefined' ? Math.round(window.innerHeight * 0.65) : 450
-    const newH = Math.min(snapExp, Math.max(SNAP_COLLAPSED, dragRef.current.startH + dy))
-    setSheetH(newH)
-  }
-  function onHandleTouchEnd() {
-    const snapExp = typeof window !== 'undefined' ? Math.round(window.innerHeight * 0.65) : 450
-    const snaps = [SNAP_COLLAPSED, SNAP_PARTIAL, snapExp]
-    const nearest = snaps.reduce((a, b) => Math.abs(sheetH - a) < Math.abs(sheetH - b) ? a : b)
-    setSheetH(nearest)
-  }
-
+  const [sheetVisible, setSheetVisible] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -389,7 +365,13 @@ export default function MapaPage() {
     if (local) {
       saveRecent(local)
       setSelectedLocal(local)
+      setSheetVisible(false)
     }
+  }
+
+  function handleMapClick() {
+    setSheetVisible(false)
+    setSelectedLocal(null)
   }
 
   function handleLocalClick(id: string) {
@@ -427,7 +409,7 @@ export default function MapaPage() {
             userPos={userPos}
             center={mapCenter}
             onMarkerClick={handleMarkerClick}
-            recenterKey={recenterKey}
+            onMapClick={handleMapClick}
           />
         )}
       </div>
@@ -445,11 +427,7 @@ export default function MapaPage() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-          {/* ℹ️ botão de info — fora do scroll para o dropdown não ser cortado */}
-          <div style={{ flexShrink: 0, padding: '0 6px 0 12px' }}>
-            <FiltrosInfoButton />
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <div className="map-chips-row" style={{ flex: 1, overflowX: 'auto' }}>
             <button
               className={`filter-chip${filtroProfissionais ? ' active' : ''}`}
@@ -475,31 +453,8 @@ export default function MapaPage() {
               )
             })}
           </div>
+          <FiltrosInfoButton />
         </div>
-
-        {/* Botão re-centrar no usuário — flutuante, direita, abaixo dos filtros */}
-        <button
-          onClick={() => setRecenterKey(k => k + 1)}
-          title="Voltar para minha localização"
-          style={{
-            position: 'absolute', top: 116, right: 12, zIndex: 490,
-            width: 38, height: 38, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.95)',
-            border: '1.5px solid var(--border)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.14)',
-            backdropFilter: 'blur(6px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33CCCC" strokeWidth="2.2" strokeLinecap="round">
-            <circle cx="12" cy="12" r="3"/>
-            <line x1="12" y1="2" x2="12" y2="6"/>
-            <line x1="12" y1="18" x2="12" y2="22"/>
-            <line x1="2" y1="12" x2="6" y2="12"/>
-            <line x1="18" y1="12" x2="22" y2="12"/>
-          </svg>
-        </button>
       </div>
 
       {/* ── Mini card do local selecionado ── */}
@@ -643,51 +598,34 @@ export default function MapaPage() {
       )}
 
       {!selectedLocal && (
-        <div
-          className="bottom-sheet"
-          style={{
-            height: sheetH,
-            transition: dragRef.current.startY ? 'none' : 'height 0.28s cubic-bezier(.4,0,.2,1)',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Handle arrastável */}
+        <div className="bottom-sheet">
+          {/* Handle + header clicáveis para abrir/fechar */}
           <div
-            className="sheet-handle"
-            style={{ cursor: 'grab', touchAction: 'none', padding: '6px 0' }}
-            onTouchStart={onHandleTouchStart}
-            onTouchMove={onHandleTouchMove}
-            onTouchEnd={onHandleTouchEnd}
-            onMouseDown={e => {
-              const startY = e.clientY
-              const startH = sheetH
-              const onMove = (ev: MouseEvent) => {
-                const snapExp = Math.round(window.innerHeight * 0.65)
-                const dy = startY - ev.clientY
-                setSheetH(Math.min(snapExp, Math.max(SNAP_COLLAPSED, startH + dy)))
-              }
-              const onUp = () => {
-                const snapExp = Math.round(window.innerHeight * 0.65)
-                const snaps = [SNAP_COLLAPSED, SNAP_PARTIAL, snapExp]
-                setSheetH(s => snaps.reduce((a, b) => Math.abs(s - a) < Math.abs(s - b) ? a : b))
-                window.removeEventListener('mousemove', onMove)
-                window.removeEventListener('mouseup', onUp)
-              }
-              window.addEventListener('mousemove', onMove)
-              window.addEventListener('mouseup', onUp)
-            }}
-          />
-          <div className="sheet-header" style={{ opacity: sheetH <= SNAP_COLLAPSED + 10 ? 0.4 : 1, transition: 'opacity 0.2s' }}>
-            <span>{loading ? 'Carregando...' : `${filtered.length} locais encontrados nesta área`}</span>
-            <svg
-              width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-              style={{ transform: sheetH >= SNAP_PARTIAL ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.25s' }}
-            >
-              <polyline points="18 15 12 9 6 15" />
-            </svg>
+            onClick={() => setSheetVisible(v => !v)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="sheet-handle" />
+            <div className="sheet-header">
+              <span>{loading ? 'Carregando...' : `${filtered.length} locais encontrados nesta área`}</span>
+              <svg
+                width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                style={{ transition: 'transform 0.25s', transform: sheetVisible ? 'rotate(0deg)' : 'rotate(180deg)' }}
+              >
+                <polyline points="18 15 12 9 6 15" />
+              </svg>
+            </div>
           </div>
-          <div className="sheet-scroll">
+
+          {/* Lista de locais — visível somente quando aberto */}
+          <div
+            className="sheet-scroll"
+            style={{
+              maxHeight: sheetVisible ? '60vh' : '0',
+              overflow: sheetVisible ? 'auto' : 'hidden',
+              transition: 'max-height 0.35s cubic-bezier(.32,1,.5,1)',
+            }}
+          >
             {filtered.map(local => {
               const amenList = amenLabels(local)
               const allAmen = [

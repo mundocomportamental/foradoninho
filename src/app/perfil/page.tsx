@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import BottomNav from '@/components/BottomNav'
 import Link from 'next/link'
-import AnuncieModal from '@/components/AnuncieModal'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -61,26 +60,33 @@ function formatarIdade(data_nascimento: string): string {
   return `${anos} ${anos === 1 ? 'ano' : 'anos'}`
 }
 
-function getBadge(total: number): { label: string; color: string; bg: string; icon: string } | null {
-  if (total >= 10) return { label: 'Contribuidor Master', color: '#7c3aed', bg: '#f3e8ff', icon: '🏆' }
-  if (total >= 5) return { label: 'Contribuidor Top', color: '#d97706', bg: '#fffbeb', icon: '⭐' }
-  return null
+// Tiers: Filhote 0-5 | Andorinha 6-15 | Gaivota 16-50 | Águia 51+
+function getTierInfo(total: number): { label: string; color: string; bg: string; icon: string } {
+  if (total > 50) return { label: 'Contribuidor(a) Águia',     color: '#d97706', bg: '#fffbeb', icon: '🦅' }
+  if (total > 15) return { label: 'Contribuidor(a) Gaivota',   color: '#0891b2', bg: '#ecfeff', icon: '🕊️' }
+  if (total > 5)  return { label: 'Contribuidor(a) Andorinha', color: '#059669', bg: '#f0fdf4', icon: '🐦' }
+  return             { label: 'Contribuidor(a) Filhote',    color: '#6b7280', bg: '#f9fafb', icon: '🐣' }
 }
 
 function BadgeProgress({ total }: { total: number }) {
-  const next = total < 5 ? 5 : total < 10 ? 10 : null
-  if (!next) return null
+  // Não mostra progresso para Águia (tier máximo)
+  if (total > 50) return null
 
-  const progress = (total / next) * 100
-  const label = next === 5 ? 'Contribuidor Top' : 'Contribuidor Master'
-  const earnedInRange = next === 5 ? total : Math.max(total - 5, 0)
-  const starsArr = Array.from({ length: 5 }, (_, i) => i < earnedInRange)
+  let rangeStart = 0, rangeEnd = 5, nextLabel = 'Andorinha'
+  if (total > 15) { rangeStart = 16; rangeEnd = 50; nextLabel = 'Águia' }
+  else if (total > 5) { rangeStart = 6; rangeEnd = 15; nextLabel = 'Gaivota' }
+
+  const earnedInRange = total - rangeStart
+  const rangeSize = rangeEnd - rangeStart
+  const progress = Math.min((earnedInRange / rangeSize) * 100, 100)
+  const starsCount = Math.min(5, Math.round((earnedInRange / rangeSize) * 5))
+  const starsArr = Array.from({ length: 5 }, (_, i) => i < starsCount)
 
   return (
     <div style={{ marginTop: 8, padding: '12px 14px', background: 'var(--bg-card)', borderRadius: 12, border: '1.5px solid var(--border)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>Próximo: {label}</span>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{total}/{next} este mês</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>Próximo: {nextLabel}</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{earnedInRange}/{rangeSize} contribuições</span>
       </div>
       <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
         {starsArr.map((earned, i) => (
@@ -88,10 +94,10 @@ function BadgeProgress({ total }: { total: number }) {
         ))}
       </div>
       <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }}>
-        <div style={{ height: '100%', width: `${progress}%`, background: next === 5 ? '#f59e0b' : '#7c3aed', borderRadius: 3, transition: 'width 0.4s' }} />
+        <div style={{ height: '100%', width: `${progress}%`, background: '#f59e0b', borderRadius: 3, transition: 'width 0.4s' }} />
       </div>
       <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-        Ganhe ⭐ ao <strong>avaliar um local</strong> ou <strong>adicionar um novo local</strong> ao mapa. Com <strong>5 ⭐ no mês</strong>, você recebe o selo <strong style={{ color: '#d97706' }}>Contribuidor Top</strong>!
+        Ganhe ⭐ ao <strong>avaliar um local</strong> ou <strong>adicionar um novo local</strong> ao mapa.
       </div>
     </div>
   )
@@ -101,7 +107,6 @@ export default function PerfilPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [checkins, setCheckins] = useState(0)
   const [avaliacoes, setAvaliacoes] = useState(0)
-  const [monthlyTotal, setMonthlyTotal] = useState(0)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   // Estados do perfil público
@@ -111,6 +116,7 @@ export default function PerfilPage() {
   const [editName, setEditName] = useState('')
   const [editUsername, setEditUsername] = useState('')
   const [saving, setSaving] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [offlineMsg, setOfflineMsg] = useState(false)
   const [showTermos, setShowTermos] = useState(false)
 
@@ -165,18 +171,12 @@ export default function PerfilPage() {
           setEditFilhos(mapped.map(f => ({ ...f })))
         }
 
-        const startOfMonth = new Date()
-        startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0)
-        const monthISO = startOfMonth.toISOString()
-        const [c, a, cm, am] = await Promise.all([
+        const [c, a] = await Promise.all([
           supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           supabase.from('avaliacoes').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-          supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', monthISO),
-          supabase.from('avaliacoes').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', monthISO),
         ])
         setCheckins(c.count || 0)
         setAvaliacoes(a.count || 0)
-        setMonthlyTotal((cm.count || 0) + (am.count || 0))
       } else {
         setProfile({ display_name: null, username: null, avatar_url: null, plano: 'gratis', role: null, cidade: null, idade: null })
       }
@@ -220,6 +220,7 @@ export default function PerfilPage() {
       setSaving(false)
     }
   }
+
 
   // ── Meu Ninho ───────────────────────────────────────────────────────────────
   function addEditFilho() {
@@ -405,16 +406,16 @@ export default function PerfilPage() {
                 <div className="stat-card"><div className="stat-value">{checkins}</div><div className="stat-label">Check-ins</div></div>
                 <div className="stat-card"><div className="stat-value">{avaliacoes}</div><div className="stat-label">Avaliações</div></div>
                 {(() => {
-                  const badge = getBadge(monthlyTotal)
-                  return badge ? (
-                    <div className="stat-card" style={{ background: badge.bg, border: `1.5px solid ${badge.color}20`, flex: 1.5 }}>
-                      <div style={{ fontSize: 18 }}>{badge.icon}</div>
-                      <div className="stat-label" style={{ color: badge.color, fontWeight: 700, fontSize: 11 }}>{badge.label}</div>
+                  const tier = getTierInfo(checkins + avaliacoes)
+                  return (
+                    <div className="stat-card" style={{ background: tier.bg, border: `1.5px solid ${tier.color}20`, flex: 1.5 }}>
+                      <div style={{ fontSize: 18 }}>{tier.icon}</div>
+                      <div className="stat-label" style={{ color: tier.color, fontWeight: 700, fontSize: 11 }}>{tier.label}</div>
                     </div>
-                  ) : null
+                  )
                 })()}
               </div>
-              <BadgeProgress total={monthlyTotal} />
+              <BadgeProgress total={checkins + avaliacoes} />
             </div>
           )}
 
@@ -568,10 +569,11 @@ export default function PerfilPage() {
                             border: editRole === r.key ? '2px solid var(--green)' : '1.5px solid var(--border)',
                             background: editRole === r.key ? 'var(--green-soft)' : 'var(--bg)',
                             cursor: 'pointer', display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', justifyContent: 'center', transition: 'all 0.12s', minHeight: 48,
+                            alignItems: 'center', justifyContent: 'center',
+                            transition: 'all 0.12s', minHeight: 48,
                           }}
                         >
-                          <span style={{ fontSize: 10, fontWeight: editRole === r.key ? 700 : 500, color: editRole === r.key ? 'var(--green-dark)' : 'var(--text)', lineHeight: 1.3, textAlign: 'center' }}>
+                          <span style={{ fontSize: 12, fontWeight: editRole === r.key ? 700 : 500, color: editRole === r.key ? 'var(--green-dark)' : 'var(--text)', lineHeight: 1.3, textAlign: 'center' }}>
                             {r.label}
                           </span>
                         </button>
@@ -717,23 +719,6 @@ export default function PerfilPage() {
           </div>
         )}
 
-        {/* Anuncie seu serviço */}
-        <div
-          onClick={() => setShowAnuncio(true)}
-          style={{ margin: '0 16px 12px', padding: '16px', background: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%)', borderRadius: 16, border: '1.5px solid #c4b5fd', cursor: 'pointer' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(124,58,237,0.12)' }}>
-              <span style={{ fontSize: 22 }}>👩‍⚕️</span>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#5b21b6', marginBottom: 2 }}>Anuncie seu serviço</div>
-              <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.4 }}>Doula, consultora, pediatra e mais — alcance famílias e cuidadores na sua cidade</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-        </div>
-
         {/* Menu */}
         <div className="card" style={{ margin: '0 16px 12px', overflow: 'hidden' }}>
           <Link href="/meus-locais" className="menu-item">
@@ -801,6 +786,23 @@ export default function PerfilPage() {
           )}
         </div>
 
+        {/* Anuncie seu serviço */}
+        <div
+          onClick={() => setShowAnuncio(true)}
+          style={{ margin: '0 16px 12px', padding: '16px', background: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%)', borderRadius: 16, border: '1.5px solid #c4b5fd', cursor: 'pointer' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(124,58,237,0.12)' }}>
+              <span style={{ fontSize: 22 }}>👩‍⚕️</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#5b21b6', marginBottom: 2 }}>Anuncie seu serviço</div>
+              <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.4 }}>Doula, consultora, pediatra e mais — alcance famílias e cuidadores na sua cidade</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+
       </div>
 
       {/* Modal Passarinho */}
@@ -842,7 +844,33 @@ export default function PerfilPage() {
         </div>
       )}
 
-      {showAnuncio && <AnuncieModal onClose={() => setShowAnuncio(false)} />}
+      {/* Modal Anuncie */}
+      {showAnuncio && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowAnuncio(false)}>
+          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', padding: '20px 20px 48px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
+            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Anuncie seu serviço</div>
+            <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
+              Alcance pais, mães e cuidadores que precisam de profissionais de confiança na sua cidade.
+            </div>
+            <div style={{ padding: '16px', background: '#f3e8ff', borderRadius: 16, border: '1.5px solid #7c3aed30', marginBottom: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#7c3aed' }}>Plano Profissional</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#7c3aed' }}>R$ 89/mês</div>
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.</div>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', margin: '12px 0' }}>Entre em contato para começar:</div>
+            <a href="mailto:foradoninho.app@gmail.com" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7c3aed', color: 'white', padding: '13px 20px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              foradoninho.app@gmail.com
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Modal offline */}
       {offlineMsg && (
