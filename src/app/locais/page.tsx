@@ -9,7 +9,7 @@ import { TIPO_LABELS, AMENIDADES } from '@/lib/types'
 const FILTROS_ESTABELECIMENTOS = [
   { key: 'todos', label: 'Todos' },
   { key: 'fraldario', label: '🧷 Fraldário' },
-  { key: 'microondas', label: '📡 Microondas' },
+  { key: 'microondas', label: '🥣 Microondas' },
   { key: 'cadeirão', label: '🪑 Cadeirão' },
   { key: 'amamentacao', label: '🤱 Amamentação' },
   { key: 'playground', label: '🛝 Playground' },
@@ -162,7 +162,7 @@ export default function LocaisPage() {
             <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>Nenhum local encontrado</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {filteredEstab.map(local => (
+              {filteredEstab.slice(0, 5).map(local => (
                 <Link key={local.id} href={`/local/${local.id}`} style={{ textDecoration: 'none' }}>
                   <div className="card" style={{ padding: '14px 14px 12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
@@ -219,7 +219,7 @@ export default function LocaisPage() {
             <div className="card" style={{ padding: 20, textAlign: 'center' }}>
               <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>Em breve na sua cidade</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Profissionais ainda não cadastrados nessa área.</div>
-              <Link href="/planos" style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: 'var(--green-dark)', fontWeight: 600, textDecoration: 'none' }}>
+              <Link href="/cadastro-profissional" style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: 'var(--green-dark)', fontWeight: 600, textDecoration: 'none' }}>
                 Anuncie seu serviço →
               </Link>
             </div>
@@ -252,7 +252,7 @@ export default function LocaisPage() {
           <div style={{ marginTop: 16, padding: '14px', background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%)', borderRadius: 14, border: '1px solid #c4b5fd' }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#5b21b6', marginBottom: 4 }}>É profissional de saúde infantil?</div>
             <div style={{ fontSize: 12, color: '#6d28d9', marginBottom: 10 }}>Anuncie no Fora do Ninho e seja encontrado pelas famílias em viagem.</div>
-            <Link href="/planos" style={{ display: 'inline-block', background: '#7c3aed', color: 'white', fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 50, textDecoration: 'none' }}>
+            <Link href="/cadastro-profissional" style={{ display: 'inline-block', background: '#7c3aed', color: 'white', fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 50, textDecoration: 'none' }}>
               Anunciar meu serviço
             </Link>
           </div>
