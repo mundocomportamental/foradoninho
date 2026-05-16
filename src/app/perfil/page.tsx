@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import BottomNav from '@/components/BottomNav'
 import Link from 'next/link'
+import AnuncieModal from '@/components/AnuncieModal'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -841,35 +842,7 @@ export default function PerfilPage() {
         </div>
       )}
 
-      {/* Modal Anuncie */}
-      {showAnuncio && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowAnuncio(false)}>
-          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', padding: '20px 20px 48px' }} onClick={e => e.stopPropagation()}>
-            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
-            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Anuncie seu serviço</div>
-            <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
-              Alcance pais, mães e cuidadores que precisam de profissionais de confiança na sua cidade.
-            </div>
-            <div style={{ padding: '16px', background: '#f3e8ff', borderRadius: 16, border: '1.5px solid #7c3aed30', marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#7c3aed' }}>Plano Profissional</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#7c3aed' }}>R$ 89/mês</div>
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.</div>
-            </div>
-            <Link
-              href="/cadastro-profissional"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7c3aed', color: 'white', padding: '13px 20px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}
-              onClick={() => setShowAnuncio(false)}
-            >
-              Fazer meu cadastro →
-            </Link>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginTop: 14 }}>
-              Dúvidas? <a href="mailto:foradoninho.app@gmail.com" style={{ color: '#7c3aed', textDecoration: 'none', fontWeight: 600 }}>foradoninho.app@gmail.com</a>
-            </div>
-          </div>
-        </div>
-      )}
+      {showAnuncio && <AnuncieModal onClose={() => setShowAnuncio(false)} />}
 
       {/* Modal offline */}
       {offlineMsg && (

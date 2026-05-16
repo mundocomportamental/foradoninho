@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Local } from '@/lib/types'
 import { TIPO_LABELS, AMENIDADES } from '@/lib/types'
+import AnuncieModal from '@/components/AnuncieModal'
 
 const FILTROS_ESTABELECIMENTOS = [
   { key: 'todos', label: 'Todos' },
@@ -40,6 +41,7 @@ export default function LocaisPage() {
   const [search, setSearch] = useState('')
   const [filtro, setFiltro] = useState('todos')
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
+  const [showAnuncio, setShowAnuncio] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -219,9 +221,9 @@ export default function LocaisPage() {
             <div className="card" style={{ padding: 20, textAlign: 'center' }}>
               <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>Em breve na sua cidade</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Profissionais ainda não cadastrados nessa área.</div>
-              <Link href="/cadastro-profissional" style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: 'var(--green-dark)', fontWeight: 600, textDecoration: 'none' }}>
-                Anuncie seu serviço →
-              </Link>
+              <button onClick={() => setShowAnuncio(true)} style={{ marginTop: 12, background: 'none', border: 'none', fontSize: 13, color: 'var(--green-dark)', fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: 'var(--font)' }}>
+                Saber mais sobre o cadastro →
+              </button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -252,12 +254,15 @@ export default function LocaisPage() {
           <div style={{ marginTop: 16, padding: '14px', background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%)', borderRadius: 14, border: '1px solid #c4b5fd' }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#5b21b6', marginBottom: 4 }}>É profissional de saúde infantil?</div>
             <div style={{ fontSize: 12, color: '#6d28d9', marginBottom: 10 }}>Anuncie no Fora do Ninho e seja encontrado pelas famílias em viagem.</div>
-            <Link href="/cadastro-profissional" style={{ display: 'inline-block', background: '#7c3aed', color: 'white', fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 50, textDecoration: 'none' }}>
-              Anunciar meu serviço
-            </Link>
+            <button onClick={() => setShowAnuncio(true)} style={{ background: '#7c3aed', color: 'white', fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+              Saber mais sobre o cadastro
+            </button>
           </div>
         </div>
       </div>
+
+      {showAnuncio && <AnuncieModal onClose={() => setShowAnuncio(false)} />}
+
       <BottomNav />
     </div>
   )

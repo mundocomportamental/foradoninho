@@ -1,6 +1,8 @@
 'use client'
+import { useState } from 'react'
 import Link from 'next/link'
 import BottomNav from '@/components/BottomNav'
+import AnuncieModal from '@/components/AnuncieModal'
 
 const plans = [
   {
@@ -27,6 +29,8 @@ const plans = [
 ]
 
 export default function PlanosPage() {
+  const [showAnuncio, setShowAnuncio] = useState(false)
+
   return (
     <div className="app-shell">
       <div className="page">
@@ -77,40 +81,36 @@ export default function PlanosPage() {
             </div>
           ))}
 
-          {/* Card "Anuncie seu serviço" */}
-          <div className="plan-card" style={{ borderColor: '#a78bfa', background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          {/* Card Anuncie */}
+          <div
+            onClick={() => setShowAnuncio(true)}
+            className="plan-card"
+            style={{ borderColor: '#a78bfa', background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%)', cursor: 'pointer' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(124,58,237,0.12)' }}>
+                <span style={{ fontSize: 22 }}>👩‍⚕️</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#5b21b6', marginBottom: 2 }}>Anuncie seu serviço</div>
+                <div style={{ fontSize: 13, color: '#7c3aed', lineHeight: 1.4 }}>Doula, consultora, pediatra e mais — alcance famílias e cuidadores na sua cidade</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                <polyline points="9 18 15 12 9 6"/>
               </svg>
-              <div className="plan-name" style={{ color: '#5b21b6' }}>É profissional do setor? Faça seu serviço aparecer para milhares de pessoas diariamente aqui</div>
             </div>
 
-            <p style={{ fontSize: 14, color: '#6d28d9', lineHeight: 1.5, marginBottom: 16 }}>
-              Para consultoras de amamentação, doulas, pediatras e outros profissionais de serviços infantis. Inclua seu pin no mapa e seja encontrado pelas famílias.
-            </p>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-              {[
-                'Consultoras', 'Doulas', 'Pediatras', 'Fisioterapeutas', 'Fonoaudiólogas',
-                'Amamentação', 'Consultoria de Sono', 'Introdução Alimentar',
-                'Musicoterapia', 'Odontologia', 'Acupuntura', 'Narração de histórias',
-              ].map(tag => (
-                <span key={tag} style={{ background: 'rgba(124,58,237,0.12)', color: '#6d28d9', fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <Link
-              href="/cadastro-profissional"
-              style={{ display: 'block', textAlign: 'center', background: '#7c3aed', color: 'white', fontSize: 15, fontWeight: 700, padding: '13px 16px', borderRadius: 50, textDecoration: 'none' }}
+            <button
+              className="btn-primary"
+              style={{ background: '#7c3aed', width: '100%', pointerEvents: 'none' }}
             >
-              Anunciar meu serviço
-            </Link>
+              Saber mais sobre o cadastro
+            </button>
           </div>
         </div>
       </div>
+
+      {showAnuncio && <AnuncieModal onClose={() => setShowAnuncio(false)} />}
 
       <BottomNav />
     </div>
