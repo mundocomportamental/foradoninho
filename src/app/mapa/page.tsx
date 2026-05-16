@@ -471,10 +471,7 @@ export default function MapaPage() {
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--green-soft)', border: '1.5px solid var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="20" height="20" viewBox="0 0 24 32" fill="none">
-                <path d="M12 0C7.03 0 3 4.03 3 9c0 6.75 9 16 9 16s9-9.25 9-16c0-4.97-4.03-9-9-9z" fill="#33cccc" stroke="white" strokeWidth="1.5"/>
-                <circle cx="12" cy="9" r="3.5" fill="white" opacity="0.9"/>
-              </svg>
+              <img src="/bird-nest.png" alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
             </div>
             <div style={{ flex: 1, minWidth: 0, paddingRight: 24 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--green-dark)', background: 'var(--green-soft)', padding: '2px 8px', borderRadius: 20, display: 'inline-block', marginBottom: 4 }}>
