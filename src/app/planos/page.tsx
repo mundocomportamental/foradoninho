@@ -1,5 +1,4 @@
 'use client'
-import { useState } from 'react'
 import Link from 'next/link'
 import BottomNav from '@/components/BottomNav'
 
@@ -27,24 +26,7 @@ const plans = [
   },
 ]
 
-type Package = { name: string; price: string; features: string[] }
-
-const anunciePackages: Package[] = [
-  {
-    name: 'Plano Profissional',
-    price: 'R$ 89,00/mês',
-    features: [
-      'Pin no mapa com sua localização',
-      'Descrição completa do serviço',
-      'Fotos do profissional/espaço',
-      'Informações de contato visíveis',
-    ],
-  },
-]
-
 export default function PlanosPage() {
-  const [showAnuncieModal, setShowAnuncieModal] = useState(false)
-
   return (
     <div className="app-shell">
       <div className="page">
@@ -101,7 +83,7 @@ export default function PlanosPage() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
               </svg>
-              <div className="plan-name" style={{ color: '#5b21b6' }}>Anuncie seu serviço aqui</div>
+              <div className="plan-name" style={{ color: '#5b21b6' }}>É profissional do setor? Faça seu serviço aparecer para milhares de pessoas diariamente aqui</div>
             </div>
 
             <p style={{ fontSize: 14, color: '#6d28d9', lineHeight: 1.5, marginBottom: 16 }}>
@@ -109,84 +91,26 @@ export default function PlanosPage() {
             </p>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-              {['Consultoras', 'Doulas', 'Pediatras', 'Fisioterapeutas', 'Fonoaudiólogas'].map(tag => (
+              {[
+                'Consultoras', 'Doulas', 'Pediatras', 'Fisioterapeutas', 'Fonoaudiólogas',
+                'Amamentação', 'Consultoria de Sono', 'Introdução Alimentar',
+                'Musicoterapia', 'Odontologia', 'Acupuntura', 'Narração de histórias',
+              ].map(tag => (
                 <span key={tag} style={{ background: 'rgba(124,58,237,0.12)', color: '#6d28d9', fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>
                   {tag}
                 </span>
               ))}
             </div>
 
-            <button
-              className="btn-primary"
-              style={{ background: '#7c3aed' }}
-              onClick={() => setShowAnuncieModal(true)}
+            <Link
+              href="/cadastro-profissional"
+              style={{ display: 'block', textAlign: 'center', background: '#7c3aed', color: 'white', fontSize: 15, fontWeight: 700, padding: '13px 16px', borderRadius: 50, textDecoration: 'none' }}
             >
-              Ver pacotes
-            </button>
+              Anunciar meu serviço
+            </Link>
           </div>
         </div>
       </div>
-
-      {/* Modal pacotes anunciante */}
-      {showAnuncieModal && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }}
-          onClick={e => { if (e.target === e.currentTarget) setShowAnuncieModal(false) }}
-        >
-          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: '24px 20px 40px', width: '100%', maxHeight: '80vh', overflowY: 'auto' }}>
-            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
-            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Escolha seu pacote</div>
-            <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 20 }}>
-              Inclua seu serviço no mapa do Fora do Ninho e seja encontrado pelas famílias em viagem.
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {anunciePackages.map((pkg) => (
-                <div key={pkg.name} style={{
-                  background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%)',
-                  border: '2px solid #a78bfa',
-                  borderRadius: 16,
-                  padding: '18px 16px',
-                  position: 'relative',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: '#5b21b6' }}>
-                      {pkg.name}
-                    </div>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: '#7c3aed' }}>
-                      {pkg.price}
-                    </div>
-                  </div>
-                  <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 7 }}>
-                    {pkg.features.map((f, i) => (
-                      <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14, color: 'var(--text-secondary)' }}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    className="btn-primary"
-                    style={{ marginTop: 14, background: '#7c3aed' }}
-                    onClick={() => alert('Em breve! Entre em contato via perfil para mais informações.')}
-                  >
-                    Quero o {pkg.name}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setShowAnuncieModal(false)}
-              style={{ width: '100%', marginTop: 16, background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer', padding: 12, fontFamily: 'var(--font)' }}
-            >
-              Fechar
-            </button>
-          </div>
-        </div>
-      )}
 
       <BottomNav />
     </div>
