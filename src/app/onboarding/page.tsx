@@ -197,8 +197,8 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
 
       {mode === 'choose' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <button onClick={handleGoogle} disabled={googleLoading || !termsAccepted} style={{ opacity: termsAccepted ? 1 : 0.45 }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
+          <button onClick={handleGoogle} disabled={googleLoading || !termsAccepted}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)', opacity: termsAccepted ? 1 : 0.45 }}>
             {googleLoading
               ? <div style={{ width: 20, height: 20, border: '2px solid var(--border)', borderTopColor: 'var(--text)', borderRadius: '50%' }} />
               : <>
@@ -212,8 +212,8 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
                 </>}
           </button>
 
-          <button onClick={handleFacebook} disabled={facebookLoading || !termsAccepted} style={{ opacity: termsAccepted ? 1 : 0.45 }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: 'none', background: '#1877F2', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'white' }}>
+          <button onClick={handleFacebook} disabled={facebookLoading || !termsAccepted}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: 'none', background: '#1877F2', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'white', opacity: termsAccepted ? 1 : 0.45 }}>
             {facebookLoading
               ? <div style={{ width: 20, height: 20, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%' }} />
               : <>
