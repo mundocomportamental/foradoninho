@@ -69,6 +69,48 @@ function Carrossel({ onDone }: { onDone: () => void }) {
   )
 }
 
+function TermsBlock() {
+  const [openTermos, setOpenTermos] = useState(false)
+  const [openPriv, setOpenPriv] = useState(false)
+  return (
+    <div style={{ background: 'var(--bg)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
+      <button
+        onClick={() => setOpenTermos(o => !o)}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>📄 Termos de Uso</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" style={{ transform: openTermos ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      {openTermos && (
+        <div style={{ padding: '0 14px 14px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.65, borderTop: '1px solid var(--border)' }}>
+          <p style={{ marginTop: 10 }}>• Você é responsável pelas informações que cadastra ou valida nesta plataforma. Conteúdo falso ou enganoso pode ser removido sem aviso prévio.</p>
+          <p>• Estabelecimentos podem solicitar sua remoção a qualquer momento. Confirmada a solicitação, a remoção será realizada em até 72 horas.</p>
+          <p>• O Fora do Ninho é uma plataforma colaborativa e não se responsabiliza pela qualidade, disponibilidade ou veracidade das informações cadastradas pelos usuários.</p>
+        </div>
+      )}
+      <div style={{ height: 1, background: 'var(--border)' }} />
+      <button
+        onClick={() => setOpenPriv(o => !o)}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>🔒 Política de Privacidade</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" style={{ transform: openPriv ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      {openPriv && (
+        <div style={{ padding: '0 14px 14px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.65, borderTop: '1px solid var(--border)' }}>
+          <p style={{ marginTop: 10 }}>• Informações de estabelecimentos são tratadas como dados públicos e podem ser exibidas para outros usuários da plataforma.</p>
+          <p>• MEIs e autônomos cadastrados têm direito de solicitar a remoção de seus dados a qualquer momento, conforme a Lei Geral de Proteção de Dados (LGPD).</p>
+          <p>• Dados de solicitações de remoção são apagados após o processamento da solicitação, mantendo apenas registros anonimizados para fins estatísticos.</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function AuthScreen({ onSkip }: { onSkip: () => void }) {
   const [mode, setMode] = useState<'choose' | 'email'>('choose')
   const [isLogin, setIsLogin] = useState(true)
@@ -79,6 +121,7 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
   const [facebookLoading, setFacebookLoading] = useState(false)
   const [magicSent, setMagicSent] = useState(false)
   const [error, setError] = useState('')
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -154,7 +197,7 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
 
       {mode === 'choose' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <button onClick={handleGoogle} disabled={googleLoading}
+          <button onClick={handleGoogle} disabled={googleLoading || !termsAccepted} style={{ opacity: termsAccepted ? 1 : 0.45 }}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
             {googleLoading
               ? <div style={{ width: 20, height: 20, border: '2px solid var(--border)', borderTopColor: 'var(--text)', borderRadius: '50%' }} />
@@ -169,7 +212,7 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
                 </>}
           </button>
 
-          <button onClick={handleFacebook} disabled={facebookLoading}
+          <button onClick={handleFacebook} disabled={facebookLoading || !termsAccepted} style={{ opacity: termsAccepted ? 1 : 0.45 }}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: 'none', background: '#1877F2', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'white' }}>
             {facebookLoading
               ? <div style={{ width: 20, height: 20, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%' }} />
@@ -187,8 +230,8 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
 
-          <button onClick={() => setMode('email')}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
+          <button onClick={() => setMode('email')} disabled={!termsAccepted}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: termsAccepted ? 'pointer' : 'not-allowed', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)', opacity: termsAccepted ? 1 : 0.45 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
               <polyline points="22,6 12,13 2,6"/>
@@ -197,10 +240,32 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
           </button>
 
           {error && <div style={{ fontSize: 13, color: '#ef4444', textAlign: 'center' }}>{error}</div>}
-          <button className="btn-secondary" onClick={onSkip} style={{ marginTop: 4 }}>Continuar sem conta</button>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.6 }}>
-            Ao continuar, você concorda com os <span style={{ color: 'var(--green-dark)', fontWeight: 600 }}>Termos de Uso</span> e a <span style={{ color: 'var(--green-dark)', fontWeight: 600 }}>Política de Privacidade</span>.
-          </div>
+
+          {/* Termos e Privacidade */}
+          <TermsBlock />
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginTop: 4 }}>
+            <div
+              onClick={() => setTermsAccepted(v => !v)}
+              style={{
+                width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1,
+                background: termsAccepted ? 'var(--green)' : 'var(--bg)',
+                border: termsAccepted ? '2px solid var(--green)' : '2px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.15s',
+              }}
+            >
+              {termsAccepted && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              )}
+            </div>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+              Li e aceito os <strong style={{ color: 'var(--green-dark)' }}>Termos de Uso</strong> e a <strong style={{ color: 'var(--green-dark)' }}>Política de Privacidade</strong> do Fora do Ninho.
+            </span>
+          </label>
+
+          <button className="btn-secondary" onClick={onSkip} disabled={!termsAccepted} style={{ marginTop: 4, opacity: termsAccepted ? 1 : 0.45 }}>Continuar sem conta</button>
         </div>
       )}
 

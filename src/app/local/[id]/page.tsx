@@ -170,8 +170,37 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState(false)
 
-  // Contagem reativa de check-ins (atualiza sem precisar recarregar a página)
+  // Contagem reativa de check-ins
   const [checkinCount, setCheckinCount] = useState<number>(0)
+
+  // Lightbox de fotos
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+
+  // Fluxo de denúncia/remoção
+  const [reportStep, setReportStep] = useState(0)
+  const [reportNome, setReportNome] = useState('')
+  const [reportContato, setReportContato] = useState('')
+  const [reportMotivo, setReportMotivo] = useState('')
+  const [reportMsg, setReportMsg] = useState('')
+  const [reportSending, setReportSending] = useState(false)
+  const [reportDone, setReportDone] = useState(false)
+  const [reportEhResponsavel, setReportEhResponsavel] = useState(false)
+
+  async function sendReport() {
+    setReportSending(true)
+    try {
+      await supabase.from('relatos').insert({
+        local_id: id,
+        nome: reportNome,
+        contato: reportContato,
+        motivo: reportMotivo,
+        mensagem: reportMsg,
+      })
+    } catch {}
+    setReportSending(false)
+    setReportDone(true)
+    setReportStep(4)
+  }
 
   const supabase = createClient()
 
@@ -336,6 +365,13 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
   const m = (key: 'limpeza' | 'atendimento' | 'instalacoes' | 'experiencia') =>
     filtroPeriodo === '3m' ? medias?.[`${key}_3m`] ?? null : medias?.[`${key}_total`] ?? null
 
+  const fotoPrincipal = local.foto_principal
+  const fotosSecundarias = (local.fotos_metadata ?? []).map((f: any) => f.url).filter(Boolean) as string[]
+  const todasFotos: string[] = [
+    ...(fotoPrincipal ? [fotoPrincipal] : []),
+    ...fotosSecundarias.filter(u => u !== fotoPrincipal),
+  ]
+
   return (
     <div className="app-shell">
       <div className="page">
@@ -403,36 +439,29 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         </div>
 
         {/* Galeria de fotos */}
-        {(() => {
-          const fotoPrincipal = local.foto_principal
-          const fotosSecundarias = (local.fotos_metadata ?? []).map(f => f.url).filter(Boolean)
-          const todasFotos = [
-            ...(fotoPrincipal ? [fotoPrincipal] : []),
-            ...fotosSecundarias.filter(u => u !== fotoPrincipal),
-          ]
-          if (todasFotos.length === 0) return null
-          return (
-            <div style={{ margin: '0 16px 4px', overflowX: 'auto' }}>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {todasFotos.map((url, i) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt={`Foto ${i + 1} de ${local.nome}`}
-                    style={{
-                      width: todasFotos.length === 1 ? '100%' : 200,
-                      height: 160,
-                      objectFit: 'cover',
-                      borderRadius: 14,
-                      flexShrink: 0,
-                      border: '1px solid var(--border)',
-                    }}
-                  />
-                ))}
-              </div>
+        {todasFotos.length > 0 && (
+          <div style={{ margin: '0 16px 4px', overflowX: 'auto' }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {todasFotos.map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`Foto ${i + 1} de ${local.nome}`}
+                  onClick={() => setLightboxIndex(i)}
+                  style={{
+                    width: todasFotos.length === 1 ? '100%' : 200,
+                    height: 160,
+                    objectFit: 'cover',
+                    borderRadius: 14,
+                    flexShrink: 0,
+                    border: '1px solid var(--border)',
+                    cursor: 'pointer',
+                  }}
+                />
+              ))}
             </div>
-          )
-        })()}
+          </div>
+        )}
 
         {/* Médias de avaliação */}
         {totalRatings > 0 && (
@@ -544,12 +573,12 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           </div>
         </div>
 
-        <div style={{ padding: '0 16px 8px' }}>
-          <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--font)' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            Algo deu errado?
+        <div style={{ padding: '0 16px 28px', textAlign: 'center' }}>
+          <button
+            onClick={() => setReportStep(1)}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', textDecoration: 'underline', textUnderlineOffset: 3 }}
+          >
+            Reportar problema ou solicitar remoção do estabelecimento
           </button>
         </div>
       </div>
@@ -697,6 +726,206 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                   {sending ? 'Enviando...' : 'Enviar avaliação'}
                 </button>
                 <button className="btn-secondary" onClick={() => setFlowStep(3)}>Voltar</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Lightbox de fotos ── */}
+      {lightboxIndex !== null && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.93)', zIndex: 2000, display: 'flex', flexDirection: 'column' }}
+          onClick={() => setLightboxIndex(null)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxIndex(null)}
+              style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: '50%', width: 38, height: 38, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{lightboxIndex + 1} / {todasFotos.length}</span>
+            <div style={{ width: 38 }} />
+          </div>
+
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px' }} onClick={e => e.stopPropagation()}>
+            <img
+              src={todasFotos[lightboxIndex]}
+              alt={`Foto ${lightboxIndex + 1}`}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 10 }}
+            />
+          </div>
+
+          {todasFotos.length > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 20px 36px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+              <button
+                onClick={() => setLightboxIndex(i => i! > 0 ? i! - 1 : todasFotos.length - 1)}
+                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 50, padding: '10px 22px', cursor: 'pointer', fontSize: 13, fontFamily: 'var(--font)' }}
+              >← Anterior</button>
+              <button
+                onClick={() => setLightboxIndex(i => i! < todasFotos.length - 1 ? i! + 1 : 0)}
+                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 50, padding: '10px 22px', cursor: 'pointer', fontSize: 13, fontFamily: 'var(--font)' }}
+              >Próxima →</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Modal de denúncia / remoção ── */}
+      {reportStep > 0 && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1500, display: 'flex', alignItems: 'flex-end' }}>
+          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '20px 20px 40px' }}>
+            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
+
+            {/* Step 1: Você é o responsável? */}
+            {reportStep === 1 && (
+              <>
+                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Você é responsável por este estabelecimento?</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.5 }}>
+                  Isso nos ajuda a entender o tipo de solicitação e direcionar sua mensagem corretamente.
+                </div>
+                <button
+                  onClick={() => { setReportEhResponsavel(true); setReportMotivo('remover'); setReportStep(2) }}
+                  style={{ width: '100%', padding: '14px 16px', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 14, marginBottom: 10, cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font)' }}
+                >
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>✅ Sim, sou o responsável</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Quero solicitar alterações ou a remoção do estabelecimento</div>
+                </button>
+                <button
+                  onClick={() => { setReportEhResponsavel(false); setReportMotivo(''); setReportStep(2) }}
+                  style={{ width: '100%', padding: '14px 16px', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 14, marginBottom: 20, cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font)' }}
+                >
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>👤 Não, sou um visitante</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Quero reportar um problema ou informação incorreta</div>
+                </button>
+                <button onClick={() => setReportStep(0)} style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                  Cancelar
+                </button>
+              </>
+            )}
+
+            {/* Step 2: Formulário */}
+            {reportStep === 2 && (
+              <>
+                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Nos conta o que está acontecendo</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Suas informações são tratadas com sigilo.</div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>Seu nome *</label>
+                  <input
+                    value={reportNome}
+                    onChange={e => setReportNome(e.target.value)}
+                    placeholder="Como podemos te chamar?"
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', color: 'var(--text)', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>Contato (e-mail ou WhatsApp) *</label>
+                  <input
+                    value={reportContato}
+                    onChange={e => setReportContato(e.target.value)}
+                    placeholder="Para entrarmos em contato, se necessário"
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', color: 'var(--text)', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>Motivo *</label>
+                  <select
+                    value={reportMotivo}
+                    onChange={e => setReportMotivo(e.target.value)}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', color: 'var(--text)', boxSizing: 'border-box' }}
+                  >
+                    <option value="">Selecione um motivo</option>
+                    <option value="remover">Solicitar remoção do estabelecimento</option>
+                    <option value="info_incorreta">Informação incorreta</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>Mensagem</label>
+                  <textarea
+                    value={reportMsg}
+                    onChange={e => setReportMsg(e.target.value)}
+                    placeholder="Descreva o problema com mais detalhes..."
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', color: 'var(--text)', boxSizing: 'border-box', minHeight: 90, resize: 'vertical' }}
+                  />
+                </div>
+
+                <button
+                  onClick={() => setReportStep(3)}
+                  disabled={!reportNome || !reportContato || !reportMotivo}
+                  style={{ width: '100%', padding: '14px', background: (!reportNome || !reportContato || !reportMotivo) ? 'var(--border)' : 'var(--green)', color: (!reportNome || !reportContato || !reportMotivo) ? 'var(--text-muted)' : 'white', border: 'none', borderRadius: 50, fontSize: 15, fontWeight: 700, cursor: (!reportNome || !reportContato || !reportMotivo) ? 'not-allowed' : 'pointer', fontFamily: 'var(--font)', marginBottom: 10 }}
+                >
+                  Revisar e enviar
+                </button>
+                <button onClick={() => setReportStep(1)} style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                  Voltar
+                </button>
+              </>
+            )}
+
+            {/* Step 3: Confirmação */}
+            {reportStep === 3 && (
+              <>
+                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>Tudo certo para enviar?</div>
+                <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>Nome</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>{reportNome}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>Contato</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>{reportContato}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>Motivo</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: reportMsg ? 12 : 0 }}>
+                    {reportMotivo === 'remover' ? 'Solicitar remoção' : reportMotivo === 'info_incorreta' ? 'Informação incorreta' : 'Outro'}
+                  </div>
+                  {reportMsg && (
+                    <>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>Mensagem</div>
+                      <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5 }}>{reportMsg}</div>
+                    </>
+                  )}
+                </div>
+                <button
+                  onClick={sendReport}
+                  disabled={reportSending}
+                  style={{ width: '100%', padding: '14px', background: 'var(--green)', color: 'white', border: 'none', borderRadius: 50, fontSize: 15, fontWeight: 700, cursor: reportSending ? 'not-allowed' : 'pointer', fontFamily: 'var(--font)', marginBottom: 10, opacity: reportSending ? 0.7 : 1 }}
+                >
+                  {reportSending ? 'Enviando...' : 'Confirmar e enviar'}
+                </button>
+                <button onClick={() => setReportStep(2)} style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                  Voltar
+                </button>
+              </>
+            )}
+
+            {/* Step 4: Sucesso */}
+            {reportStep === 4 && (
+              <>
+                <div style={{ textAlign: 'center', padding: '20px 0 24px' }}>
+                  <div style={{ fontSize: 52, marginBottom: 16 }}>
+                    {reportMotivo === 'remover' ? '🥺' : '💚'}
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 12 }}>
+                    {reportMotivo === 'remover' ? 'Recebemos seu pedido' : 'Muito obrigado!'}
+                  </div>
+                  <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.65 }}>
+                    {reportMotivo === 'remover'
+                      ? 'É uma pena ver que você prefere sair do nosso ninho... Entraremos em contato pelo seu e-mail ou WhatsApp em até 72 horas para confirmar a remoção.'
+                      : 'Muito obrigado por ajudar essa comunidade! Sua mensagem foi recebida e nossa equipe vai verificar as informações em breve.'
+                    }
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setReportStep(0); setReportNome(''); setReportContato(''); setReportMotivo(''); setReportMsg(''); setReportDone(false) }}
+                  style={{ width: '100%', padding: '14px', background: 'var(--green)', color: 'white', border: 'none', borderRadius: 50, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font)' }}
+                >
+                  Fechar
+                </button>
               </>
             )}
           </div>
