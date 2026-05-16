@@ -446,9 +446,11 @@ export default function MapaPage() {
           />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-          <div className="map-chips-row" style={{ flex: 1, overflowX: 'auto' }}>
-            {/* ℹ️ botão de info — à esquerda do primeiro filtro */}
+          {/* ℹ️ botão de info — fora do scroll para o dropdown não ser cortado */}
+          <div style={{ flexShrink: 0, padding: '0 6px 0 12px' }}>
             <FiltrosInfoButton />
+          </div>
+          <div className="map-chips-row" style={{ flex: 1, overflowX: 'auto' }}>
             <button
               className={`filter-chip${filtroProfissionais ? ' active' : ''}`}
               onClick={() => setFiltroProfissionais(p => !p)}
