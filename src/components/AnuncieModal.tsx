@@ -7,19 +7,19 @@ const STEPS = [
     icon: '📍',
     tag: 'Visibilidade',
     title: 'Apareça para famílias quando elas mais precisam de você',
-    body: 'Pais em viagem estão num território desconhecido, com urgência real — eles buscam profissionais com pressa e alta intenção de contratar. Seu perfil aparece exatamente nesse momento, para quem já está procurando.',
+    body: 'Pais com um novo bebê, seja no seu próprio ninho ou em viagem, estão num território muitas vezes desconhecido, com urgência real — eles buscam profissionais em que possam confiar dentro da sua rede de apoio e com alta intenção de contratar. Seu perfil aparece exatamente nesse momento, para quem já está procurando.',
   },
   {
     icon: '🤝',
     tag: 'Rede & Autoridade',
     title: 'Faça parte da maior rede de apoio para famílias em movimento',
-    body: 'Cada família que te encontra e confia no seu trabalho vira uma indicação para outras. No Fora do Ninho, reputação se constrói coletivamente — avaliações reais de pais reais, que recomendam você para sua rede.',
+    body: 'Cada família que te encontra e confia no seu trabalho vira uma indicação para outras. No Fora do Ninho, sua reputação se constrói coletivamente. Maior visibilidade do seu negócio para que mais papais e mamães recomendem você para sua rede de apoio.',
   },
   {
     icon: '🔑',
     tag: 'Você no controle',
     title: 'Sua agenda, seus clientes, suas regras',
-    body: 'O Fora do Ninho te conecta com as famílias — mas tudo o que vem depois é seu. Você conversa pelo seu WhatsApp, agenda do seu jeito e recebe como preferir. Nenhuma comissão, nenhum intermediário, nenhuma dependência.',
+    body: 'O Fora do Ninho te conecta com as famílias, mas tudo o que vem depois continua sendo seu. Você conversa pelo seu WhatsApp, agenda do seu jeito e recebe como preferir. Nenhuma comissão, nenhum intermediário, nenhuma dependência.',
   },
 ]
 

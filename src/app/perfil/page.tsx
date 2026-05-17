@@ -796,8 +796,8 @@ export default function PerfilPage() {
               <span style={{ fontSize: 22 }}>👩‍⚕️</span>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#5b21b6', marginBottom: 2 }}>Anuncie seu serviço</div>
-              <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.4 }}>Doula, consultora, pediatra e mais — alcance famílias e cuidadores na sua cidade</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#5b21b6', marginBottom: 2 }}>Faz parte da rede de apoio às famílias?</div>
+              <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.4 }}>Doula, consultora, pediatra, psicóloga e muito mais — alcance famílias que buscam apoio no pré e pós-parto, na sua cidade ou em viagem.</div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
@@ -924,13 +924,13 @@ export default function PerfilPage() {
               </div>
             </div>
             <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
-              O Fora do Ninho nasceu de uma necessidade real: a de quem já esteve na estrada com um bebê no colo e não sabia onde parar com segurança. Fraldário limpo, um lugar tranquilo para amamentar, um restaurante com cadeirão — coisas simples que fazem toda a diferença.
+              O Fora do Ninho nasceu de uma necessidade real: a de quem já esteve na estrada com um bebê no colo e não sabia onde parar com segurança. Fraldário limpo, um lugar tranquilo para amamentar, um restaurante com cadeirão... coisas simples que fazem toda a diferença.
             </div>
             <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
               Mais do que um app de mapas, queremos construir uma <strong style={{ color: 'var(--green-dark)' }}>comunidade</strong> — de pais, mães e cuidadores que se ajudam nos momentos que mais precisam. Cada avaliação, cada check-in, cada foto compartilhada é um presente para quem ainda não conhece aquele local.
             </div>
             <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
-              Porque viajar com crianças pequenas não precisa ser estressante. Com as informações certas — e com a ajuda uns dos outros — cada parada pode ser um bom momento.
+              Porque sair ou viajar com crianças pequenas não precisa ser estressante. Com as informações certas — e com a ajuda uns dos outros — cada parada pode ser um bom momento. Ajude-nos a construir uma rede de apoio cada vez mais participativa e "ninhos" cada vez mais acolhedores.
             </div>
             <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
               {[
