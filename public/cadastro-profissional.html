@@ -487,7 +487,7 @@
           <div class="plan-name">Plano Profissional</div>
           <div class="plan-desc">Perfil público + visibilidade no app</div>
         </div>
-        <div class="plan-price" id="plan-price">R$89<span style="font-size:0.75rem;font-weight:400">/mês</span></div>
+        <div class="plan-price" id="plan-price">R$34,90<span style="font-size:0.75rem;font-weight:400">/mês</span></div>
       </div>
 
       <!-- Cupom -->
@@ -547,40 +547,6 @@
         </p>
       </div>
 
-      <!-- Termos e Privacidade -->
-      <div style="margin:1.5rem 0 0;background:#FAFAFA;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-        <button type="button" onclick="toggleTermos()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:0.85rem;font-weight:600;color:var(--text);">
-          <span>📄 Termos de Uso</span>
-          <span id="arrow-termos" style="transition:transform 0.2s;display:inline-block;">▾</span>
-        </button>
-        <div id="termos-content" style="display:none;padding:0 14px 14px;font-size:0.78rem;color:var(--text-muted);line-height:1.65;border-top:1px solid var(--border);">
-          <p style="margin-top:10px;">• Você é responsável pelas informações que cadastra nesta plataforma. Dados falsos ou enganosos podem resultar na remoção do perfil sem aviso prévio.</p>
-          <p style="margin-top:6px;">• Profissionais cadastrados podem solicitar a remoção de seus dados a qualquer momento. Confirmada a solicitação, a remoção será realizada em até 72 horas.</p>
-          <p style="margin-top:6px;">• O Fora do Ninho é uma plataforma de conexão e não se responsabiliza pela qualidade dos serviços prestados ou pela veracidade de informações cadastradas.</p>
-        </div>
-        <div style="height:1px;background:var(--border);"></div>
-        <button type="button" onclick="togglePriv()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:0.85rem;font-weight:600;color:var(--text);">
-          <span>🔒 Política de Privacidade</span>
-          <span id="arrow-priv" style="transition:transform 0.2s;display:inline-block;">▾</span>
-        </button>
-        <div id="priv-content" style="display:none;padding:0 14px 14px;font-size:0.78rem;color:var(--text-muted);line-height:1.65;border-top:1px solid var(--border);">
-          <p style="margin-top:10px;">• Informações do seu perfil profissional são tratadas como dados públicos e serão exibidas para usuários do aplicativo.</p>
-          <p style="margin-top:6px;">• MEIs e autônomos têm direito de solicitar a remoção de seus dados a qualquer momento, conforme a Lei Geral de Proteção de Dados (LGPD).</p>
-          <p style="margin-top:6px;">• Dados de solicitações de remoção são apagados após o processamento, mantendo apenas registros anonimizados para fins estatísticos.</p>
-        </div>
-      </div>
-
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin:1rem 0 0;">
-        <div id="terms-check-box" onclick="toggleTermsCheck()" style="width:20px;height:20px;border-radius:6px;flex-shrink:0;margin-top:2px;background:#fff;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all 0.15s;cursor:pointer;">
-        </div>
-        <span style="font-size:0.82rem;color:var(--text-muted);line-height:1.6;">
-          Li e aceito os <strong style="color:var(--primary);">Termos de Uso</strong> e a <strong style="color:var(--primary);">Política de Privacidade</strong> do Fora do Ninho.
-        </span>
-      </label>
-      <div id="terms-error" style="display:none;font-size:0.78rem;color:var(--error);margin-top:6px;">
-        Você precisa aceitar os termos para continuar.
-      </div>
-
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="goTo(5)">← Voltar</button>
         <button class="btn btn-success" id="submit-btn" onclick="submitForm()">✓ Finalizar cadastro</button>
@@ -626,7 +592,7 @@ const SERVICES = [
 
 const COUPONS = {
   'NINHO00': { type: 'free', label: '🎉 Cupom aplicado! Seu cadastro está gratuito — nenhum dado de cartão é necessário.' },
-  'NINHO29': { type: 'discount', label: '🎉 Cupom aplicado! Você pagará R$29/mês nos primeiros 3 meses, depois o valor normal de R$89/mês. Os dados do cartão são obrigatórios para ativar o desconto.' },
+  'NINHO29': { type: 'discount', label: '🎉 Cupom aplicado! Você pagará R$29/mês nos primeiros 3 meses, depois o valor normal de R$34,90/mês. Os dados do cartão são obrigatórios para ativar o desconto.' },
 };
 
 let currentStep = 1;
@@ -680,106 +646,7 @@ function toggleAtend(btn) {
   btn.classList.toggle('active');
 }
 
-function showFieldError(id, msg) {
-  const el = document.getElementById(id);
-  el.style.borderColor = 'var(--error)';
-  let hint = el.parentElement.querySelector('.field-error');
-  if (!hint) {
-    hint = document.createElement('div');
-    hint.className = 'field-error';
-    hint.style.cssText = 'font-size:0.78rem;color:var(--error);margin-top:4px;';
-    el.parentElement.appendChild(hint);
-  }
-  hint.textContent = msg;
-  return el;
-}
-
-function clearFieldErrors() {
-  document.querySelectorAll('.field-error').forEach(e => e.remove());
-  document.querySelectorAll('input,select,textarea').forEach(e => e.style.borderColor = '');
-}
-
-// ── Termos e Privacidade ─────────────────────────────────────────────
-let termsChecked = false;
-
-function toggleTermos() {
-  const el = document.getElementById('termos-content');
-  const arrow = document.getElementById('arrow-termos');
-  const open = el.style.display === 'none';
-  el.style.display = open ? 'block' : 'none';
-  arrow.style.transform = open ? 'rotate(180deg)' : 'none';
-}
-
-function togglePriv() {
-  const el = document.getElementById('priv-content');
-  const arrow = document.getElementById('arrow-priv');
-  const open = el.style.display === 'none';
-  el.style.display = open ? 'block' : 'none';
-  arrow.style.transform = open ? 'rotate(180deg)' : 'none';
-}
-
-function toggleTermsCheck() {
-  termsChecked = !termsChecked;
-  const box = document.getElementById('terms-check-box');
-  const errEl = document.getElementById('terms-error');
-  if (termsChecked) {
-    box.style.background = '#7C3AED';
-    box.style.borderColor = '#7C3AED';
-    box.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
-    errEl.style.display = 'none';
-  } else {
-    box.style.background = '#fff';
-    box.style.borderColor = 'var(--border)';
-    box.innerHTML = '';
-  }
-}
-
-function validateStep(n) {
-  clearFieldErrors();
-  let firstErr = null;
-
-  if (n === 1) {
-    const nome = document.getElementById('nome').value.trim();
-    const cpf = document.getElementById('cpf').value.replace(/\D/g,'');
-    const email = document.getElementById('email').value.trim();
-    const tel = document.getElementById('telefone').value.replace(/\D/g,'');
-    const nasc = document.getElementById('nascimento').value.trim();
-
-    if (!nome) firstErr = firstErr || showFieldError('nome', 'Nome obrigatório.');
-    if (cpf.length < 11) firstErr = firstErr || showFieldError('cpf', 'CPF inválido — preencha todos os dígitos.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) firstErr = firstErr || showFieldError('email', 'E-mail inválido.');
-    if (tel.length < 10) firstErr = firstErr || showFieldError('telefone', 'Telefone inválido.');
-    if (nasc && !parseBRDate(nasc)) firstErr = firstErr || showFieldError('nascimento', 'Data inválida — use DD/MM/AAAA.');
-  }
-
-  if (n === 6 && appliedCoupon !== 'NINHO00') {
-    const cardName = document.getElementById('card-name').value.trim();
-    const cardNum = document.getElementById('card-num-input').value.replace(/\s/g,'');
-    const cardExp = document.getElementById('card-exp').value.trim();
-    const cardCvv = document.getElementById('card-cvv').value.trim();
-
-    if (!cardName) firstErr = firstErr || showFieldError('card-name', 'Nome no cartão obrigatório.');
-    if (cardNum.length < 16) firstErr = firstErr || showFieldError('card-num-input', 'Número do cartão inválido.');
-    if (!/^\d{2}\/\d{2}$/.test(cardExp)) firstErr = firstErr || showFieldError('card-exp', 'Validade inválida — use MM/AA.');
-    if (cardCvv.length < 3) firstErr = firstErr || showFieldError('card-cvv', 'CVV inválido.');
-  }
-
-  if (firstErr) { firstErr.focus(); return false; }
-  return true;
-}
-
-function parseBRDate(str) {
-  if (!str || str.length < 10) return null;
-  const parts = str.split('/');
-  if (parts.length !== 3 || parts[2].length !== 4) return null;
-  const [d, m, y] = parts;
-  if (isNaN(Number(d)) || isNaN(Number(m)) || isNaN(Number(y))) return null;
-  return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-}
-
 function goTo(n) {
-  // Validate before moving forward
-  if (n > currentStep && !validateStep(currentStep)) return;
   document.getElementById('step-' + currentStep).classList.remove('visible');
   currentStep = n;
   document.getElementById('step-' + currentStep).classList.add('visible');
@@ -845,7 +712,7 @@ function applyCoupon() {
     msgEl.textContent = '❌ Cupom inválido. Verifique o código e tente novamente.';
     appliedCoupon = null;
     cardFields.classList.remove('hidden');
-    planPrice.innerHTML = 'R$89<span style="font-size:0.75rem;font-weight:400">/mês</span>';
+    planPrice.innerHTML = 'R$34,90<span style="font-size:0.75rem;font-weight:400">/mês</span>';
     submitBtn.textContent = '✓ Finalizar cadastro';
     return;
   }
@@ -856,14 +723,14 @@ function applyCoupon() {
     msgEl.className = 'coupon-msg success';
     msgEl.textContent = coupon.label;
     cardFields.classList.add('hidden');
-    planPrice.innerHTML = '<span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$89</span> <span style="color:var(--success)">Grátis</span>';
+    planPrice.innerHTML = '<span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$34,90</span> <span style="color:var(--success)">Grátis</span>';
     submitBtn.textContent = '✓ Finalizar cadastro (gratuito)';
     submitBtn.style.background = 'var(--success)';
   } else if (coupon.type === 'discount') {
     msgEl.className = 'coupon-msg warning';
     msgEl.textContent = coupon.label;
     cardFields.classList.remove('hidden');
-    planPrice.innerHTML = '<span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$89</span> <span style="color:var(--warning)">R$29</span><span style="font-size:0.75rem;font-weight:400;color:var(--warning)"> /mês (3 meses)</span>';
+    planPrice.innerHTML = '<span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$34,90</span> <span style="color:var(--warning)">R$29</span><span style="font-size:0.75rem;font-weight:400;color:var(--warning)"> /mês (3 meses)</span>';
     submitBtn.textContent = '✓ Finalizar cadastro com desconto';
     submitBtn.style.background = '';
   }
@@ -908,12 +775,6 @@ function formatExp(input) {
 }
 
 async function submitForm() {
-  if (!validateStep(6)) return;
-  if (!termsChecked) {
-    document.getElementById('terms-error').style.display = 'block';
-    document.getElementById('terms-error').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
-  }
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Enviando...';
@@ -927,8 +788,8 @@ async function submitForm() {
     const payload = {
       // Dados pessoais
       nome: document.getElementById('nome').value,
-      cpf: document.getElementById('cpf').value.replace(/\D/g, ''),
-      dataNascimento: parseBRDate(document.getElementById('nascimento').value),
+      cpf: document.getElementById('cpf').value,
+      dataNascimento: document.getElementById('nascimento').value || null,
       email: document.getElementById('email').value,
       telefone: document.getElementById('telefone').value,
       genero: document.getElementById('genero').value || null,

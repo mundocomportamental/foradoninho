@@ -856,7 +856,7 @@ export default function PerfilPage() {
             <div style={{ padding: '16px', background: '#f3e8ff', borderRadius: 16, border: '1.5px solid #7c3aed30', marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <div style={{ fontSize: 16, fontWeight: 700, color: '#7c3aed' }}>Plano Profissional</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#7c3aed' }}>R$ 89/mês</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#7c3aed' }}>R$ 34,90/mês</div>
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.</div>
             </div>
