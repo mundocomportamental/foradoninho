@@ -390,6 +390,9 @@ export default function NovoLocalPage() {
           {/* ── Step 0: Localização ─────────────────────────────────────────── */}
           {step === 0 && (
             <>
+              <div style={{ fontSize: 13, color: 'var(--green-dark)', fontWeight: 600, background: 'var(--green-soft)', borderRadius: 12, padding: '10px 14px', marginBottom: 16, lineHeight: 1.5 }}>
+                🪺 Conhece um ninho que acolheu você? Compartilhe com a nossa rede um lugar onde você se sentiu em casa — na sua cidade ou em viagem.
+              </div>
               <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Onde fica o local?</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
                 Use o GPS ou preencha o endereço manualmente
