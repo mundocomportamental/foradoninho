@@ -860,13 +860,14 @@ export default function PerfilPage() {
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.</div>
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', margin: '12px 0' }}>Entre em contato para começar:</div>
-            <a href="mailto:foradoninho.app@gmail.com" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7c3aed', color: 'white', padding: '13px 20px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
+            <a
+              href="/cadastro-profissional"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7c3aed', color: 'white', padding: '13px 20px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
+                <path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/>
               </svg>
-              foradoninho.app@gmail.com
+              Quero anunciar meu serviço
             </a>
           </div>
         </div>
