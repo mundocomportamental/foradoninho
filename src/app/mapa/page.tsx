@@ -540,47 +540,26 @@ export default function MapaPage() {
           </div>
 
           {selectedLocal.is_servico ? (
-            /* ── Card de profissional: mostra descrição curta ── */
-            <>
-              {selectedLocal.descricao && (
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 12,
-                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                  {selectedLocal.descricao}
-                </div>
-              )}
-              {/* ── 2 botões: Detalhes | Direção ── */}
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={() => handleLocalClick(selectedLocal.id)}
-                  style={{
-                    flex: 1, padding: '11px 12px', fontSize: 14, fontWeight: 700,
-                    fontFamily: 'var(--font)', background: '#7c3aed', color: 'white',
-                    border: 'none', borderRadius: 50, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    transition: 'opacity 0.15s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
-                    <circle cx="12" cy="12" r="9"/>
-                    <line x1="12" y1="8" x2="12" y2="8"/>
-                    <line x1="12" y1="12" x2="12" y2="16"/>
-                  </svg>
-                  Detalhes
-                </button>
-                <button
-                  onClick={() => setShowNavModal(true)}
-                  className="btn-outline"
-                  style={{ padding: '11px 14px', flexShrink: 0 }}
-                  title="Navegar até o local"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                  </svg>
-                </button>
-              </div>
-            </>
+            /* ── Card de profissional: só nome + cidade + botão Detalhes ── */
+            <button
+              onClick={() => handleLocalClick(selectedLocal.id)}
+              style={{
+                width: '100%', padding: '12px', fontSize: 14, fontWeight: 700,
+                fontFamily: 'var(--font)', background: '#7c3aed', color: 'white',
+                border: 'none', borderRadius: 50, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="9"/>
+                <line x1="12" y1="8" x2="12" y2="8"/>
+                <line x1="12" y1="12" x2="12" y2="16"/>
+              </svg>
+              Ver perfil do profissional
+            </button>
           ) : (
             /* ── Card de estabelecimento: ratings + amenidades + 3 botões ── */
             <>
@@ -724,36 +703,47 @@ export default function MapaPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <div className="local-name">{local.nome}</div>
-                      <div className="local-type">{TIPO_LABELS[local.tipo] || local.tipo}</div>
+                      <div className="local-type" style={{ color: local.is_servico ? '#7c3aed' : undefined }}>
+                        {TIPO_LABELS[local.tipo] || local.tipo}
+                      </div>
+                      {local.cidade && (
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                          {local.cidade}{local.estado ? `, ${local.estado}` : ''}
+                        </div>
+                      )}
                     </div>
-                    {local.certificado_pitstop && (
+                    {!local.is_servico && local.certificado_pitstop && (
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: 8 }}>
                         <circle cx="12" cy="12" r="9" /><polyline points="9,12 11,14 15,10" />
                       </svg>
                     )}
                   </div>
-                  <div className="local-meta">
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                      <span style={{ color: '#f5a623' }}>★</span>
-                      <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{Number(local.rating).toFixed(1)}</span>
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <circle cx="12" cy="12" r="9" /><polyline points="12,7 12,12 15,15" />
-                      </svg>
-                      {local.total_checkins} check-ins
-                    </span>
-                  </div>
-                  <div className="local-chips">
-                    {amenList.length > 0 ? (
-                      <>
-                        {amenList.map(a => <span key={a} className="local-chip-tiny">{a}</span>)}
-                        {allAmen.length > 3 && <span className="local-chip-tiny">+{allAmen.length - 3}</span>}
-                      </>
-                    ) : (
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>Seja o primeiro a avaliar ✨</span>
-                    )}
-                  </div>
+                  {!local.is_servico && (
+                    <>
+                      <div className="local-meta">
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <span style={{ color: '#f5a623' }}>★</span>
+                          <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{Number(local.rating).toFixed(1)}</span>
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <circle cx="12" cy="12" r="9" /><polyline points="12,7 12,12 15,15" />
+                          </svg>
+                          {local.total_checkins} check-ins
+                        </span>
+                      </div>
+                      <div className="local-chips">
+                        {amenList.length > 0 ? (
+                          <>
+                            {amenList.map(a => <span key={a} className="local-chip-tiny">{a}</span>)}
+                            {allAmen.length > 3 && <span className="local-chip-tiny">+{allAmen.length - 3}</span>}
+                          </>
+                        ) : (
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>Seja o primeiro a avaliar ✨</span>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               )
             })}
