@@ -134,6 +134,13 @@ export default function PerfilPage() {
   const [savingNinho, setSavingNinho] = useState(false)
   const [ninhoError, setNinhoError] = useState('')
 
+  // ── Perfil profissional ──────────────────────────────────────────────────────
+  const [profissional, setProfissional] = useState<any | null>(null)
+  const [showEditProfissional, setShowEditProfissional] = useState(false)
+  const [editProf, setEditProf] = useState<any>({})
+  const [savingProf, setSavingProf] = useState(false)
+  const [profSaved, setProfSaved] = useState(false)
+
   const router = useRouter()
   const supabase = createClient()
 
@@ -177,6 +184,24 @@ export default function PerfilPage() {
         ])
         setCheckins(c.count || 0)
         setAvaliacoes(a.count || 0)
+
+        // Verifica se o usuário tem perfil profissional
+        const { data: profData } = await supabase
+          .from('profissionais')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (profData) {
+          setProfissional(profData)
+          setEditProf({
+            nome_negocio: profData.nome_negocio || '',
+            resumo: profData.resumo || '',
+            whatsapp: profData.whatsapp || '',
+            instagram: profData.instagram || '',
+            facebook: profData.facebook || '',
+            site: profData.site || '',
+          })
+        }
       } else {
         setProfile({ display_name: null, username: null, avatar_url: null, plano: 'gratis', role: null, cidade: null, idade: null })
       }
@@ -310,6 +335,23 @@ export default function PerfilPage() {
   async function signOut() {
     await supabase.auth.signOut()
     router.push('/onboarding')
+  }
+
+  async function saveProfissionalEdits() {
+    if (!profissional) return
+    setSavingProf(true)
+    try {
+      await supabase.from('profissionais').update({
+        pending_changes: editProf,
+        pending_since: new Date().toISOString(),
+        status_aprovacao: 'edicao_pendente',
+      }).eq('id', profissional.id)
+      setProfissional((p: any) => ({ ...p, pending_changes: editProf, status_aprovacao: 'edicao_pendente' }))
+      setProfSaved(true)
+      setTimeout(() => { setShowEditProfissional(false); setProfSaved(false) }, 1800)
+    } finally {
+      setSavingProf(false)
+    }
   }
 
   if (!profile) return null
@@ -786,8 +828,70 @@ export default function PerfilPage() {
           )}
         </div>
 
-        {/* Anuncie seu serviço */}
-        <div
+        {/* ── Card do profissional cadastrado ── */}
+        {profissional && (() => {
+          const st = profissional.status_aprovacao
+          const hasPending = !!profissional.pending_changes
+          const statusInfo = st === 'aprovado' && profissional.ativo
+            ? { label: 'Ativo no app', color: '#059669', bg: '#d1fae5', icon: '✓' }
+            : hasPending || st === 'edicao_pendente'
+            ? { label: 'Edição em análise', color: '#0369a1', bg: '#e0f2fe', icon: '📝' }
+            : st === 'rejeitado'
+            ? { label: 'Não aprovado — entre em contato', color: '#dc2626', bg: '#fee2e2', icon: '✗' }
+            : { label: 'Aguardando aprovação (até 3 dias úteis)', color: '#92400e', bg: '#fef3c7', icon: '⏳' }
+
+          return (
+            <div style={{ margin: '0 16px 12px', borderRadius: 16, border: '1.5px solid #c4b5fd', overflow: 'hidden' }}>
+              {/* Header */}
+              <div style={{ background: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%)', padding: '14px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 12, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(124,58,237,0.15)' }}>
+                    {profissional.foto_perfil
+                      ? <img src={profissional.foto_perfil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }} />
+                      : <span style={{ fontSize: 20 }}>👩‍⚕️</span>}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#5b21b6', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {profissional.nome_negocio || profissional.nome}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#7c3aed' }}>
+                      {(profissional.servicos || []).slice(0, 2).join(' · ') || 'Profissional'}
+                    </div>
+                  </div>
+                </div>
+                {/* Badge de status */}
+                <div style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 5, background: statusInfo.bg, color: statusInfo.color, fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>
+                  <span>{statusInfo.icon}</span> {statusInfo.label}
+                </div>
+              </div>
+              {/* Botões */}
+              <div style={{ display: 'flex', borderTop: '1px solid #e9d5ff' }}>
+                <button
+                  onClick={() => setShowEditProfissional(true)}
+                  style={{ flex: 1, padding: '12px', background: 'white', border: 'none', fontSize: 13, fontWeight: 600, color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font)' }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Editar informações
+                </button>
+                {profissional.ativo && (
+                  <>
+                    <div style={{ width: 1, background: '#e9d5ff' }} />
+                    <a
+                      href={`/local/${profissional.id}`}
+                      style={{ flex: 1, padding: '12px', background: 'white', border: 'none', fontSize: 13, fontWeight: 600, color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/></svg>
+                      Ver meu perfil
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Anuncie seu serviço — só aparece se não for profissional */}
+        {!profissional && <div
           onClick={() => setShowAnuncio(true)}
           style={{ margin: '0 16px 12px', padding: '16px', background: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%)', borderRadius: 16, border: '1.5px solid #c4b5fd', cursor: 'pointer' }}
         >
@@ -801,9 +905,75 @@ export default function PerfilPage() {
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
-        </div>
+        </div>}
 
       </div>
+
+      {/* ── Modal editar perfil profissional ── */}
+      {showEditProfissional && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowEditProfissional(false)}>
+          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '92vh', overflowY: 'auto', padding: '20px 20px 48px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 16px' }} />
+
+            {profSaved ? (
+              <div style={{ textAlign: 'center', padding: '28px 0' }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>✅</div>
+                <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 8 }}>Salvo com sucesso!</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                  Suas alterações foram enviadas para análise e serão aplicadas em até 3 dias úteis.
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Editar perfil profissional</div>
+                <div style={{ fontSize: 12, color: '#7c3aed', background: '#f3e8ff', borderRadius: 10, padding: '8px 12px', marginBottom: 20, lineHeight: 1.5 }}>
+                  ℹ️ As alterações ficam em análise por até 3 dias úteis antes de aparecerem no app.
+                </div>
+
+                {[
+                  { label: 'Nome do negócio', key: 'nome_negocio', placeholder: 'Ex: Dra. Ana Silva — Doula' },
+                  { label: 'WhatsApp', key: 'whatsapp', placeholder: 'Ex: 11999999999' },
+                  { label: 'Instagram', key: 'instagram', placeholder: '@seuperfil' },
+                  { label: 'Facebook', key: 'facebook', placeholder: 'facebook.com/seuperfil' },
+                  { label: 'Site', key: 'site', placeholder: 'https://seusite.com.br' },
+                ].map(({ label, key, placeholder }) => (
+                  <div key={key} style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{label}</div>
+                    <input
+                      type="text"
+                      value={editProf[key] || ''}
+                      onChange={e => setEditProf((p: any) => ({ ...p, [key]: e.target.value }))}
+                      placeholder={placeholder}
+                      style={{ width: '100%', padding: '11px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                ))}
+
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Bio / Resumo</div>
+                  <textarea
+                    value={editProf.resumo || ''}
+                    onChange={e => setEditProf((p: any) => ({ ...p, resumo: e.target.value }))}
+                    placeholder="Fale sobre sua formação, especialidades e como você pode ajudar as famílias..."
+                    className="review-textarea"
+                    style={{ minHeight: 100 }}
+                  />
+                </div>
+
+                <button
+                  className="btn-primary"
+                  onClick={saveProfissionalEdits}
+                  disabled={savingProf}
+                  style={{ background: '#7c3aed' }}
+                >
+                  {savingProf ? 'Salvando...' : 'Salvar e enviar para análise'}
+                </button>
+                <button className="btn-secondary" onClick={() => setShowEditProfissional(false)}>Cancelar</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Modal Passarinho */}
       {showBirdPicker && (
