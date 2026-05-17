@@ -164,7 +164,7 @@ function FiltrosInfoButton() {
       </button>
       {open && (
         <div style={{
-          position: 'absolute', top: 36, right: 0, zIndex: 600,
+          position: 'absolute', top: 36, left: 0, zIndex: 600,
           background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)',
           boxShadow: '0 8px 28px rgba(0,0,0,0.16)', padding: '14px 0',
           width: 270, maxHeight: '70vh', overflowY: 'auto',
@@ -428,6 +428,7 @@ export default function MapaPage() {
           />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <FiltrosInfoButton />
           <div className="map-chips-row" style={{ flex: 1, overflowX: 'auto' }}>
             <button
               className={`filter-chip${filtroProfissionais ? ' active' : ''}`}
@@ -453,9 +454,38 @@ export default function MapaPage() {
               )
             })}
           </div>
-          <FiltrosInfoButton />
         </div>
       </div>
+
+      {/* ── Botão de geolocalização ── */}
+      {userPos && (
+        <button
+          onClick={() => setMapCenter({ ...userPos })}
+          title="Voltar para minha localização"
+          style={{
+            position: 'absolute',
+            bottom: 'calc(var(--nav-height) + 80px)',
+            right: 16,
+            zIndex: 450,
+            width: 44, height: 44,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.95)',
+            border: '1.5px solid var(--border)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.18)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <line x1="12" y1="2" x2="12" y2="5"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="2" y1="12" x2="5" y2="12"/>
+            <line x1="19" y1="12" x2="22" y2="12"/>
+          </svg>
+        </button>
+      )}
 
       {/* ── Mini card do local selecionado ── */}
       {selectedLocal && (

@@ -71,6 +71,13 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
     }
   }, [])
 
+  // Re-centraliza o mapa quando o prop center muda (ex: botão de geolocalização)
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    map.flyTo([center.lat, center.lng], Math.max(map.getZoom(), 13), { animate: true, duration: 0.8 })
+  }, [center.lat, center.lng])
+
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
