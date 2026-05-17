@@ -129,7 +129,7 @@ export default function AnuncieModal({ onClose }: AnuncieModalProps) {
                   <div style={{ fontSize: 12, color: '#7c3aed', marginTop: 3 }}>Sem fidelidade · cancele quando quiser</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: '#7c3aed', lineHeight: 1 }}>R$ 89</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: '#7c3aed', lineHeight: 1 }}>R$ 34,90</div>
                   <div style={{ fontSize: 12, color: '#7c3aed' }}>/mês</div>
                 </div>
               </div>
