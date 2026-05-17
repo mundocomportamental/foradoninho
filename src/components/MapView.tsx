@@ -8,6 +8,7 @@ interface Props {
   center: { lat: number; lng: number }
   onMarkerClick: (id: string) => void
   onMapClick?: () => void
+  flyTrigger?: number
 }
 
 // SVG de pin de geolocalização simples com efeito hover/touch
@@ -31,7 +32,7 @@ function pinSVG(color: string, size: number, isProfissional = false) {
   </div>`
 }
 
-export default function MapView({ locais, userPos, center, onMarkerClick, onMapClick }: Props) {
+export default function MapView({ locais, userPos, center, onMarkerClick, onMapClick, flyTrigger }: Props) {
   const mapRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const markersRef = useRef<any[]>([])
@@ -71,12 +72,13 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
     }
   }, [])
 
-  // Re-centraliza o mapa quando o prop center muda (ex: botão de geolocalização)
+  // Re-centraliza o mapa ao clicar no botão de geolocalização (flyTrigger incrementa a cada clique)
   useEffect(() => {
+    if (!flyTrigger) return
     const map = mapRef.current
     if (!map) return
     map.flyTo([center.lat, center.lng], Math.max(map.getZoom(), 13), { animate: true, duration: 0.8 })
-  }, [center.lat, center.lng])
+  }, [flyTrigger])
 
   useEffect(() => {
     const map = mapRef.current

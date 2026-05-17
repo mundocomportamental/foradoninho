@@ -295,6 +295,7 @@ export default function MapaPage() {
   const [showWelcome, setShowWelcome] = useState(false)
   const [showNavModal, setShowNavModal] = useState(false)
   const [sheetVisible, setSheetVisible] = useState(false)
+  const [flyTrigger, setFlyTrigger] = useState(0)
   const router = useRouter()
   const supabase = createClient()
 
@@ -410,6 +411,7 @@ export default function MapaPage() {
             center={mapCenter}
             onMarkerClick={handleMarkerClick}
             onMapClick={handleMapClick}
+            flyTrigger={flyTrigger}
           />
         )}
       </div>
@@ -457,27 +459,27 @@ export default function MapaPage() {
         </div>
       </div>
 
-      {/* ── Botão de geolocalização ── */}
+      {/* ── Botão de geolocalização (canto superior direito, abaixo dos filtros) ── */}
       {userPos && (
         <button
-          onClick={() => setMapCenter({ ...userPos })}
+          onClick={() => setFlyTrigger(t => t + 1)}
           title="Voltar para minha localização"
           style={{
             position: 'absolute',
-            bottom: 'calc(var(--nav-height) + 80px)',
-            right: 16,
+            top: 'calc(var(--overlay-top-height, 110px) + 8px)',
+            right: 12,
             zIndex: 450,
-            width: 44, height: 44,
+            width: 36, height: 36,
             borderRadius: '50%',
             background: 'rgba(255,255,255,0.95)',
             border: '1.5px solid var(--border)',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.18)',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.16)',
             backdropFilter: 'blur(6px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3"/>
             <line x1="12" y1="2" x2="12" y2="5"/>
             <line x1="12" y1="19" x2="12" y2="22"/>
