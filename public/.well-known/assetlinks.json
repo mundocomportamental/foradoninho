@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "br.com.foradoninho.app",
+    "sha256_cert_fingerprints": [
+      "CE:E9:4C:1F:86:90:39:42:B3:E0:34:36:F0:BF:F7:B4:AE:13:83:D3:9C:EF:C5:8C:C3:10:ED:3B:F9:E7:70:12"
+    ]
+  }
+}]
