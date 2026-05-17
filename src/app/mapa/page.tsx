@@ -498,7 +498,7 @@ export default function MapaPage() {
           background: 'var(--bg-card)', borderRadius: 20,
           boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
           padding: '16px 16px 14px',
-          border: '1px solid var(--border)',
+          border: selectedLocal.is_servico ? '1.5px solid #c4b5fd' : '1px solid var(--border)',
         }}>
           <button
             onClick={() => setSelectedLocal(null)}
@@ -510,11 +510,24 @@ export default function MapaPage() {
           </button>
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--green-soft)', border: '1.5px solid var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <img src="/bird-nest.png" alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+            <div style={{
+              width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+              background: selectedLocal.is_servico ? '#ede9fe' : 'var(--green-soft)',
+              border: selectedLocal.is_servico ? '1.5px solid #c4b5fd' : '1.5px solid var(--green-light)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {selectedLocal.is_servico ? (
+                <span style={{ fontSize: 22 }}>👶</span>
+              ) : (
+                <img src="/bird-nest.png" alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 0, paddingRight: 24 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--green-dark)', background: 'var(--green-soft)', padding: '2px 8px', borderRadius: 20, display: 'inline-block', marginBottom: 4 }}>
+              <div style={{
+                fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, display: 'inline-block', marginBottom: 4,
+                color: selectedLocal.is_servico ? '#6d28d9' : 'var(--green-dark)',
+                background: selectedLocal.is_servico ? '#ede9fe' : 'var(--green-soft)',
+              }}>
                 {TIPO_LABELS[selectedLocal.tipo] || selectedLocal.tipo}
               </div>
               <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -526,106 +539,148 @@ export default function MapaPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ color: '#f5a623', fontSize: 16 }}>★</span>
-              <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)' }}>{Number(selectedLocal.rating ?? 0).toFixed(1)}</span>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({selectedLocal.total_ratings ?? 0})</span>
-            </div>
-            <span style={{ color: 'var(--border)' }}>·</span>
-            <span style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="9"/><polyline points="12,7 12,12 15,15"/>
-              </svg>
-              {selectedLocal.total_checkins ?? 0} check-ins
-            </span>
-            {selectedLocal.certificado_pitstop && (
-              <>
+          {selectedLocal.is_servico ? (
+            /* ── Card de profissional: mostra descrição curta ── */
+            <>
+              {selectedLocal.descricao && (
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 12,
+                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {selectedLocal.descricao}
+                </div>
+              )}
+              {/* ── 2 botões: Detalhes | Direção ── */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => handleLocalClick(selectedLocal.id)}
+                  style={{
+                    flex: 1, padding: '11px 12px', fontSize: 14, fontWeight: 700,
+                    fontFamily: 'var(--font)', background: '#7c3aed', color: 'white',
+                    border: 'none', borderRadius: 50, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    transition: 'opacity 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <line x1="12" y1="8" x2="12" y2="8"/>
+                    <line x1="12" y1="12" x2="12" y2="16"/>
+                  </svg>
+                  Detalhes
+                </button>
+                <button
+                  onClick={() => setShowNavModal(true)}
+                  className="btn-outline"
+                  style={{ padding: '11px 14px', flexShrink: 0 }}
+                  title="Navegar até o local"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
+              </div>
+            </>
+          ) : (
+            /* ── Card de estabelecimento: ratings + amenidades + 3 botões ── */
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ color: '#f5a623', fontSize: 16 }}>★</span>
+                  <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)' }}>{Number(selectedLocal.rating ?? 0).toFixed(1)}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>({selectedLocal.total_ratings ?? 0})</span>
+                </div>
                 <span style={{ color: 'var(--border)' }}>·</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#059669' }}>✓ Verificado</span>
-              </>
-            )}
-          </div>
-
-          {(() => {
-            const all = [
-              selectedLocal.fraldario && 'Fraldário',
-              selectedLocal.espaco_familia && 'Espaço Família',
-              selectedLocal.espaco_kids && 'Área Kids',
-              selectedLocal.microondas && 'Microondas',
-              selectedLocal.menu_kids && 'Menu Kids',
-              selectedLocal.cadeirão && 'Cadeirão',
-              selectedLocal.pet_friendly && 'Pet-Friendly',
-            ].filter(Boolean)
-            if (all.length === 0) {
-              return <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 12 }}>Seja o primeiro a avaliar ✨</div>
-            }
-            return (
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-                {all.slice(0, 3).map(a => (
-                  <span key={String(a)} style={{ fontSize: 15, background: 'var(--green-soft)', color: 'var(--green-dark)', padding: '5px 14px', borderRadius: 20, fontWeight: 600 }}>
-                    {String(a)}
-                  </span>
-                ))}
-                {all.length > 3 && (
-                  <span style={{ fontSize: 15, background: 'var(--bg)', color: 'var(--text-muted)', padding: '5px 14px', borderRadius: 20, border: '1px solid var(--border)' }}>
-                    +{all.length - 3}
-                  </span>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <circle cx="12" cy="12" r="9"/><polyline points="12,7 12,12 15,15"/>
+                  </svg>
+                  {selectedLocal.total_checkins ?? 0} check-ins
+                </span>
+                {selectedLocal.certificado_pitstop && (
+                  <>
+                    <span style={{ color: 'var(--border)' }}>·</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#059669' }}>✓ Verificado</span>
+                  </>
                 )}
               </div>
-            )
-          })()}
 
-          {/* ── 3 botões: Detalhes | Navegação | Avaliar ── */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {/* Detalhes */}
-            <button
-              onClick={() => handleLocalClick(selectedLocal.id)}
-              style={{
-                flex: 1, padding: '11px 12px', fontSize: 14, fontWeight: 700,
-                fontFamily: 'var(--font)', background: '#33CCCC', color: 'white',
-                border: 'none', borderRadius: 50, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="9"/>
-                <line x1="12" y1="8" x2="12" y2="8"/>
-                <line x1="12" y1="12" x2="12" y2="16"/>
-              </svg>
-              Detalhes
-            </button>
+              {(() => {
+                const all = [
+                  selectedLocal.fraldario && 'Fraldário',
+                  selectedLocal.espaco_familia && 'Espaço Família',
+                  selectedLocal.espaco_kids && 'Área Kids',
+                  selectedLocal.microondas && 'Microondas',
+                  selectedLocal.menu_kids && 'Menu Kids',
+                  selectedLocal.cadeirão && 'Cadeirão',
+                  selectedLocal.pet_friendly && 'Pet-Friendly',
+                ].filter(Boolean)
+                if (all.length === 0) {
+                  return <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 12 }}>Seja o primeiro a avaliar ✨</div>
+                }
+                return (
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                    {all.slice(0, 3).map(a => (
+                      <span key={String(a)} style={{ fontSize: 15, background: 'var(--green-soft)', color: 'var(--green-dark)', padding: '5px 14px', borderRadius: 20, fontWeight: 600 }}>
+                        {String(a)}
+                      </span>
+                    ))}
+                    {all.length > 3 && (
+                      <span style={{ fontSize: 15, background: 'var(--bg)', color: 'var(--text-muted)', padding: '5px 14px', borderRadius: 20, border: '1px solid var(--border)' }}>
+                        +{all.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )
+              })()}
 
-            {/* Navegação (ícone) */}
-            <button
-              onClick={() => setShowNavModal(true)}
-              className="btn-outline"
-              style={{ padding: '11px 14px', flexShrink: 0 }}
-              title="Navegar até o local"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-            </button>
-
-            {/* Avaliar local */}
-            <button
-              onClick={() => handleAvaliarClick(selectedLocal.id)}
-              className="btn-outline"
-              style={{
-                flex: 1, padding: '11px 12px', fontSize: 13, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-              Avaliar
-            </button>
-          </div>
+              {/* ── 3 botões: Detalhes | Navegação | Avaliar ── */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => handleLocalClick(selectedLocal.id)}
+                  style={{
+                    flex: 1, padding: '11px 12px', fontSize: 14, fontWeight: 700,
+                    fontFamily: 'var(--font)', background: '#33CCCC', color: 'white',
+                    border: 'none', borderRadius: 50, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    transition: 'opacity 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <line x1="12" y1="8" x2="12" y2="8"/>
+                    <line x1="12" y1="12" x2="12" y2="16"/>
+                  </svg>
+                  Detalhes
+                </button>
+                <button
+                  onClick={() => setShowNavModal(true)}
+                  className="btn-outline"
+                  style={{ padding: '11px 14px', flexShrink: 0 }}
+                  title="Navegar até o local"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handleAvaliarClick(selectedLocal.id)}
+                  className="btn-outline"
+                  style={{
+                    flex: 1, padding: '11px 12px', fontSize: 13, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                  Avaliar
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
