@@ -919,36 +919,4 @@ export default function PerfilPage() {
               </div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 800 }}>Sobre o Fora do Ninho</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Nossa história e missão</div>
-              </div>
-            </div>
-            <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
-              O Fora do Ninho nasceu de uma necessidade real: a de quem já esteve na estrada com um bebê no colo e não sabia onde parar com segurança. Fraldário limpo, um lugar tranquilo para amamentar, um restaurante com cadeirão — coisas simples que fazem toda a diferença.
-            </div>
-            <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
-              Mais do que um app de mapas, queremos construir uma <strong style={{ color: 'var(--green-dark)' }}>comunidade</strong> — de pais, mães e cuidadores que se ajudam nos momentos que mais precisam. Cada avaliação, cada check-in, cada foto compartilhada é um presente para quem ainda não conhece aquele local.
-            </div>
-            <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
-              Porque viajar com crianças pequenas não precisa ser estressante. Com as informações certas — e com a ajuda uns dos outros — cada parada pode ser um bom momento.
-            </div>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-              {[
-                { icon: '🗺️', label: 'Locais mapeados\npela comunidade' },
-                { icon: '🤝', label: 'Famílias que se\najudam na estrada' },
-                { icon: '💚', label: 'Gratuito para\npais e cuidadores' },
-              ].map(item => (
-                <div key={item.label} style={{ flex: 1, background: 'var(--green-soft)', borderRadius: 14, padding: '12px 10px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>{item.icon}</div>
-                  <div style={{ fontSize: 11, color: 'var(--green-dark)', fontWeight: 600, lineHeight: 1.4, whiteSpace: 'pre-line' }}>{item.label}</div>
-                </div>
-              ))}
-            </div>
-            <button className="btn-primary" onClick={() => setShowSobreNos(false)}>Fechar</button>
-          </div>
-        </div>
-      )}
-
-      <BottomNav />
-    </div>
-  )
-}
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>N
