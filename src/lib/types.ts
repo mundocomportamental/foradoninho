@@ -30,6 +30,8 @@ export interface Local {
   website?: string
   telefone?: string
   descricao?: string
+  servicos?: string[]
+  outros_servicos?: string
   profissional_id?: string
   rating: number
   total_ratings: number

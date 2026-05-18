@@ -73,7 +73,16 @@ export default function LocaisPage() {
   const filteredEstab = estabelecimentos
     .filter(l => {
       if (filtro !== 'todos' && !l[filtro as keyof Local]) return false
-      if (search && !l.nome.toLowerCase().includes(search.toLowerCase()) && !l.cidade.toLowerCase().includes(search.toLowerCase())) return false
+      if (search) {
+        const q = search.toLowerCase()
+        const tipoLabel = (TIPO_LABELS[l.tipo] || l.tipo || '').toLowerCase()
+        const matches =
+          l.nome.toLowerCase().includes(q) ||
+          l.cidade.toLowerCase().includes(q) ||
+          l.tipo.toLowerCase().includes(q) ||
+          tipoLabel.includes(q)
+        if (!matches) return false
+      }
       return true
     })
     .map(l => ({
@@ -83,7 +92,20 @@ export default function LocaisPage() {
     .sort((a, b) => (a.distKm ?? 999) - (b.distKm ?? 999))
 
   const filteredServicos = servicos.filter(l => {
-    if (search && !l.nome.toLowerCase().includes(search.toLowerCase())) return false
+    if (search) {
+      const q = search.toLowerCase()
+      const tipoLabel = (TIPO_SERVICO_LABELS[l.tipo] || TIPO_LABELS[l.tipo] || l.tipo || '').toLowerCase()
+      const servicosStr = (l.servicos ?? []).join(' ').toLowerCase()
+      const outrosServicos = (l.outros_servicos ?? '').toLowerCase()
+      const matches =
+        l.nome.toLowerCase().includes(q) ||
+        l.cidade.toLowerCase().includes(q) ||
+        l.tipo.toLowerCase().includes(q) ||
+        tipoLabel.includes(q) ||
+        servicosStr.includes(q) ||
+        outrosServicos.includes(q)
+      if (!matches) return false
+    }
     return true
   }).map(l => ({
     ...l,
