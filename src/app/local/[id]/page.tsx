@@ -1,8 +1,9 @@
 'use client'
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import BottomNav from '@/components/BottomNav'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import type { Local } from '@/lib/types'
 import { AMENIDADES, TIPO_LABELS } from '@/lib/types'
 
@@ -20,7 +21,6 @@ interface Medias {
   total_3m: number
 }
 
-// ── Componente RatingBar (escala 1-10, exibe número) ──────────────────
 function RatingBar({ label, value }: { label: string; value: number | null }) {
   const v = value ?? 0
   return (
@@ -38,7 +38,6 @@ function RatingBar({ label, value }: { label: string; value: number | null }) {
   )
 }
 
-// ── Componente SmileBar (escala 1-5, exibe carinha sem número) ─────────
 const SMILE_ICONS = ['😞', '😕', '😐', '🙂', '😄']
 function smileForValue(v: number): string {
   const idx = Math.min(Math.max(Math.round(v) - 1, 0), 4)
@@ -52,9 +51,7 @@ function SmileBar({ label, value }: { label: string; value: number | null }) {
     <div style={{ marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
         <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{label}</span>
-        <span style={{ fontSize: 17, lineHeight: 1 }}>
-          {value != null && v > 0 ? smileForValue(v) : '—'}
-        </span>
+        <span style={{ fontSize: 17, lineHeight: 1 }}>{value != null && v > 0 ? smileForValue(v) : '—'}</span>
       </div>
       <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 3, transition: 'width 0.4s' }} />
@@ -63,7 +60,6 @@ function SmileBar({ label, value }: { label: string; value: number | null }) {
   )
 }
 
-// ── ScorePicker geral (1-10, barras numéricas) ────────────────────────
 function ScorePicker({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div style={{ marginBottom: 18 }}>
@@ -75,19 +71,13 @@ function ScorePicker({ label, value, onChange }: { label: string; value: number;
       </div>
       <div style={{ display: 'flex', gap: 4 }}>
         {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
-          <button
-            key={n}
-            onClick={() => onChange(n)}
-            style={{
-              flex: 1, height: 36, borderRadius: 8, border: 'none',
-              background: n <= value
-                ? (value >= 8 ? '#33cccc' : value >= 5 ? '#f59e0b' : '#ef4444')
-                : 'var(--border)',
-              cursor: 'pointer', transition: 'background 0.1s',
-              fontSize: 12, fontWeight: 700,
-              color: n <= value ? 'white' : 'var(--text-muted)',
-            }}
-          >{n}</button>
+          <button key={n} onClick={() => onChange(n)} style={{
+            flex: 1, height: 36, borderRadius: 8, border: 'none',
+            background: n <= value ? (value >= 8 ? '#33cccc' : value >= 5 ? '#f59e0b' : '#ef4444') : 'var(--border)',
+            cursor: 'pointer', transition: 'background 0.1s',
+            fontSize: 12, fontWeight: 700,
+            color: n <= value ? 'white' : 'var(--text-muted)',
+          }}>{n}</button>
         ))}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
@@ -98,7 +88,6 @@ function ScorePicker({ label, value, onChange }: { label: string; value: number;
   )
 }
 
-// ── SmilePicker (1-5 com carinhas, sem números) ───────────────────────
 const SMILES = ['😞', '😕', '😐', '🙂', '😄']
 const SMILE_LABELS = ['Ruim', 'Regular', 'Ok', 'Bom', 'Ótimo']
 
@@ -107,27 +96,21 @@ function SmilePicker({ label, value, onChange }: { label: string; value: number;
     <div style={{ marginBottom: 18 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <span style={{ fontSize: 15, fontWeight: 700 }}>{label}</span>
-        {value > 0 && (
-          <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>{SMILE_LABELS[value - 1]}</span>
-        )}
+        {value > 0 && <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>{SMILE_LABELS[value - 1]}</span>}
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
         {SMILES.map((emoji, i) => {
           const n = i + 1
           const active = value === n
           return (
-            <button
-              key={n}
-              onClick={() => onChange(n)}
-              style={{
-                flex: 1, height: 54, borderRadius: 12, border: active ? '2px solid var(--green)' : '1.5px solid var(--border)',
-                background: active ? 'var(--green-soft)' : 'var(--bg)',
-                cursor: 'pointer', transition: 'all 0.15s',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
-                fontSize: active ? 26 : 22,
-                transform: active ? 'scale(1.08)' : 'scale(1)',
-              }}
-            >
+            <button key={n} onClick={() => onChange(n)} style={{
+              flex: 1, height: 54, borderRadius: 12,
+              border: active ? '2px solid var(--green)' : '1.5px solid var(--border)',
+              background: active ? 'var(--green-soft)' : 'var(--bg)',
+              cursor: 'pointer', transition: 'all 0.15s',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+              fontSize: active ? 26 : 22, transform: active ? 'scale(1.08)' : 'scale(1)',
+            }}>
               <span>{emoji}</span>
             </button>
           )
@@ -137,84 +120,190 @@ function SmilePicker({ label, value, onChange }: { label: string; value: number;
   )
 }
 
-// ── Página principal ───────────────────────────────────────────────────
+// ── Carrossel / Lightbox ───────────────────────────────────────────────
+function PhotoCarousel({ fotos, startIndex, onClose }: { fotos: string[]; startIndex: number; onClose: () => void }) {
+  const [index, setIndex] = useState(startIndex)
+  const touchStartX = useRef<number | null>(null)
+
+  function prev() { setIndex(i => (i - 1 + fotos.length) % fotos.length) }
+  function next() { setIndex(i => (i + 1) % fotos.length) }
+
+  function onTouchStart(e: React.TouchEvent) { touchStartX.current = e.touches[0].clientX }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 40) diff > 0 ? next() : prev()
+    touchStartX.current = null
+  }
+
+  // Fechar com ESC
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowLeft') prev()
+      if (e.key === 'ArrowRight') next()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  return (
+    <div
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 2000,
+        background: 'rgba(0,0,0,0.92)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      }}
+    >
+      {/* Botão fechar */}
+      <button onClick={onClose} style={{
+        position: 'absolute', top: 16, right: 16,
+        width: 40, height: 40, borderRadius: '50%',
+        background: 'rgba(255,255,255,0.15)', border: 'none',
+        color: 'white', fontSize: 20, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>✕</button>
+
+      {/* Contador */}
+      {fotos.length > 1 && (
+        <div style={{ position: 'absolute', top: 22, left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: 600 }}>
+          {index + 1} / {fotos.length}
+        </div>
+      )}
+
+      {/* Imagem */}
+      <img
+        src={fotos[index]}
+        alt={`Foto ${index + 1}`}
+        style={{
+          maxWidth: '95vw', maxHeight: '80vh',
+          objectFit: 'contain', borderRadius: 12,
+          userSelect: 'none', pointerEvents: 'none',
+        }}
+      />
+
+      {/* Seta anterior */}
+      {fotos.length > 1 && (
+        <button onClick={prev} style={{
+          position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+          width: 40, height: 40, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.18)', border: 'none',
+          color: 'white', fontSize: 20, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>‹</button>
+      )}
+
+      {/* Seta próxima */}
+      {fotos.length > 1 && (
+        <button onClick={next} style={{
+          position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+          width: 40, height: 40, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.18)', border: 'none',
+          color: 'white', fontSize: 20, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>›</button>
+      )}
+
+      {/* Dots */}
+      {fotos.length > 1 && (
+        <div style={{ display: 'flex', gap: 6, marginTop: 20 }}>
+          {fotos.map((_, i) => (
+            <div key={i} onClick={() => setIndex(i)} style={{
+              width: i === index ? 18 : 7, height: 7,
+              borderRadius: 4, cursor: 'pointer',
+              background: i === index ? '#33cccc' : 'rgba(255,255,255,0.35)',
+              transition: 'all 0.2s',
+            }} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function LocalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const searchParams = useSearchParams()
   const [local, setLocal] = useState<Local | null>(null)
   const [loading, setLoading] = useState(true)
   const [isFav, setIsFav] = useState(false)
   const [medias, setMedias] = useState<Medias | null>(null)
   const [filtroPeriodo, setFiltroPeriodo] = useState<'total' | '3m'>('total')
 
-  // Fluxo checkin + avaliação: 4 etapas
   // 0 = fechado, 1 = ratings, 2 = fotos, 3 = comentário, 4 = confirmar amenidades
   const [flowStep, setFlowStep] = useState(0)
   const [checkinDone, setCheckinDone] = useState(false)
 
-  // Ratings (1-10)
   const [rLimpeza, setRLimpeza] = useState(0)
   const [rAtendimento, setRAtendimento] = useState(0)
   const [rInstalacoes, setRInstalacoes] = useState(0)
   const [rExperiencia, setRExperiencia] = useState(0)
 
-  // Fotos
   const [fotos, setFotos] = useState<File[]>([])
   const [fotoURLs, setFotoURLs] = useState<string[]>([])
-
-  // Comentário
   const [comment, setComment] = useState('')
-
-  // Amenidades reportadas
   const [amenReportadas, setAmenReportadas] = useState<Record<string, boolean>>({})
-
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState(false)
-
-  // Contagem reativa de check-ins
   const [checkinCount, setCheckinCount] = useState<number>(0)
 
-  // Lightbox de fotos
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  // Carrossel
+  const [carouselOpen, setCarouselOpen] = useState(false)
+  const [carouselIndex, setCarouselIndex] = useState(0)
 
-  // Fluxo de denúncia/remoção
-  const [reportStep, setReportStep] = useState(0)
+  // Reporte de estabelecimento
+  const [reportOpen, setReportOpen] = useState(false)
+  const [reportTipo, setReportTipo] = useState('')
+  const [reportMensagem, setReportMensagem] = useState('')
   const [reportNome, setReportNome] = useState('')
-  const [reportContato, setReportContato] = useState('')
-  const [reportMotivo, setReportMotivo] = useState('')
-  const [reportMsg, setReportMsg] = useState('')
+  const [reportEmail, setReportEmail] = useState('')
   const [reportSending, setReportSending] = useState(false)
   const [reportDone, setReportDone] = useState(false)
-  const [reportEhResponsavel, setReportEhResponsavel] = useState(false)
 
-  async function sendReport() {
-    setReportSending(true)
-    try {
-      await supabase.from('relatos').insert({
-        local_id: id,
-        nome: reportNome,
-        contato: reportContato,
-        motivo: reportMotivo,
-        mensagem: reportMsg,
-      })
-    } catch {}
-    setReportSending(false)
-    setReportDone(true)
-    setReportStep(4)
-  }
+  // Curtidas (profissionais)
+  const [curtidasCount, setCurtidasCount] = useState(0)
+  const [userCurtiu, setUserCurtiu] = useState(false)
+  const [curtidaId, setCurtidaId] = useState<string | null>(null)
+  const [curtidaLoading, setCurtidaLoading] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Evita disparar o auto-start mais de uma vez
+  const autoStartedRef = useRef(false)
 
   const supabase = createClient()
 
   useEffect(() => {
     async function load() {
-      const [{ data: localData }, { data: mediasData }, { count: realCheckinCount }] = await Promise.all([
+      const [
+        { data: localData },
+        { data: mediasData },
+        { count: realCheckinCount },
+        { count: curtidasTotal },
+        { data: authResult },
+      ] = await Promise.all([
         supabase.from('locais').select('*').eq('id', id).single(),
         supabase.from('avaliacoes_medias').select('*').eq('local_id', id).single(),
         supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('local_id', id),
+        supabase.from('curtidas').select('*', { count: 'exact', head: true }).eq('local_id', id),
+        supabase.auth.getUser(),
       ])
+      setCurtidasCount(curtidasTotal ?? 0)
+      const authUser = authResult?.user ?? null
+      if (authUser) {
+        setUserId(authUser.id)
+        const { data: myCurtida } = await supabase
+          .from('curtidas').select('id').eq('local_id', id).eq('user_id', authUser.id).maybeSingle()
+        if (myCurtida) {
+          setUserCurtiu(true)
+          setCurtidaId(myCurtida.id)
+          setIsFav(true)
+        }
+      }
       if (localData) {
         setLocal(localData as Local)
         setCheckinCount(realCheckinCount ?? 0)
-        // Inicializa amenidades: preferir escolha do usuário (salva por 1 dia), senão valores do DB
         try {
           const stored = localStorage.getItem(`amen_${id}`)
           if (stored) {
@@ -250,7 +339,15 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     } catch {}
   }, [id, supabase])
 
-  // ── Checkin + abre fluxo de avaliação ───────────────────────────────
+  // Auto-inicia o fluxo quando vier via ?avaliar=1 (ex: botão "Avaliar" no card do mapa)
+  useEffect(() => {
+    if (!loading && local && searchParams.get('avaliar') === '1' && !autoStartedRef.current) {
+      autoStartedRef.current = true
+      startCheckinFlow()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, local])
+
   async function startCheckinFlow() {
     setCheckinDone(true)
     setFlowStep(1)
@@ -260,7 +357,6 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     } catch {}
   }
 
-  // ── Upload de fotos ─────────────────────────────────────────────────
   function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])
     setFotos(prev => [...prev, ...files].slice(0, 5))
@@ -270,50 +366,43 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     })
   }
 
-  // ── Envio final ──────────────────────────────────────────────────────
   async function sendReview() {
     setSending(true)
     try {
-      // Upload das fotos para Storage (bucket 'locais-fotos')
-      const uploadedUrls: string[] = []
+      // Faz upload das fotos para pasta exclusiva do estabelecimento (nome_id)
+      // As fotos ficam no storage para revisão manual — NÃO são adicionadas à tabela locais automaticamente
+      const nomeSlug = (local?.nome ?? 'local')
+        .toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+      const storagePath = `${nomeSlug}_${id}`
+
       for (const foto of fotos) {
         const ext = foto.name.split('.').pop()
-        const path = `${id}/${Date.now()}.${ext}`
-        const { data: up } = await supabase.storage.from('locais-fotos').upload(path, foto, { upsert: false })
-        if (up) {
-          const { data: pub } = supabase.storage.from('locais-fotos').getPublicUrl(up.path)
-          if (pub) uploadedUrls.push(pub.publicUrl)
-        }
+        const path = `${storagePath}/${Date.now()}_${Math.random().toString(36).slice(2,7)}.${ext}`
+        await supabase.storage.from('locais-fotos').upload(path, foto, { upsert: false })
+        // Não armazenamos as URLs: as fotos aguardam revisão manual no storage
       }
 
-      // Insere avaliação — ratings aprovados automaticamente, fotos ficam em imagens[] aguardando revisão manual
       await supabase.from('avaliacoes').insert({
         local_id: id,
         limpeza: rLimpeza || null,
         atendimento: rAtendimento || null,
         instalacoes: rInstalacoes || null,
         experiencia: rExperiencia || null,
-        comentario: comment || null,   // armazenado mas não exibido publicamente
-        imagens: uploadedUrls,         // fotos ficam em avaliacoes.imagens — publicar manualmente via locais.fotos_metadata
+        comentario: comment || null,
+        imagens: [],
         aprovado: true,
         amenidades_reportadas: amenReportadas,
         periodo_ref: new Date().toISOString(),
       })
-
-      // Salva amenidades no localStorage por 1 dia (o usuário vê sua própria seleção)
       try {
         localStorage.setItem(`amen_${id}`, JSON.stringify({ data: amenReportadas, savedAt: Date.now() }))
       } catch {}
-
       setDone(true)
       setFlowStep(0)
-
-      // Re-busca as médias para refletir a nova avaliação imediatamente
-      const { data: newMedias } = await supabase
-        .from('avaliacoes_medias')
-        .select('*')
-        .eq('local_id', id)
-        .single()
+      const { data: newMedias } = await supabase.from('avaliacoes_medias').select('*').eq('local_id', id).single()
       if (newMedias) setMedias(newMedias as Medias)
     } catch (err) {
       console.error(err)
@@ -322,7 +411,6 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     }
   }
 
-  // ── Favorito ─────────────────────────────────────────────────────────
   function toggleFav() {
     if (!local) return
     try {
@@ -342,7 +430,75 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${local.lat},${local.lng}`, '_blank')
   }
 
-  // ── Loading / Not found ───────────────────────────────────────────────
+  async function sendReport() {
+    if (!reportTipo) return
+    setReportSending(true)
+    try {
+      await supabase.from('reportes_locais').insert({
+        local_id: id,
+        tipo: reportTipo,
+        mensagem: reportMensagem || null,
+        nome_contato: reportNome || null,
+        email_contato: reportEmail || null,
+      })
+      setReportDone(true)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setReportSending(false)
+    }
+  }
+
+  function closeReport() {
+    setReportOpen(false)
+    setReportDone(false)
+    setReportTipo('')
+    setReportMensagem('')
+    setReportNome('')
+    setReportEmail('')
+  }
+
+  async function toggleCurtida() {
+    if (curtidaLoading) return
+    setCurtidaLoading(true)
+    try {
+      if (userCurtiu && curtidaId) {
+        await supabase.from('curtidas').delete().eq('id', curtidaId)
+        setUserCurtiu(false)
+        setCurtidaId(null)
+        setCurtidasCount(c => Math.max(0, c - 1))
+        setIsFav(false)
+        try {
+          const favs = JSON.parse(localStorage.getItem('favoritos') || '[]')
+          localStorage.setItem('favoritos', JSON.stringify(favs.filter((f: any) => f.id !== id)))
+        } catch {}
+      } else if (userId) {
+        const { data } = await supabase
+          .from('curtidas').insert({ local_id: id, user_id: userId }).select('id').single()
+        if (data) {
+          setUserCurtiu(true)
+          setCurtidaId(data.id)
+          setCurtidasCount(c => c + 1)
+          setIsFav(true)
+          if (local) {
+            try {
+              const favs = JSON.parse(localStorage.getItem('favoritos') || '[]')
+              if (!favs.some((f: any) => f.id === id)) {
+                localStorage.setItem('favoritos', JSON.stringify([local, ...favs]))
+              }
+            } catch {}
+          }
+        }
+      } else {
+        // Não logado — salva só no localStorage
+        toggleFav()
+        setUserCurtiu(prev => !prev)
+      }
+    } finally {
+      setCurtidaLoading(false)
+    }
+  }
+
   if (loading) return (
     <div className="app-shell">
       <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 60 }}>
@@ -365,17 +521,267 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
   const m = (key: 'limpeza' | 'atendimento' | 'instalacoes' | 'experiencia') =>
     filtroPeriodo === '3m' ? medias?.[`${key}_3m`] ?? null : medias?.[`${key}_total`] ?? null
 
+  // Prepara lista de fotos para o carrossel
   const fotoPrincipal = local.foto_principal
-  const fotosSecundarias = (local.fotos_metadata ?? []).map((f: any) => f.url).filter(Boolean) as string[]
-  const todasFotos: string[] = [
-    ...(fotoPrincipal ? [fotoPrincipal] : []),
-    ...fotosSecundarias.filter(u => u !== fotoPrincipal),
-  ]
+  const fotosSecundarias = (local.fotos_metadata ?? []).map((f: any) => f.url).filter(Boolean)
+  const todasFotos = [...(fotoPrincipal ? [fotoPrincipal] : []), ...fotosSecundarias.filter((u: string) => u !== fotoPrincipal)]
 
+  // ── Vista de profissional (is_servico=true) ─────────────────────────
+  if (local.is_servico) {
+    const tipoLabel = TIPO_LABELS[local.tipo] || local.tipo
+    const temFoto = !!fotoPrincipal
+    const fotosExtras = fotosSecundarias.filter(u => u !== fotoPrincipal)
+
+    return (
+      <div className="app-shell">
+        <div className="page" style={{ paddingBottom: 80 }}>
+
+          {/* ── Hero com foto ou gradiente ── */}
+          <div style={{ position: 'relative', width: '100%', height: temFoto ? 260 : 180, flexShrink: 0 }}>
+            {temFoto ? (
+              <img
+                src={fotoPrincipal}
+                alt={local.nome}
+                onClick={() => { setCarouselIndex(0); setCarouselOpen(true) }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+              />
+            ) : (
+              <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)' }} />
+            )}
+            {/* Gradiente escuro na base para legibilidade */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 40%, rgba(0,0,0,0.55) 100%)' }} />
+
+            {/* Botão voltar */}
+            <Link href="/mapa" style={{
+              position: 'absolute', top: 14, left: 14,
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(6px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#1a1a1a', textDecoration: 'none',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </Link>
+
+            {/* Botão curtir (coração) */}
+            <button
+              onClick={toggleCurtida}
+              disabled={curtidaLoading}
+              style={{
+                position: 'absolute', top: 14, right: 14,
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(6px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: 'none', cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24"
+                fill={userCurtiu ? '#e11d48' : 'none'}
+                stroke={userCurtiu ? '#e11d48' : '#1a1a1a'}
+                strokeWidth="2" strokeLinecap="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            </button>
+
+            {/* Nome + tipo + localização sobrepostos */}
+            <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'white', background: 'rgba(124,58,237,0.85)', padding: '3px 10px', borderRadius: 20, display: 'inline-block', marginBottom: 6, backdropFilter: 'blur(4px)' }}>
+                {tipoLabel}
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: 'white', lineHeight: 1.2, textShadow: '0 1px 4px rgba(0,0,0,0.4)', marginBottom: 4 }}>
+                {local.nome}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'rgba(255,255,255,0.9)', fontSize: 13 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                {local.cidade}{local.estado ? `, ${local.estado}` : ''}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Descrição ── */}
+          {local.descricao && (
+            <div style={{ padding: '16px 16px 0' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>Sobre</div>
+              <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.75 }}>{local.descricao}</div>
+            </div>
+          )}
+
+          {/* ── Serviços ── */}
+          {local.servicos && local.servicos.length > 0 && (
+            <div style={{ padding: '16px 16px 0' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>Serviços</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {local.servicos.map((s, i) => (
+                  <span key={i} style={{ fontSize: 12, fontWeight: 600, color: '#6d28d9', background: '#ede9fe', padding: '5px 12px', borderRadius: 20 }}>
+                    {s}
+                  </span>
+                ))}
+                {local.outros_servicos && (
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#6d28d9', background: '#ede9fe', padding: '5px 12px', borderRadius: 20 }}>
+                    {local.outros_servicos}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Redes sociais ── */}
+          {(local.instagram || local.facebook || local.website) && (
+            <div style={{ padding: '16px 16px 0' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>Redes sociais</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {local.instagram && (
+                  <a
+                    href={local.instagram.startsWith('http') ? local.instagram : `https://instagram.com/${local.instagram.replace('@','')}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, background: '#fff0f6', border: '1px solid #fbb6ce', textDecoration: 'none' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#be185d" strokeWidth="2" strokeLinecap="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#be185d" stroke="none"/>
+                    </svg>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#be185d' }}>@{local.instagram.replace('@','').replace(/.*instagram\.com\//,'')}</span>
+                  </a>
+                )}
+                {local.facebook && (
+                  <a
+                    href={local.facebook.startsWith('http') ? local.facebook : `https://facebook.com/${local.facebook}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, background: '#eff6ff', border: '1px solid #bfdbfe', textDecoration: 'none' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877f2">
+                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                    </svg>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1877f2' }}>{local.facebook.replace(/.*facebook\.com\//,'').replace('@','')}</span>
+                  </a>
+                )}
+                {local.website && (
+                  <a
+                    href={local.website.startsWith('http') ? local.website : `https://${local.website}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, background: '#f5f3ff', border: '1px solid #c4b5fd', textDecoration: 'none' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#7c3aed', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {local.website.replace(/^https?:\/\//, '')}
+                    </span>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Fotos adicionais ── */}
+          {fotosExtras.length > 0 && (
+            <div style={{ padding: '16px 0 0' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', padding: '0 16px', marginBottom: 10 }}>Fotos</div>
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '0 16px', scrollbarWidth: 'none' }}>
+                {fotosExtras.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`Foto ${i + 2}`}
+                    onClick={() => { setCarouselIndex(i + 1); setCarouselOpen(true) }}
+                    style={{ width: 140, height: 110, objectFit: 'cover', borderRadius: 12, flexShrink: 0, cursor: 'pointer', border: '1px solid var(--border)' }}
+                    onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                    onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Curtidas ── */}
+          <div style={{ padding: '20px 16px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={curtidasCount > 0 ? '#e11d48' : 'none'} stroke="#e11d48" strokeWidth="2" strokeLinecap="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+              {curtidasCount === 0
+                ? 'Seja o primeiro a curtir este perfil'
+                : `${curtidasCount} ${curtidasCount === 1 ? 'pessoa curtiu' : 'pessoas curtiram'} este perfil`}
+            </span>
+          </div>
+
+          {/* ── Botões de ação ── */}
+          <div style={{ padding: '16px 16px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {local.whatsapp && (
+              <a
+                href={`https://wa.me/${local.whatsapp.replace(/\D/g,'')}`}
+                target="_blank" rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#25d366', color: 'white', padding: '14px', borderRadius: 50, textDecoration: 'none', fontSize: 15, fontWeight: 700, fontFamily: 'var(--font)' }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.118 1.528 5.845L.057 23.428a.75.75 0 0 0 .927.926l5.583-1.471A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.717 9.717 0 0 1-5.003-1.381l-.358-.213-3.712.977.994-3.63-.234-.374A9.718 9.718 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/>
+                </svg>
+                Entrar em contato via WhatsApp
+              </a>
+            )}
+            {!local.whatsapp && local.telefone && (
+              <a
+                href={`tel:${local.telefone.replace(/\D/g,'')}`}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7c3aed', color: 'white', padding: '14px', borderRadius: 50, textDecoration: 'none', fontSize: 15, fontWeight: 700, fontFamily: 'var(--font)' }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1 19.79 19.79 0 0 1 1.61 4.47 2 2 0 0 1 3.6 2.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                Ligar: {local.telefone}
+              </a>
+            )}
+            <button
+              onClick={openMaps}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'none', border: '1.5px solid var(--border)', color: 'var(--text)', padding: '13px', borderRadius: 50, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font)' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              Como chegar
+            </button>
+            <button
+              onClick={toggleCurtida}
+              disabled={curtidaLoading}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                background: userCurtiu ? '#fff1f5' : '#7c3aed',
+                border: userCurtiu ? '1.5px solid #fecdd3' : 'none',
+                color: userCurtiu ? '#e11d48' : 'white',
+                padding: '13px', borderRadius: 50, fontSize: 14, fontWeight: 700,
+                cursor: curtidaLoading ? 'default' : 'pointer',
+                fontFamily: 'var(--font)', opacity: curtidaLoading ? 0.7 : 1,
+                transition: 'all 0.2s',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24"
+                fill={userCurtiu ? '#e11d48' : 'none'}
+                stroke={userCurtiu ? '#e11d48' : 'white'}
+                strokeWidth="2" strokeLinecap="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+              {userCurtiu ? 'Curtido ✓' : 'Curtir este profissional'}
+            </button>
+          </div>
+        </div>
+
+        {/* Lightbox de fotos */}
+        {carouselOpen && todasFotos.length > 0 && (
+          <PhotoCarousel fotos={todasFotos} startIndex={carouselIndex} onClose={() => setCarouselOpen(false)} />
+        )}
+
+        <BottomNav />
+      </div>
+    )
+  }
+
+  // ── Vista de estabelecimento (is_servico=false / undefined) ──────────
   return (
     <div className="app-shell">
       <div className="page">
-        {/* Top bar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 16px 8px' }}>
           <Link href="/mapa" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: '50%', border: '1.5px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text)', textDecoration: 'none' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -391,33 +797,21 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           </div>
         </div>
 
-        {/* Header card */}
         <div className="local-header-card">
           <div className="local-tipo-badge">{TIPO_LABELS[local.tipo] || local.tipo}</div>
           <div className="local-nome">{local.nome}</div>
           <div className="local-address">{local.endereco && `${local.endereco} · `}{local.cidade}, {local.estado}</div>
-
-          {/* Avaliação média geral */}
           {totalRatings > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', gap: 6 }}>
                 {(['total', '3m'] as const).map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setFiltroPeriodo(p)}
-                    style={{
-                      padding: '3px 10px',
-                      borderRadius: 20,
-                      border: '1.5px solid',
-                      borderColor: filtroPeriodo === p ? 'var(--green)' : 'var(--border)',
-                      background: filtroPeriodo === p ? 'var(--green-soft)' : 'transparent',
-                      color: filtroPeriodo === p ? 'var(--green-dark)' : 'var(--text-muted)',
-                      fontSize: 11,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      fontFamily: 'var(--font)',
-                    }}
-                  >
+                  <button key={p} onClick={() => setFiltroPeriodo(p)} style={{
+                    padding: '3px 10px', borderRadius: 20, border: '1.5px solid',
+                    borderColor: filtroPeriodo === p ? 'var(--green)' : 'var(--border)',
+                    background: filtroPeriodo === p ? 'var(--green-soft)' : 'transparent',
+                    color: filtroPeriodo === p ? 'var(--green-dark)' : 'var(--text-muted)',
+                    fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font)',
+                  }}>
                     {p === 'total' ? 'Histórico' : 'Últimos 3 meses'}
                   </button>
                 ))}
@@ -427,7 +821,6 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
               </span>
             </div>
           )}
-
           {local.certificado_pitstop && (
             <div className="certified-badge">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2.5" strokeLinecap="round">
@@ -438,8 +831,8 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           )}
         </div>
 
-        {/* Galeria de fotos */}
-        {todasFotos.length > 0 && (
+        {/* ── Galeria de fotos com clique para carrossel ── */}
+        {todasFotos.length > 0 && local.aprovado && (
           <div style={{ margin: '0 16px 4px', overflowX: 'auto' }}>
             <div style={{ display: 'flex', gap: 8 }}>
               {todasFotos.map((url, i) => (
@@ -447,23 +840,21 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                   key={i}
                   src={url}
                   alt={`Foto ${i + 1} de ${local.nome}`}
-                  onClick={() => setLightboxIndex(i)}
+                  onClick={() => { setCarouselIndex(i); setCarouselOpen(true) }}
                   style={{
-                    width: todasFotos.length === 1 ? '100%' : 200,
-                    height: 160,
-                    objectFit: 'cover',
-                    borderRadius: 14,
-                    flexShrink: 0,
-                    border: '1px solid var(--border)',
-                    cursor: 'pointer',
+                    width: todasFotos.length === 1 ? '100%' : 200, height: 160,
+                    objectFit: 'cover', borderRadius: 14, flexShrink: 0,
+                    border: '1px solid var(--border)', cursor: 'pointer',
+                    transition: 'opacity 0.15s',
                   }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* Médias de avaliação */}
         {totalRatings > 0 && (
           <div style={{ margin: '0 16px 4px' }}>
             <div className="card" style={{ padding: 16 }}>
@@ -476,7 +867,6 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           </div>
         )}
 
-        {/* Comodidades */}
         {(() => {
           const hasAnyAmenity = AMENIDADES.some(a => !!local[a.key as keyof Local])
           return (
@@ -489,10 +879,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                     return (
                       <div key={a.key} className={`amenity-chip${has ? ' has' : ''}`}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          {has
-                            ? <><circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/></>
-                            : <><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></>
-                          }
+                          {has ? <><circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/></> : <><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></>}
                         </svg>
                         {a.label}
                         {has && <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600 }}>✓</span>}
@@ -501,22 +888,15 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                   })}
                 </div>
               ) : (
-                /* Nenhuma amenidade ainda — convite a avaliar */
                 <div style={{ margin: '0 16px', background: 'var(--green-soft)', border: '1.5px solid var(--green-light)', borderRadius: 16, padding: '20px 16px', textAlign: 'center' }}>
                   <div style={{ fontSize: 28, marginBottom: 8 }}>✨</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
-                    Seja o primeiro a avaliar
-                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>Seja o primeiro a avaliar</div>
                   <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 16 }}>
                     Ainda não temos informações sobre as comodidades deste local. Faça seu check-in e ajude outras famílias!
                   </div>
                   {!done && (
-                    <button
-                      className="btn-primary"
-                      onClick={startCheckinFlow}
-                      disabled={checkinDone && flowStep === 0}
-                      style={{ opacity: (checkinDone && flowStep === 0) ? 0.7 : 1, maxWidth: 260, margin: '0 auto' }}
-                    >
+                    <button className="btn-primary" onClick={startCheckinFlow} disabled={checkinDone && flowStep === 0}
+                      style={{ opacity: (checkinDone && flowStep === 0) ? 0.7 : 1, maxWidth: 260, margin: '0 auto' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                         <circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/>
                       </svg>
@@ -529,7 +909,6 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           )
         })()}
 
-        {/* Botão Check-in + Avaliar (quando já há amenidades) */}
         {AMENIDADES.some(a => !!local[a.key as keyof Local]) && (
           <div style={{ padding: '16px 16px 0' }}>
             {done ? (
@@ -537,12 +916,8 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                 ❤️ Avaliação enviada! Obrigado pela contribuição.
               </div>
             ) : (
-              <button
-                className="btn-primary"
-                onClick={startCheckinFlow}
-                disabled={checkinDone && flowStep === 0}
-                style={{ opacity: (checkinDone && flowStep === 0) ? 0.7 : 1 }}
-              >
+              <button className="btn-primary" onClick={startCheckinFlow} disabled={checkinDone && flowStep === 0}
+                style={{ opacity: (checkinDone && flowStep === 0) ? 0.7 : 1 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                   <circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/>
                 </svg>
@@ -552,7 +927,6 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           </div>
         )}
 
-        {/* Direções */}
         <div className="action-row">
           <button className="btn-outline" onClick={openMaps}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -562,23 +936,15 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           </button>
         </div>
 
-        {/* Check-ins */}
-        <div className="section-title">Check-ins da comunidade</div>
         <div style={{ padding: '0 16px 16px' }}>
-          <div className="card" style={{ padding: 16, color: 'var(--text-muted)', fontSize: 14, textAlign: 'center' }}>
-            {checkinCount > 0
-              ? `${checkinCount} check-ins confirmados`
-              : 'Nenhum check-in ainda. Seja o primeiro!'
-            }
-          </div>
-        </div>
-
-        <div style={{ padding: '0 16px 28px', textAlign: 'center' }}>
           <button
-            onClick={() => setReportStep(1)}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', textDecoration: 'underline', textUnderlineOffset: 3 }}
+            onClick={() => setReportOpen(true)}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--font)', padding: 0 }}
           >
-            Reportar problema ou solicitar remoção do estabelecimento
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Algo deu errado? Reportar problema
           </button>
         </div>
       </div>
@@ -588,15 +954,12 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }}>
           <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '92vh', overflowY: 'auto', padding: '20px 20px 40px' }}>
             <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 16px' }} />
-
-            {/* Indicador de etapa */}
             <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
               {[1,2,3,4].map(s => (
                 <div key={s} style={{ flex: 1, height: 3, borderRadius: 2, background: s <= flowStep ? 'var(--green)' : 'var(--border)', transition: 'background 0.2s' }} />
               ))}
             </div>
 
-            {/* Etapa 1: Experiência geral (1-10) + Limpeza/Atendimento/Instalações (carinhas 1-5) */}
             {flowStep === 1 && (
               <>
                 <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Como foi sua experiência?</div>
@@ -606,95 +969,63 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                 <SmilePicker label="Limpeza" value={rLimpeza} onChange={setRLimpeza} />
                 <SmilePicker label="Atendimento" value={rAtendimento} onChange={setRAtendimento} />
                 <SmilePicker label="Instalações" value={rInstalacoes} onChange={setRInstalacoes} />
-                <button
-                  className="btn-primary"
-                  style={{ marginTop: 8 }}
+                <button className="btn-primary" style={{ marginTop: 8 }}
                   disabled={!rExperiencia || !rLimpeza || !rAtendimento || !rInstalacoes}
-                  onClick={() => setFlowStep(2)}
-                >
-                  Próximo
-                </button>
+                  onClick={() => setFlowStep(2)}>Próximo</button>
                 <button className="btn-secondary" onClick={() => setFlowStep(0)}>Cancelar</button>
               </>
             )}
 
-            {/* Etapa 2: Fotos */}
             {flowStep === 2 && (
               <>
                 <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Adicionar fotos</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
-                  Fotos do estabelecimento ajudam outras famílias.
-                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Fotos do estabelecimento ajudam outras famílias.</div>
                 <div style={{ fontSize: 12, color: '#e05b4e', background: '#fff1f0', border: '1px solid #fecaca', borderRadius: 10, padding: '8px 12px', marginBottom: 16 }}>
                   ⚠️ São permitidas apenas fotos do espaço físico. Imagens com pessoas serão removidas automaticamente.
                 </div>
-
                 {fotoURLs.length > 0 && (
                   <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
                     {fotoURLs.map((url, i) => (
                       <div key={i} style={{ position: 'relative' }}>
                         <img src={url} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 10, border: '1.5px solid var(--border)' }} />
-                        <button
-                          onClick={() => {
-                            setFotos(p => p.filter((_, j) => j !== i))
-                            setFotoURLs(p => p.filter((_, j) => j !== i))
-                          }}
-                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ef4444', border: 'none', color: 'white', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >×</button>
+                        <button onClick={() => { setFotos(p => p.filter((_, j) => j !== i)); setFotoURLs(p => p.filter((_, j) => j !== i)) }}
+                          style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#ef4444', border: 'none', color: 'white', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                       </div>
                     ))}
                   </div>
                 )}
-
                 {fotos.length < 5 && (
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', border: '1.5px dashed var(--border)', borderRadius: 12, cursor: 'pointer', marginBottom: 16 }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-                      <polyline points="21 15 16 10 5 21"/>
+                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                     </svg>
                     <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>Adicionar fotos ({fotos.length}/5)</span>
                     <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleFotoSelect} />
                   </label>
                 )}
-
-                <button className="btn-primary" onClick={() => setFlowStep(3)}>
-                  {fotos.length > 0 ? 'Próximo' : 'Pular'}
-                </button>
+                <button className="btn-primary" onClick={() => setFlowStep(3)}>{fotos.length > 0 ? 'Próximo' : 'Pular'}</button>
                 <button className="btn-secondary" onClick={() => setFlowStep(1)}>Voltar</button>
               </>
             )}
 
-            {/* Etapa 3: Comentário */}
             {flowStep === 3 && (
               <>
                 <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Deixar um comentário</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
-                  Opcional. Sua avaliação escrita será revisada antes de ser publicada.
-                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Opcional. Sua avaliação escrita será revisada antes de ser publicada.</div>
                 <div style={{ fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', marginBottom: 14 }}>
                   ℹ️ Comentários passam por moderação e não são publicados imediatamente.
                 </div>
-                <textarea
-                  className="review-textarea"
-                  placeholder="Como foi a experiência? Dicas para outras famílias..."
-                  value={comment}
-                  onChange={e => setComment(e.target.value)}
-                  style={{ minHeight: 100 }}
-                />
-                <button className="btn-primary" style={{ marginTop: 12 }} onClick={() => setFlowStep(4)}>
-                  Próximo
-                </button>
+                <textarea className="review-textarea" placeholder="Como foi a experiência? Dicas para outras famílias..."
+                  value={comment} onChange={e => setComment(e.target.value)} style={{ minHeight: 100 }} />
+                <button className="btn-primary" style={{ marginTop: 12 }} onClick={() => setFlowStep(4)}>Próximo</button>
                 <button className="btn-secondary" onClick={() => setFlowStep(2)}>Voltar</button>
               </>
             )}
 
-            {/* Etapa 4: Confirmar amenidades */}
             {flowStep === 4 && (
               <>
                 <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Confirmar comodidades</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-                  Marque as comodidades que você encontrou disponíveis
-                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Marque as comodidades que você encontrou disponíveis</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                   {AMENIDADES.map(a => (
                     <label key={a.key} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
@@ -704,9 +1035,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                         border: amenReportadas[a.key] ? '2px solid var(--green)' : '2px solid var(--border)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         transition: 'all 0.15s', flexShrink: 0,
-                      }}
-                        onClick={() => setAmenReportadas(p => ({ ...p, [a.key]: !p[a.key] }))}
-                      >
+                      }} onClick={() => setAmenReportadas(p => ({ ...p, [a.key]: !p[a.key] }))}>
                         {amenReportadas[a.key] && (
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
                             <polyline points="20 6 9 17 4 12"/>
@@ -717,12 +1046,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                     </label>
                   ))}
                 </div>
-
-                <button
-                  className="btn-primary"
-                  onClick={sendReview}
-                  disabled={sending}
-                >
+                <button className="btn-primary" onClick={sendReview} disabled={sending}>
                   {sending ? 'Enviando...' : 'Enviar avaliação'}
                 </button>
                 <button className="btn-secondary" onClick={() => setFlowStep(3)}>Voltar</button>
@@ -732,200 +1056,94 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {/* ── Lightbox de fotos ── */}
-      {lightboxIndex !== null && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.93)', zIndex: 2000, display: 'flex', flexDirection: 'column' }}
-          onClick={() => setLightboxIndex(null)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-            <button
-              onClick={() => setLightboxIndex(null)}
-              style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: '50%', width: 38, height: 38, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                <polyline points="15 18 9 12 15 6"/>
-              </svg>
-            </button>
-            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{lightboxIndex + 1} / {todasFotos.length}</span>
-            <div style={{ width: 38 }} />
-          </div>
-
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px' }} onClick={e => e.stopPropagation()}>
-            <img
-              src={todasFotos[lightboxIndex]}
-              alt={`Foto ${lightboxIndex + 1}`}
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 10 }}
-            />
-          </div>
-
-          {todasFotos.length > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 20px 36px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-              <button
-                onClick={() => setLightboxIndex(i => i! > 0 ? i! - 1 : todasFotos.length - 1)}
-                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 50, padding: '10px 22px', cursor: 'pointer', fontSize: 13, fontFamily: 'var(--font)' }}
-              >← Anterior</button>
-              <button
-                onClick={() => setLightboxIndex(i => i! < todasFotos.length - 1 ? i! + 1 : 0)}
-                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 50, padding: '10px 22px', cursor: 'pointer', fontSize: 13, fontFamily: 'var(--font)' }}
-              >Próxima →</button>
-            </div>
-          )}
-        </div>
+      {/* ── Lightbox / Carrossel de fotos ── */}
+      {carouselOpen && todasFotos.length > 0 && (
+        <PhotoCarousel
+          fotos={todasFotos}
+          startIndex={carouselIndex}
+          onClose={() => setCarouselOpen(false)}
+        />
       )}
 
-      {/* ── Modal de denúncia / remoção ── */}
-      {reportStep > 0 && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1500, display: 'flex', alignItems: 'flex-end' }}>
-          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '20px 20px 40px' }}>
-            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
+      {/* ── Modal de reporte ── */}
+      {reportOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }}
+          onClick={closeReport}>
+          <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '20px 20px 48px' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 16px' }} />
 
-            {/* Step 1: Você é o responsável? */}
-            {reportStep === 1 && (
+            {reportDone ? (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>💚</div>
+                <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Muito obrigado!</div>
+                <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 24 }}>
+                  Muito obrigado por ajudar essa comunidade! Sua mensagem foi recebida e nossa equipe vai verificar as informações em breve.
+                </div>
+                <button className="btn-primary" onClick={closeReport}>Fechar</button>
+              </div>
+            ) : (
               <>
-                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Você é responsável por este estabelecimento?</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.5 }}>
-                  Isso nos ajuda a entender o tipo de solicitação e direcionar sua mensagem corretamente.
-                </div>
-                <button
-                  onClick={() => { setReportEhResponsavel(true); setReportMotivo('remover'); setReportStep(2) }}
-                  style={{ width: '100%', padding: '14px 16px', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 14, marginBottom: 10, cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font)' }}
-                >
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>✅ Sim, sou o responsável</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Quero solicitar alterações ou a remoção do estabelecimento</div>
-                </button>
-                <button
-                  onClick={() => { setReportEhResponsavel(false); setReportMotivo(''); setReportStep(2) }}
-                  style={{ width: '100%', padding: '14px 16px', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 14, marginBottom: 20, cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font)' }}
-                >
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>👤 Não, sou um visitante</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Quero reportar um problema ou informação incorreta</div>
-                </button>
-                <button onClick={() => setReportStep(0)} style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)' }}>
-                  Cancelar
-                </button>
-              </>
-            )}
+                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Reportar problema</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Nos ajude a manter as informações corretas e a comunidade segura.</div>
 
-            {/* Step 2: Formulário */}
-            {reportStep === 2 && (
-              <>
-                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Nos conta o que está acontecendo</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Suas informações são tratadas com sigilo.</div>
-
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>Seu nome *</label>
-                  <input
-                    value={reportNome}
-                    onChange={e => setReportNome(e.target.value)}
-                    placeholder="Como podemos te chamar?"
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', color: 'var(--text)', boxSizing: 'border-box' }}
-                  />
+                {/* Tipo */}
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Qual é o problema?</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+                  {[
+                    { value: 'sou_proprietario', label: '🏠 Sou o proprietário — quero remover ou editar este local' },
+                    { value: 'informacao_errada', label: '✏️ Informação incorreta (endereço, nome, comodidades)' },
+                    { value: 'local_fechado',     label: '🔒 Este local está fechado ou não existe mais' },
+                    { value: 'foto_inadequada',   label: '🚫 Foto imprópria ou com pessoas' },
+                    { value: 'outro',             label: '💬 Outro motivo' },
+                  ].map(op => (
+                    <label key={op.value} style={{
+                      display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
+                      padding: '12px 14px', borderRadius: 14,
+                      border: reportTipo === op.value ? '2px solid var(--green)' : '1.5px solid var(--border)',
+                      background: reportTipo === op.value ? 'var(--green-soft)' : 'var(--bg)',
+                      transition: 'all 0.15s',
+                    }} onClick={() => setReportTipo(op.value)}>
+                      <div style={{
+                        width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                        border: reportTipo === op.value ? '2px solid var(--green)' : '2px solid var(--border)',
+                        background: reportTipo === op.value ? 'var(--green)' : 'transparent',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        {reportTipo === op.value && <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'white' }} />}
+                      </div>
+                      <span style={{ fontSize: 13, lineHeight: 1.4 }}>{op.label}</span>
+                    </label>
+                  ))}
                 </div>
 
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>Contato (e-mail ou WhatsApp) *</label>
-                  <input
-                    value={reportContato}
-                    onChange={e => setReportContato(e.target.value)}
-                    placeholder="Para entrarmos em contato, se necessário"
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', color: 'var(--text)', boxSizing: 'border-box' }}
-                  />
-                </div>
+                {/* Mensagem */}
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Detalhes <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(opcional)</span></div>
+                <textarea
+                  className="review-textarea"
+                  placeholder="Descreva o problema com mais detalhes..."
+                  value={reportMensagem}
+                  onChange={e => setReportMensagem(e.target.value)}
+                  style={{ minHeight: 80, marginBottom: 14 }}
+                />
 
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>Motivo *</label>
-                  <select
-                    value={reportMotivo}
-                    onChange={e => setReportMotivo(e.target.value)}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', color: 'var(--text)', boxSizing: 'border-box' }}
-                  >
-                    <option value="">Selecione um motivo</option>
-                    <option value="remover">Solicitar remoção do estabelecimento</option>
-                    <option value="info_incorreta">Informação incorreta</option>
-                    <option value="outro">Outro</option>
-                  </select>
-                </div>
+                {/* Contato */}
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Seu contato <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(opcional, para retorno)</span></div>
+                <input
+                  type="text" placeholder="Nome"
+                  value={reportNome} onChange={e => setReportNome(e.target.value)}
+                  style={{ width: '100%', padding: '11px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', marginBottom: 8, boxSizing: 'border-box' }}
+                />
+                <input
+                  type="email" placeholder="E-mail"
+                  value={reportEmail} onChange={e => setReportEmail(e.target.value)}
+                  style={{ width: '100%', padding: '11px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', marginBottom: 18, boxSizing: 'border-box' }}
+                />
 
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 6 }}>Mensagem</label>
-                  <textarea
-                    value={reportMsg}
-                    onChange={e => setReportMsg(e.target.value)}
-                    placeholder="Descreva o problema com mais detalhes..."
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', color: 'var(--text)', boxSizing: 'border-box', minHeight: 90, resize: 'vertical' }}
-                  />
-                </div>
-
-                <button
-                  onClick={() => setReportStep(3)}
-                  disabled={!reportNome || !reportContato || !reportMotivo}
-                  style={{ width: '100%', padding: '14px', background: (!reportNome || !reportContato || !reportMotivo) ? 'var(--border)' : 'var(--green)', color: (!reportNome || !reportContato || !reportMotivo) ? 'var(--text-muted)' : 'white', border: 'none', borderRadius: 50, fontSize: 15, fontWeight: 700, cursor: (!reportNome || !reportContato || !reportMotivo) ? 'not-allowed' : 'pointer', fontFamily: 'var(--font)', marginBottom: 10 }}
-                >
-                  Revisar e enviar
+                <button className="btn-primary" onClick={sendReport} disabled={!reportTipo || reportSending}>
+                  {reportSending ? 'Enviando...' : 'Enviar reporte'}
                 </button>
-                <button onClick={() => setReportStep(1)} style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)' }}>
-                  Voltar
-                </button>
-              </>
-            )}
-
-            {/* Step 3: Confirmação */}
-            {reportStep === 3 && (
-              <>
-                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>Tudo certo para enviar?</div>
-                <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>Nome</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>{reportNome}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>Contato</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>{reportContato}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>Motivo</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: reportMsg ? 12 : 0 }}>
-                    {reportMotivo === 'remover' ? 'Solicitar remoção' : reportMotivo === 'info_incorreta' ? 'Informação incorreta' : 'Outro'}
-                  </div>
-                  {reportMsg && (
-                    <>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>Mensagem</div>
-                      <div style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5 }}>{reportMsg}</div>
-                    </>
-                  )}
-                </div>
-                <button
-                  onClick={sendReport}
-                  disabled={reportSending}
-                  style={{ width: '100%', padding: '14px', background: 'var(--green)', color: 'white', border: 'none', borderRadius: 50, fontSize: 15, fontWeight: 700, cursor: reportSending ? 'not-allowed' : 'pointer', fontFamily: 'var(--font)', marginBottom: 10, opacity: reportSending ? 0.7 : 1 }}
-                >
-                  {reportSending ? 'Enviando...' : 'Confirmar e enviar'}
-                </button>
-                <button onClick={() => setReportStep(2)} style={{ width: '100%', padding: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)' }}>
-                  Voltar
-                </button>
-              </>
-            )}
-
-            {/* Step 4: Sucesso */}
-            {reportStep === 4 && (
-              <>
-                <div style={{ textAlign: 'center', padding: '20px 0 24px' }}>
-                  <div style={{ fontSize: 52, marginBottom: 16 }}>
-                    {reportMotivo === 'remover' ? '🥺' : '💚'}
-                  </div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 12 }}>
-                    {reportMotivo === 'remover' ? 'Recebemos seu pedido' : 'Muito obrigado!'}
-                  </div>
-                  <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.65 }}>
-                    {reportMotivo === 'remover'
-                      ? 'É uma pena ver que você prefere sair do nosso ninho... Entraremos em contato pelo seu e-mail ou WhatsApp em até 72 horas para confirmar a remoção.'
-                      : 'Muito obrigado por ajudar essa comunidade! Sua mensagem foi recebida e nossa equipe vai verificar as informações em breve.'
-                    }
-                  </div>
-                </div>
-                <button
-                  onClick={() => { setReportStep(0); setReportNome(''); setReportContato(''); setReportMotivo(''); setReportMsg(''); setReportDone(false) }}
-                  style={{ width: '100%', padding: '14px', background: 'var(--green)', color: 'white', border: 'none', borderRadius: 50, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font)' }}
-                >
-                  Fechar
-                </button>
+                <button className="btn-secondary" onClick={closeReport}>Cancelar</button>
               </>
             )}
           </div>
