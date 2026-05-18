@@ -136,6 +136,7 @@ export default function PerfilPage() {
 
   // ── Perfil profissional ──────────────────────────────────────────────────────
   const [profissional, setProfissional] = useState<any | null>(null)
+  const [profLocalId, setProfLocalId] = useState<string | null>(null) // ID na tabela locais (para o link)
   const [showEditProfissional, setShowEditProfissional] = useState(false)
   const [editProf, setEditProf] = useState<any>({})
   const [savingProf, setSavingProf] = useState(false)
@@ -197,10 +198,21 @@ export default function PerfilPage() {
             nome_negocio: profData.nome_negocio || '',
             resumo: profData.resumo || '',
             whatsapp: profData.whatsapp || '',
+            telefone: profData.telefone || '',
             instagram: profData.instagram || '',
             facebook: profData.facebook || '',
             site: profData.site || '',
+            servicos: (profData.servicos || []).join(', '),
+            outros_servicos: profData.outros_servicos || '',
           })
+          // Busca o ID na tabela locais para o link "Ver meu perfil"
+          const { data: locaisEntry } = await supabase
+            .from('locais')
+            .select('id')
+            .eq('profissional_id', user.id)
+            .eq('is_servico', true)
+            .maybeSingle()
+          if (locaisEntry) setProfLocalId(locaisEntry.id)
         }
       } else {
         setProfile({ display_name: null, username: null, avatar_url: null, plano: 'gratis', role: null, cidade: null, idade: null })
@@ -341,12 +353,23 @@ export default function PerfilPage() {
     if (!profissional) return
     setSavingProf(true)
     try {
+      // Converte servicos de string (separada por vírgula) para array
+      const servicosArray = (editProf.servicos || '')
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+
+      const changes = {
+        ...editProf,
+        servicos: servicosArray,
+      }
+
       await supabase.from('profissionais').update({
-        pending_changes: editProf,
+        pending_changes: changes,
         pending_since: new Date().toISOString(),
         status_aprovacao: 'edicao_pendente',
       }).eq('id', profissional.id)
-      setProfissional((p: any) => ({ ...p, pending_changes: editProf, status_aprovacao: 'edicao_pendente' }))
+      setProfissional((p: any) => ({ ...p, pending_changes: changes, status_aprovacao: 'edicao_pendente' }))
       setProfSaved(true)
       setTimeout(() => { setShowEditProfissional(false); setProfSaved(false) }, 1800)
     } finally {
@@ -761,6 +784,95 @@ export default function PerfilPage() {
           </div>
         )}
 
+        {/* ── Meu Negócio (só para profissionais com cadastro) ── */}
+        {isLoggedIn && profissional && (() => {
+          const st = profissional.status_aprovacao
+          const isAprovado = st === 'aprovado' && profissional.ativo
+          const isPending = st === 'edicao_pendente' || (!!profissional.pending_changes && !isAprovado)
+          const isRejeitado = st === 'rejeitado'
+          const isAguardando = !isAprovado && !isPending && !isRejeitado
+
+          return (
+            <div style={{ margin: '0 16px 12px' }}>
+              <div style={{ borderRadius: 16, border: '1.5px solid #c4b5fd', overflow: 'hidden' }}>
+
+                {/* Header gradiente */}
+                <div style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', padding: '16px 16px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', border: '1.5px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                      {profissional.foto_perfil
+                        ? <img src={profissional.foto_perfil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: 22 }}>👩‍⚕️</span>}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 600, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Meu Negócio</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {profissional.nome_negocio || profissional.nome}
+                      </div>
+                      {(profissional.servicos || []).length > 0 && (
+                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 2 }}>
+                          {(profissional.servicos || []).slice(0, 2).join(' · ')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Badge de status */}
+                  {isAprovado && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#d1fae5', color: '#059669', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Ativo no app
+                    </div>
+                  )}
+                  {isAguardando && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#fef3c7', color: '#92400e', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
+                      ⏳ Aguardando aprovação (até 3 dias úteis)
+                    </div>
+                  )}
+                  {isPending && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#e0f2fe', color: '#0369a1', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
+                      📝 Edição em análise
+                    </div>
+                  )}
+                  {isRejeitado && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#fee2e2', color: '#dc2626', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
+                      ✗ Não aprovado — entre em contato
+                    </div>
+                  )}
+                </div>
+
+                {/* Botões de ação */}
+                <div style={{ display: 'flex', background: 'white', borderTop: '1px solid #e9d5ff' }}>
+                  <button
+                    onClick={() => setShowEditProfissional(true)}
+                    style={{ flex: 1, padding: '13px', background: 'none', border: 'none', fontSize: 13, fontWeight: 600, color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font)' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Editar perfil
+                  </button>
+                  {isAprovado && profLocalId && (
+                    <>
+                      <div style={{ width: 1, background: '#e9d5ff' }} />
+                      <a
+                        href={`/local/${profLocalId}`}
+                        style={{ flex: 1, padding: '13px', background: 'none', border: 'none', fontSize: 13, fontWeight: 600, color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none' }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Ver como clientes veem
+                      </a>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Menu */}
         <div className="card" style={{ margin: '0 16px 12px', overflow: 'hidden' }}>
           <Link href="/meus-locais" className="menu-item">
@@ -828,70 +940,9 @@ export default function PerfilPage() {
           )}
         </div>
 
-        {/* ── Card do profissional cadastrado ── */}
-        {profissional && (() => {
-          const st = profissional.status_aprovacao
-          const hasPending = !!profissional.pending_changes
-          const statusInfo = st === 'aprovado' && profissional.ativo
-            ? { label: 'Ativo no app', color: '#059669', bg: '#d1fae5', icon: '✓' }
-            : hasPending || st === 'edicao_pendente'
-            ? { label: 'Edição em análise', color: '#0369a1', bg: '#e0f2fe', icon: '📝' }
-            : st === 'rejeitado'
-            ? { label: 'Não aprovado — entre em contato', color: '#dc2626', bg: '#fee2e2', icon: '✗' }
-            : { label: 'Aguardando aprovação (até 3 dias úteis)', color: '#92400e', bg: '#fef3c7', icon: '⏳' }
 
-          return (
-            <div style={{ margin: '0 16px 12px', borderRadius: 16, border: '1.5px solid #c4b5fd', overflow: 'hidden' }}>
-              {/* Header */}
-              <div style={{ background: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%)', padding: '14px 16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 12, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(124,58,237,0.15)' }}>
-                    {profissional.foto_perfil
-                      ? <img src={profissional.foto_perfil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }} />
-                      : <span style={{ fontSize: 20 }}>👩‍⚕️</span>}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#5b21b6', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {profissional.nome_negocio || profissional.nome}
-                    </div>
-                    <div style={{ fontSize: 12, color: '#7c3aed' }}>
-                      {(profissional.servicos || []).slice(0, 2).join(' · ') || 'Profissional'}
-                    </div>
-                  </div>
-                </div>
-                {/* Badge de status */}
-                <div style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 5, background: statusInfo.bg, color: statusInfo.color, fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>
-                  <span>{statusInfo.icon}</span> {statusInfo.label}
-                </div>
-              </div>
-              {/* Botões */}
-              <div style={{ display: 'flex', borderTop: '1px solid #e9d5ff' }}>
-                <button
-                  onClick={() => setShowEditProfissional(true)}
-                  style={{ flex: 1, padding: '12px', background: 'white', border: 'none', fontSize: 13, fontWeight: 600, color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font)' }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  Editar informações
-                </button>
-                {profissional.ativo && (
-                  <>
-                    <div style={{ width: 1, background: '#e9d5ff' }} />
-                    <a
-                      href={`/local/${profissional.id}`}
-                      style={{ flex: 1, padding: '12px', background: 'white', border: 'none', fontSize: 13, fontWeight: 600, color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none' }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/></svg>
-                      Ver meu perfil
-                    </a>
-                  </>
-                )}
-              </div>
-            </div>
-          )
-        })()}
-
-        {/* Anuncie seu serviço — só aparece se não for profissional */}
-        {!profissional && <div
+        {/* Anuncie seu serviço — aparece sempre (usuário pode ter múltiplos negócios) */}
+        {isLoggedIn && <div
           onClick={() => setShowAnuncio(true)}
           style={{ margin: '0 16px 12px', padding: '16px', background: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%)', borderRadius: 16, border: '1.5px solid #c4b5fd', cursor: 'pointer' }}
         >
@@ -930,12 +981,14 @@ export default function PerfilPage() {
                   ℹ️ As alterações ficam em análise por até 3 dias úteis antes de aparecerem no app.
                 </div>
 
+                {/* Campos de texto básicos */}
                 {[
-                  { label: 'Nome do negócio', key: 'nome_negocio', placeholder: 'Ex: Dra. Ana Silva — Doula' },
+                  { label: 'Nome do negócio / profissional', key: 'nome_negocio', placeholder: 'Ex: Dra. Ana Silva — Doula' },
                   { label: 'WhatsApp', key: 'whatsapp', placeholder: 'Ex: 11999999999' },
+                  { label: 'Telefone', key: 'telefone', placeholder: 'Ex: 1133334444' },
                   { label: 'Instagram', key: 'instagram', placeholder: '@seuperfil' },
                   { label: 'Facebook', key: 'facebook', placeholder: 'facebook.com/seuperfil' },
-                  { label: 'Site', key: 'site', placeholder: 'https://seusite.com.br' },
+                  { label: 'Site / Website', key: 'site', placeholder: 'https://seusite.com.br' },
                 ].map(({ label, key, placeholder }) => (
                   <div key={key} style={{ marginBottom: 14 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{label}</div>
@@ -949,14 +1002,38 @@ export default function PerfilPage() {
                   </div>
                 ))}
 
-                <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>Bio / Resumo</div>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Descrição / Bio</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Fale sobre sua formação, experiência e como pode ajudar as famílias.</div>
                   <textarea
                     value={editProf.resumo || ''}
                     onChange={e => setEditProf((p: any) => ({ ...p, resumo: e.target.value }))}
-                    placeholder="Fale sobre sua formação, especialidades e como você pode ajudar as famílias..."
+                    placeholder="Ex: Doula certificada pela DONA, 8 anos de experiência..."
                     className="review-textarea"
-                    style={{ minHeight: 100 }}
+                    style={{ minHeight: 90 }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Serviços oferecidos</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Separe por vírgula. Ex: Parto humanizado, Amamentação, Cuidados com o recém-nascido</div>
+                  <textarea
+                    value={editProf.servicos || ''}
+                    onChange={e => setEditProf((p: any) => ({ ...p, servicos: e.target.value }))}
+                    placeholder="Parto humanizado, Amamentação, Pós-parto..."
+                    className="review-textarea"
+                    style={{ minHeight: 70 }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Outros serviços / observações</div>
+                  <input
+                    type="text"
+                    value={editProf.outros_servicos || ''}
+                    onChange={e => setEditProf((p: any) => ({ ...p, outros_servicos: e.target.value }))}
+                    placeholder="Qualquer informação adicional..."
+                    style={{ width: '100%', padding: '11px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg)', fontSize: 14, fontFamily: 'var(--font)', boxSizing: 'border-box' }}
                   />
                 </div>
 
