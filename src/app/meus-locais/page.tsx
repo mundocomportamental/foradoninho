@@ -41,10 +41,43 @@ export default function MeusLocaisPage() {
         return
       }
       setAuthState('logged')
+
       try {
         setRecentes(JSON.parse(localStorage.getItem('recentes') || '[]'))
-        setFavoritos(JSON.parse(localStorage.getItem('favoritos') || '[]'))
-      } catch {}
+
+        // ── Favoritos: combina localStorage (estabelecimentos) + Supabase curtidas (profissionais) ──
+        const localFavs: Local[] = JSON.parse(localStorage.getItem('favoritos') || '[]')
+
+        // Busca curtidas do usuário no banco (fonte de verdade para profissionais)
+        const { data: curtidas } = await supabase
+          .from('curtidas')
+          .select('local_id')
+          .eq('user_id', user.id)
+
+        if (curtidas && curtidas.length > 0) {
+          const ids = curtidas.map((c: any) => c.local_id)
+          const { data: curtidaLocais } = await supabase
+            .from('locais')
+            .select('*')
+            .in('id', ids)
+
+          if (curtidaLocais && curtidaLocais.length > 0) {
+            // Merge: profissionais do DB + estabelecimentos do localStorage que não estão no DB
+            const dbIds = new Set(curtidaLocais.map((l: any) => l.id))
+            const localOnlyFavs = localFavs.filter(f => !dbIds.has(f.id))
+            const merged = [...curtidaLocais as Local[], ...localOnlyFavs]
+            setFavoritos(merged)
+            // Mantém localStorage sincronizado
+            localStorage.setItem('favoritos', JSON.stringify(merged))
+            return
+          }
+        }
+
+        // Sem curtidas no banco — usa só o localStorage
+        setFavoritos(localFavs)
+      } catch {
+        setFavoritos([])
+      }
     }
     checkAuth()
   }, [supabase, router])
@@ -175,7 +208,7 @@ export default function MeusLocaisPage() {
                 </svg>
               </div>
               <div className="empty-title">Nenhum favorito salvo</div>
-              <div className="empty-desc">Toque no ♡ em um local para salvá-lo aqui.</div>
+              <div className="empty-desc">Toque no ♡ em um local ou profissional para salvá-lo aqui.</div>
               <Link href="/mapa" className="empty-link">Explorar o mapa</Link>
             </div>
           ) : (
@@ -183,10 +216,14 @@ export default function MeusLocaisPage() {
               {favoritos.map((local) => (
                 <div key={local.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <Link href={`/local/${local.id}`} className="recent-item" style={{ flex: 1 }}>
-                    <div className="recent-icon-box">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#4caf85" stroke="#4caf85" strokeWidth="1.5" strokeLinecap="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                      </svg>
+                    <div className="recent-icon-box" style={local.is_servico ? { background: '#ede9fe' } : {}}>
+                      {local.is_servico ? (
+                        <span style={{ fontSize: 16 }}>👶</span>
+                      ) : (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#4caf85" stroke="#4caf85" strokeWidth="1.5" strokeLinecap="round">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                      )}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -196,9 +233,17 @@ export default function MeusLocaisPage() {
                         {local.cidade}, {local.estado}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 13 }}>
-                      <span style={{ color: '#f5a623' }}>★</span>
-                      <span style={{ fontWeight: 600, color: 'var(--text)' }}>{Number(local.rating).toFixed(1)}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 13, flexShrink: 0 }}>
+                      {local.is_servico ? (
+                        <span style={{ fontSize: 11, color: '#7c3aed', background: '#ede9fe', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>
+                          Profissional
+                        </span>
+                      ) : (
+                        <>
+                          <span style={{ color: '#f5a623' }}>★</span>
+                          <span style={{ fontWeight: 600, color: 'var(--text)' }}>{Number(local.rating).toFixed(1)}</span>
+                        </>
+                      )}
                     </div>
                   </Link>
                   <button
