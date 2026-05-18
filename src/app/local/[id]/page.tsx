@@ -299,6 +299,16 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           setUserCurtiu(true)
           setCurtidaId(myCurtida.id)
           setIsFav(true)
+          // Sync to localStorage so Meus Locais > Favoritos reflects this curtida
+          // even if user navigates there from a fresh session
+          if (localData) {
+            try {
+              const favs = JSON.parse(localStorage.getItem('favoritos') || '[]')
+              if (!favs.some((f: any) => f.id === id)) {
+                localStorage.setItem('favoritos', JSON.stringify([localData, ...favs]))
+              }
+            } catch {}
+          }
         }
       }
       if (localData) {
@@ -462,8 +472,11 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     if (curtidaLoading) return
     setCurtidaLoading(true)
     try {
-      if (userCurtiu && curtidaId) {
-        await supabase.from('curtidas').delete().eq('id', curtidaId)
+      if (userCurtiu) {
+        // Remove: delete by user_id + local_id (não depende de curtidaId)
+        await supabase.from('curtidas').delete()
+          .eq('local_id', id)
+          .eq('user_id', userId ?? '')
         setUserCurtiu(false)
         setCurtidaId(null)
         setCurtidasCount(c => Math.max(0, c - 1))
@@ -473,11 +486,11 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           localStorage.setItem('favoritos', JSON.stringify(favs.filter((f: any) => f.id !== id)))
         } catch {}
       } else if (userId) {
-        const { data } = await supabase
-          .from('curtidas').insert({ local_id: id, user_id: userId }).select('id').single()
-        if (data) {
+        // Insert sem .select() para evitar problema de RLS bloqueando SELECT após INSERT
+        const { error } = await supabase
+          .from('curtidas').insert({ local_id: id, user_id: userId })
+        if (!error) {
           setUserCurtiu(true)
-          setCurtidaId(data.id)
           setCurtidasCount(c => c + 1)
           setIsFav(true)
           if (local) {
