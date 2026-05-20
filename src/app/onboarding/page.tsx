@@ -162,7 +162,11 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
         }
       } else {
         if (!password) { setError('Crie uma senha'); return }
-        const { error } = await supabase.auth.signUp({ email, password })
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/mapa` },
+        })
         if (error) { setError(error.message); return }
         setMagicSent(true)
       }
@@ -186,9 +190,7 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '40px 24px 32px', overflowY: 'auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div style={{ width: 72, height: 72, background: 'var(--green-soft)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-          <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 52, height: 52, objectFit: 'contain' }} />
-        </div>
+        <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 88, height: 88, objectFit: 'contain', margin: '0 auto 14px', display: 'block' }} />
         <div style={{ fontSize: 22, fontWeight: 800 }}>Fora do Ninho</div>
         <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
           {mode === 'email' ? (isLogin ? 'Entrar na sua conta' : 'Criar conta gratuita') : 'Entre para salvar seus locais favoritos'}
@@ -243,25 +245,32 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
 
           {/* Termos e Privacidade */}
           <TermsBlock />
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginTop: 4 }}>
+          <label
+            onClick={() => setTermsAccepted(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginTop: 8,
+              background: termsAccepted ? 'rgba(26,171,171,0.08)' : 'rgba(26,171,171,0.04)',
+              border: termsAccepted ? '2px solid var(--green)' : '2px solid #33CCCC',
+              borderRadius: 12, padding: '12px 14px', transition: 'all 0.15s',
+            }}
+          >
             <div
-              onClick={() => setTermsAccepted(v => !v)}
               style={{
-                width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1,
-                background: termsAccepted ? 'var(--green)' : 'var(--bg)',
-                border: termsAccepted ? '2px solid var(--green)' : '2px solid var(--border)',
+                width: 24, height: 24, borderRadius: 7, flexShrink: 0,
+                background: termsAccepted ? 'var(--green)' : 'white',
+                border: termsAccepted ? '2px solid var(--green)' : '2.5px solid #33CCCC',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.15s',
               }}
             >
               {termsAccepted && (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               )}
             </div>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              Li e aceito os <strong style={{ color: 'var(--green-dark)' }}>Termos de Uso</strong> e a <strong style={{ color: 'var(--green-dark)' }}>Política de Privacidade</strong> do Fora do Ninho.
+            <span style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5, fontWeight: 500 }}>
+              Li e aceito os <strong style={{ color: 'var(--green-dark)' }}>Termos de Uso</strong> e a <strong style={{ color: 'var(--green-dark)' }}>Política de Privacidade</strong>
             </span>
           </label>
 
