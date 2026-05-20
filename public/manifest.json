@@ -1,5 +1,6 @@
 {
   "name": "Fora do Ninho",
+  "id": "/",
   "short_name": "Fora do Ninho",
   "description": "Encontre fraldários, microondas e locais baby-friendly em qualquer estrada do Brasil.",
   "start_url": "/mapa",
