@@ -190,7 +190,7 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '40px 24px 32px', overflowY: 'auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 88, height: 88, objectFit: 'contain', margin: '0 auto 14px', display: 'block' }} />
+        <img src="/icon-192.png" alt="Fora do Ninho" style={{ width: 88, height: 88, objectFit: 'contain', margin: '0 auto 14px', display: 'block', borderRadius: 20 }} />
         <div style={{ fontSize: 22, fontWeight: 800 }}>Fora do Ninho</div>
         <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
           {mode === 'email' ? (isLogin ? 'Entrar na sua conta' : 'Criar conta gratuita') : 'Entre para salvar seus locais favoritos'}
