@@ -397,7 +397,7 @@ export default function MapaPage() {
 
   const amenLabels = (l: Local) => {
     const items = []
-    if (l.fraldario) items.push('Fraldário')
+    if (l.fraldario) items.push('Fraldário/Trocador')
     if (l.espaco_familia) items.push('Espaço Família')
     if (l.espaco_kids) items.push('Área Kids')
     if (l.microondas) items.push('Microondas')
@@ -598,7 +598,7 @@ export default function MapaPage() {
 
               {(() => {
                 const all = [
-                  selectedLocal.fraldario && 'Fraldário',
+                  selectedLocal.fraldario && 'Fraldário/Trocador',
                   selectedLocal.espaco_familia && 'Espaço Família',
                   selectedLocal.espaco_kids && 'Área Kids',
                   selectedLocal.microondas && 'Microondas',

@@ -44,24 +44,18 @@ export interface Local {
 export const TIPO_LABELS: Record<string, string> = {
   posto: 'Posto',
   restaurante: 'Restaurante',
+  cafe: 'Café',
+  padaria: 'Padaria',
   hotel: 'Hotel',
   shopping: 'Shopping',
-  farmacia: 'Farmácia',
   lanchonete: 'Lanchonete',
   supermercado: 'Supermercado',
   parque: 'Parque',
   outro: 'Outro',
-  // Profissionais
-  consultora: 'Consultora de Amamentação',
-  doula: 'Doula',
-  pediatra: 'Pediatra',
-  fisioterapeuta: 'Fisioterapeuta',
-  fonoaudiologa: 'Fonoaudióloga',
-  psicologa: 'Psicóloga Infantil',
 }
 
 export const AMENIDADES = [
-  { key: 'fraldario', label: 'Fraldário', icon: '🧷' },
+  { key: 'fraldario', label: 'Fraldário/Trocador', icon: '🧷' },
   { key: 'espaco_familia', label: 'Espaço Família', icon: '👨‍👩‍👧' },
   { key: 'espaco_kids', label: 'Espaço Kids', icon: '🛝' },
   { key: 'microondas', label: 'Microondas', icon: '🥣' },
@@ -71,7 +65,7 @@ export const AMENIDADES = [
 ]
 
 export const FILTROS = [
-  { key: 'fraldario', label: 'Fraldário' },
+  { key: 'fraldario', label: 'Fraldário/Trocador' },
   { key: 'espaco_familia', label: 'Espaço Família' },
   { key: 'espaco_kids', label: 'Espaço Kids' },
   { key: 'microondas', label: 'Microondas' },

@@ -9,7 +9,7 @@ import AnuncieModal from '@/components/AnuncieModal'
 
 const FILTROS_ESTABELECIMENTOS = [
   { key: 'todos', label: 'Todos' },
-  { key: 'fraldario', label: '🧷 Fraldário' },
+  { key: 'fraldario', label: '🧷 Fraldário/Trocador' },
   { key: 'microondas', label: '🥣 Microondas' },
   { key: 'cadeirão', label: '🪑 Cadeirão' },
   { key: 'amamentacao', label: '🤱 Amamentação' },
