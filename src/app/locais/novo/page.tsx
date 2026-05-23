@@ -547,29 +547,6 @@ export default function NovoLocalPage() {
                 )}
               </div>
 
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
-                  <div
-                    onClick={() => setIsServico(!isServico)}
-                    style={{
-                      width: 22, height: 22, borderRadius: 6, marginTop: 2, flexShrink: 0,
-                      background: isServico ? '#7c3aed' : 'var(--bg)',
-                      border: isServico ? '2px solid #7c3aed' : '2px solid var(--border)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    {isServico && (
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                    )}
-                  </div>
-                  <span style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5 }}>
-                    👩‍⚕️ É um serviço profissional infantil (consultoria de amamentação, especialista em sono do bebê, pediatra, enfermeira obstétrica, doula, osteopata infantil, musicalização para bebês, narração de histórias...)
-                  </span>
-                </label>
-              </div>
-
               <button
                 className="btn-primary"
                 disabled={!nome.trim() || !tipo || (tipo === 'outro' && !tipoCustom.trim())}
