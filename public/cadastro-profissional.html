@@ -259,7 +259,7 @@
       </div>
       <div class="row-2">
         <div class="field-group">
-          <label>Telefone / WhatsApp <span class="optional">(principal)</span></label>
+          <label>Telefone / WhatsApp</label>
           <input type="tel" id="telefone" placeholder="(11) 99999-9999" />
         </div>
         <div class="field-group">
@@ -286,7 +286,7 @@
         <p>Como você vai aparecer para as famílias? Pode ser seu nome ou o nome do seu negócio.</p>
       </div>
       <div class="field-group">
-        <label>Nome profissional / nome do negócio</label>
+        <label>Nome profissional / nome do negócio <span style="color:var(--error)">*</span></label>
         <input type="text" id="nome-negocio" placeholder="Ex.: Dra. Ana Costa — Lactação" />
         <div class="hint">Este é o nome que aparecerá no app para as famílias.</div>
       </div>
@@ -403,7 +403,7 @@
         <div class="hint">Caso seu serviço não esteja na lista acima.</div>
       </div>
       <div class="field-group">
-        <label>Resumo dos seus serviços</label>
+        <label>Resumo dos seus serviços <span style="color:var(--error)">*</span></label>
         <textarea id="resumo" placeholder="Conte em poucas palavras o que você oferece, sua experiência e diferenciais. As famílias vão ver este texto no seu perfil." maxlength="500"></textarea>
         <div class="hint"><span id="char-count">0</span>/500 caracteres</div>
       </div>
@@ -646,7 +646,89 @@ function toggleAtend(btn) {
   btn.classList.toggle('active');
 }
 
+function showFieldError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.borderColor = 'var(--error)';
+  el.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.12)';
+  let hint = el.parentElement.querySelector('.field-err');
+  if (!hint) {
+    hint = document.createElement('div');
+    hint.className = 'field-err';
+    hint.style.cssText = 'font-size:0.78rem;color:var(--error);margin-top:4px;';
+    el.parentElement.appendChild(hint);
+  }
+  hint.textContent = msg;
+}
+
+function clearFieldError(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.borderColor = '';
+  el.style.boxShadow = '';
+  const hint = el.parentElement.querySelector('.field-err');
+  if (hint) hint.remove();
+}
+
+function validateStep(step) {
+  let ok = true;
+  if (step === 1) {
+    [
+      { id: 'nome',     label: 'Nome completo é obrigatório' },
+      { id: 'cpf',      label: 'CPF é obrigatório' },
+      { id: 'email',    label: 'E-mail é obrigatório' },
+      { id: 'telefone', label: 'Telefone é obrigatório' },
+    ].forEach(f => {
+      clearFieldError(f.id);
+      if (!document.getElementById(f.id).value.trim()) {
+        showFieldError(f.id, f.label); ok = false;
+      }
+    });
+  }
+  if (step === 2) {
+    clearFieldError('nome-negocio');
+    if (!document.getElementById('nome-negocio').value.trim()) {
+      showFieldError('nome-negocio', 'Nome do negócio é obrigatório'); ok = false;
+    }
+  }
+  if (step === 3) {
+    [
+      { id: 'cep',    label: 'CEP é obrigatório' },
+      { id: 'uf',     label: 'Estado é obrigatório' },
+      { id: 'cidade', label: 'Cidade é obrigatória' },
+      { id: 'rua',    label: 'Rua é obrigatória' },
+      { id: 'numero', label: 'Número é obrigatório' },
+      { id: 'bairro', label: 'Bairro é obrigatório' },
+    ].forEach(f => {
+      clearFieldError(f.id);
+      if (!document.getElementById(f.id).value.trim()) {
+        showFieldError(f.id, f.label); ok = false;
+      }
+    });
+  }
+  if (step === 4) {
+    const servSel = document.querySelectorAll('#service-grid .service-option.checked').length;
+    const errEl = document.getElementById('service-err');
+    if (servSel === 0) {
+      if (!errEl) {
+        const e = document.createElement('div');
+        e.id = 'service-err';
+        e.style.cssText = 'font-size:0.78rem;color:var(--error);margin-top:4px;';
+        e.textContent = 'Selecione ao menos um serviço';
+        document.getElementById('service-grid').parentElement.appendChild(e);
+      }
+      ok = false;
+    } else if (errEl) errEl.remove();
+    clearFieldError('resumo');
+    if (!document.getElementById('resumo').value.trim()) {
+      showFieldError('resumo', 'Resumo dos serviços é obrigatório'); ok = false;
+    }
+  }
+  return ok;
+}
+
 function goTo(n) {
+  if (n > currentStep && !validateStep(currentStep)) return;
   document.getElementById('step-' + currentStep).classList.remove('visible');
   currentStep = n;
   document.getElementById('step-' + currentStep).classList.add('visible');
