@@ -367,13 +367,51 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     } catch {}
   }
 
-  function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files || [])
-    setFotos(prev => [...prev, ...files].slice(0, 5))
-    files.forEach(f => {
-      const url = URL.createObjectURL(f)
-      setFotoURLs(prev => [...prev, url].slice(0, 5))
+  // Comprime a imagem no browser antes do upload via Canvas API.
+  // Redimensiona para no máximo 1200px no lado maior e re-encoda como JPEG ~82%.
+  // Redução típica: foto de celular 4–8 MB → 300–600 KB sem perda visual perceptível.
+  async function compressImage(file: File, maxDim = 1200, quality = 0.82): Promise<File> {
+    return new Promise((resolve) => {
+      const img = new Image()
+      const blobUrl = URL.createObjectURL(file)
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl)
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+        const w = Math.round(img.width * scale)
+        const h = Math.round(img.height * scale)
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return resolve(file) // fallback sem compressão
+        ctx.drawImage(img, 0, 0, w, h)
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return resolve(file)
+            const compressed = new File(
+              [blob],
+              file.name.replace(/\.[^.]+$/, '.jpg'),
+              { type: 'image/jpeg' }
+            )
+            resolve(compressed)
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+      img.onerror = () => resolve(file) // fallback: sobe o original
+      img.src = blobUrl
     })
+  }
+
+  async function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    for (const file of files) {
+      const compressed = await compressImage(file)
+      setFotos(prev => [...prev, compressed].slice(0, 5))
+      const url = URL.createObjectURL(compressed)
+      setFotoURLs(prev => [...prev, url].slice(0, 5))
+    }
   }
 
   async function sendReview() {
