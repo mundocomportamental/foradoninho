@@ -1,8 +1,8 @@
 [{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.foradoninho.app",
-        "sha256_cert_fingerprints": ["48:3C:44:4D:B6:B1:FD:EC:99:69:05:7E:39:7A:61:EB:72:07:E2:27:23:77:C0:68:75:D7:42:3F:50:83:03:94"]
-      }
-    }]
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.foradoninho.app",
+    "sha256_cert_fingerprints": ["48:3C:44:4D:B6:B1:FD:EC:99:69:05:7E:39:7A:61:EB:72:07:E2:27:23:77:C0:68:75:D7:42:3F:50:83:03:94"]
+  }
+}]

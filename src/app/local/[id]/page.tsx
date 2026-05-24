@@ -81,8 +81,8 @@ function ScorePicker({ label, value, onChange }: { label: string; value: number;
         ))}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Nada baby-friendly</span>
-        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Super baby-friendly</span>
+        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Péssima</span>
+        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Excepcional</span>
       </div>
     </div>
   )
@@ -367,51 +367,13 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     } catch {}
   }
 
-  // Comprime a imagem no browser antes do upload via Canvas API.
-  // Redimensiona para no máximo 1200px no lado maior e re-encoda como JPEG ~82%.
-  // Redução típica: foto de celular 4–8 MB → 300–600 KB sem perda visual perceptível.
-  async function compressImage(file: File, maxDim = 1200, quality = 0.82): Promise<File> {
-    return new Promise((resolve) => {
-      const img = new Image()
-      const blobUrl = URL.createObjectURL(file)
-      img.onload = () => {
-        URL.revokeObjectURL(blobUrl)
-        const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
-        const w = Math.round(img.width * scale)
-        const h = Math.round(img.height * scale)
-        const canvas = document.createElement('canvas')
-        canvas.width = w
-        canvas.height = h
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return resolve(file) // fallback sem compressão
-        ctx.drawImage(img, 0, 0, w, h)
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return resolve(file)
-            const compressed = new File(
-              [blob],
-              file.name.replace(/\.[^.]+$/, '.jpg'),
-              { type: 'image/jpeg' }
-            )
-            resolve(compressed)
-          },
-          'image/jpeg',
-          quality
-        )
-      }
-      img.onerror = () => resolve(file) // fallback: sobe o original
-      img.src = blobUrl
-    })
-  }
-
-  async function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])
-    for (const file of files) {
-      const compressed = await compressImage(file)
-      setFotos(prev => [...prev, compressed].slice(0, 5))
-      const url = URL.createObjectURL(compressed)
+    setFotos(prev => [...prev, ...files].slice(0, 5))
+    files.forEach(f => {
+      const url = URL.createObjectURL(f)
       setFotoURLs(prev => [...prev, url].slice(0, 5))
-    }
+    })
   }
 
   async function sendReview() {
@@ -1013,19 +975,13 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
 
             {flowStep === 1 && (
               <>
-                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Este local foi um ninho para vocês? 🪺</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>Avalie <strong>apenas</strong> o quanto este local foi baby-friendly — se acolheu você e seu bebê como um ninho fora de casa.</div>
-                <div style={{ background: '#e6faf8', border: '1.5px solid #33cccc', borderRadius: 12, padding: '10px 14px', marginBottom: 20, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: 18, lineHeight: 1 }}>🍼</span>
-                  <span style={{ fontSize: 12, color: '#0e7070', lineHeight: 1.55 }}>
-                    <strong>Esta avaliação é sobre a experiência para famílias com bebês</strong>, não sobre o estabelecimento em geral. Considere: havia fraldário? O espaço acolheu bem quem está amamentando? A equipe foi atenciosa com as crianças?
-                  </span>
-                </div>
-                <ScorePicker label="Experiência baby-friendly" value={rExperiencia} onChange={setRExperiencia} />
+                <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Como foi sua experiência?</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Avalie de 1 a 10 na experiência geral e use as carinhas para o resto</div>
+                <ScorePicker label="Experiência geral" value={rExperiencia} onChange={setRExperiencia} />
                 <div style={{ height: 1, background: 'var(--border)', margin: '4px 0 18px' }} />
-                <SmilePicker label="Limpeza dos espaços" value={rLimpeza} onChange={setRLimpeza} />
-                <SmilePicker label="Acolhimento às famílias" value={rAtendimento} onChange={setRAtendimento} />
-                <SmilePicker label="Estrutura para bebês" value={rInstalacoes} onChange={setRInstalacoes} />
+                <SmilePicker label="Limpeza" value={rLimpeza} onChange={setRLimpeza} />
+                <SmilePicker label="Atendimento" value={rAtendimento} onChange={setRAtendimento} />
+                <SmilePicker label="Instalações" value={rInstalacoes} onChange={setRInstalacoes} />
                 <button className="btn-primary" style={{ marginTop: 8 }}
                   disabled={!rExperiencia || !rLimpeza || !rAtendimento || !rInstalacoes}
                   onClick={() => setFlowStep(2)}>Próximo</button>
