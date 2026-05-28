@@ -28,7 +28,7 @@ export default function PrivacidadePage() {
           Política de Privacidade
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, margin: 0 }}>
-          Fora do Ninho · Atualizada em maio de 2025
+          Fora do Ninho · Atualizada em maio de 2026
         </p>
       </div>
 
@@ -137,3 +137,4 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   )
 }
+
