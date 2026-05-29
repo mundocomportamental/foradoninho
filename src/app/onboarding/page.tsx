@@ -51,7 +51,7 @@ function Carrossel({ onDone }: { onDone: () => void }) {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
         {step === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 28 }}>
-            <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 84, height: 84, objectFit: 'contain' }} />
+            <img src="/icons/icon-512-store.png" alt="Fora do Ninho" style={{ width: 84, height: 84, objectFit: 'contain', borderRadius: 20 }} />
             <span style={{ fontSize: 22, fontWeight: 800, color: '#1aabab', lineHeight: 1.3 }}>
               Bem-vindo à comunidade<br />Fora do Ninho
             </span>
@@ -59,7 +59,7 @@ function Carrossel({ onDone }: { onDone: () => void }) {
         )}
         {step > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-            <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+            <img src="/icons/icon-512-store.png" alt="Fora do Ninho" style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: 7 }} />
             <span style={{ fontSize: 13, fontWeight: 700, color: '#1aabab' }}>Fora do Ninho</span>
           </div>
         )}
@@ -175,9 +175,9 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
       {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <img
-          src="/love-birds.png"
+          src="/icons/icon-512-store.png"
           alt="Fora do Ninho"
-          style={{ width: 88, height: 88, objectFit: 'contain', margin: '0 auto 14px', display: 'block' }}
+          style={{ width: 88, height: 88, objectFit: 'contain', borderRadius: 22, margin: '0 auto 14px', display: 'block' }}
         />
         <div style={{ fontSize: 22, fontWeight: 800 }}>Fora do Ninho</div>
         <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
