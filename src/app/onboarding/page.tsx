@@ -1,24 +1,41 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const SLIDES = [
   {
-    emoji: '🗺️',
-    bg: 'linear-gradient(135deg, #e8f5ef 0%, #d1f0e0 100%)',
+    icon: (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#33CCCC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21"/>
+        <line x1="9" y1="3" x2="9" y2="18"/>
+        <line x1="15" y1="6" x2="15" y2="21"/>
+      </svg>
+    ),
+    bg: 'linear-gradient(135deg, #e0f7f7 0%, #b2eded 100%)',
     title: 'Encontre locais\nbaby-friendly',
     desc: 'Fraldários, microondas, cadeirão e muito mais. Tudo mapeado colaborativamente por pais, mães e cuidadores em viagem.',
   },
   {
-    emoji: '📍',
-    bg: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+    icon: (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#33CCCC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+    ),
+    bg: 'linear-gradient(135deg, #d4f5f5 0%, #a8e8e8 100%)',
     title: 'Próximos\nde você',
     desc: 'O app detecta sua localização e mostra os melhores locais na rota — postos, restaurantes, hotéis e shoppings.',
   },
   {
-    emoji: '✅',
-    bg: 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)',
+    icon: (
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#33CCCC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    ),
+    bg: 'linear-gradient(135deg, #c8f0f0 0%, #99e0e0 100%)',
     title: 'Check-in e\navaliações',
     desc: 'Com um toque, confirme que um local está ativo e avalie a experiência para ajudar outras famílias e cuidadores na estrada.',
   },
@@ -32,32 +49,46 @@ function Carrossel({ onDone }: { onDone: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '48px 32px 32px' }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-        {/* Primeiro slide: brand em destaque acima do ícone */}
         {step === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 28 }}>
             <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 84, height: 84, objectFit: 'contain' }} />
-            <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--green-dark)', lineHeight: 1.3 }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: '#1aabab', lineHeight: 1.3 }}>
               Bem-vindo à comunidade<br />Fora do Ninho
             </span>
           </div>
         )}
-        {/* Outros slides: logo pequeno */}
         {step > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <img src="/love-birds.png" alt="Fora do Ninho" style={{ width: 28, height: 28, objectFit: 'contain' }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--green-dark)' }}>Fora do Ninho</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#1aabab' }}>Fora do Ninho</span>
           </div>
         )}
-        <div style={{ width: 96, height: 96, borderRadius: 28, background: slide.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44, marginBottom: 32, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
-          {slide.emoji}
+
+        <div style={{
+          width: 96, height: 96, borderRadius: 28,
+          background: slide.bg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: 32, boxShadow: '0 8px 32px rgba(51,204,204,0.15)',
+        }}>
+          {slide.icon}
         </div>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', lineHeight: 1.25, whiteSpace: 'pre-line', marginBottom: 16 }}>{slide.title}</h1>
-        <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 300 }}>{slide.desc}</p>
+
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', lineHeight: 1.25, whiteSpace: 'pre-line', marginBottom: 16 }}>
+          {slide.title}
+        </h1>
+        <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 300 }}>
+          {slide.desc}
+        </p>
       </div>
 
       <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 28 }}>
         {SLIDES.map((_, i) => (
-          <div key={i} style={{ height: 4, borderRadius: 2, width: i === step ? 22 : 8, background: i === step ? 'var(--green)' : 'var(--border)', transition: 'all 0.2s' }} />
+          <div key={i} style={{
+            height: 4, borderRadius: 2,
+            width: i === step ? 22 : 8,
+            background: i === step ? '#33CCCC' : 'var(--border)',
+            transition: 'all 0.2s',
+          }} />
         ))}
       </div>
 
@@ -69,48 +100,6 @@ function Carrossel({ onDone }: { onDone: () => void }) {
   )
 }
 
-function TermsBlock() {
-  const [openTermos, setOpenTermos] = useState(false)
-  const [openPriv, setOpenPriv] = useState(false)
-  return (
-    <div style={{ background: 'var(--bg)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
-      <button
-        onClick={() => setOpenTermos(o => !o)}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}
-      >
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>📄 Termos de Uso</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" style={{ transform: openTermos ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </button>
-      {openTermos && (
-        <div style={{ padding: '0 14px 14px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.65, borderTop: '1px solid var(--border)' }}>
-          <p style={{ marginTop: 10 }}>• Você é responsável pelas informações que cadastra ou valida nesta plataforma. Conteúdo falso ou enganoso pode ser removido sem aviso prévio.</p>
-          <p>• Estabelecimentos podem solicitar sua remoção a qualquer momento. Confirmada a solicitação, a remoção será realizada em até 72 horas.</p>
-          <p>• O Fora do Ninho é uma plataforma colaborativa e não se responsabiliza pela qualidade, disponibilidade ou veracidade das informações cadastradas pelos usuários.</p>
-        </div>
-      )}
-      <div style={{ height: 1, background: 'var(--border)' }} />
-      <button
-        onClick={() => setOpenPriv(o => !o)}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}
-      >
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>🔒 Política de Privacidade</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" style={{ transform: openPriv ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </button>
-      {openPriv && (
-        <div style={{ padding: '0 14px 14px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.65, borderTop: '1px solid var(--border)' }}>
-          <p style={{ marginTop: 10 }}>• Informações de estabelecimentos são tratadas como dados públicos e podem ser exibidas para outros usuários da plataforma.</p>
-          <p>• MEIs e autônomos cadastrados têm direito de solicitar a remoção de seus dados a qualquer momento, conforme a Lei Geral de Proteção de Dados (LGPD).</p>
-          <p>• Dados de solicitações de remoção são apagados após o processamento da solicitação, mantendo apenas registros anonimizados para fins estatísticos.</p>
-        </div>
-      )}
-    </div>
-  )
-}
-
 function AuthScreen({ onSkip }: { onSkip: () => void }) {
   const [mode, setMode] = useState<'choose' | 'email'>('choose')
   const [isLogin, setIsLogin] = useState(true)
@@ -118,7 +107,6 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const [facebookLoading, setFacebookLoading] = useState(false)
   const [magicSent, setMagicSent] = useState(false)
   const [error, setError] = useState('')
   const [termsAccepted, setTermsAccepted] = useState(false)
@@ -133,16 +121,6 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
       options: { redirectTo: `${window.location.origin}/mapa` },
     })
     if (error) { setError('Erro ao entrar com Google'); setGoogleLoading(false) }
-  }
-
-  async function handleFacebook() {
-    setFacebookLoading(true); setError('')
-    localStorage.setItem('onboarding_done', '1')
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'facebook',
-      options: { redirectTo: `${window.location.origin}/mapa` },
-    })
-    if (error) { setError('Erro ao entrar com Facebook'); setFacebookLoading(false) }
   }
 
   async function handleEmail() {
@@ -185,12 +163,22 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
     </div>
   )
 
-  const inputStyle: React.CSSProperties = { height: 48, padding: '0 14px', borderRadius: 12, border: '1.5px solid var(--border)', fontFamily: 'var(--font)', fontSize: 14, color: 'var(--text)', background: 'var(--bg-card)', outline: 'none', width: '100%' }
+  const inputStyle: React.CSSProperties = {
+    height: 48, padding: '0 14px', borderRadius: 12,
+    border: '1.5px solid var(--border)', fontFamily: 'var(--font)',
+    fontSize: 14, color: 'var(--text)', background: 'var(--bg-card)',
+    outline: 'none', width: '100%',
+  }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '40px 24px 32px', overflowY: 'auto' }}>
+      {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <img src="/icon-192.png" alt="Fora do Ninho" style={{ width: 88, height: 88, objectFit: 'contain', margin: '0 auto 14px', display: 'block', borderRadius: 20 }} />
+        <img
+          src="/love-birds.png"
+          alt="Fora do Ninho"
+          style={{ width: 88, height: 88, objectFit: 'contain', margin: '0 auto 14px', display: 'block' }}
+        />
         <div style={{ fontSize: 22, fontWeight: 800 }}>Fora do Ninho</div>
         <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
           {mode === 'email' ? (isLogin ? 'Entrar na sua conta' : 'Criar conta gratuita') : 'Entre para salvar seus locais favoritos'}
@@ -199,6 +187,7 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
 
       {mode === 'choose' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Google */}
           <button onClick={handleGoogle} disabled={googleLoading || !termsAccepted}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)', opacity: termsAccepted ? 1 : 0.45 }}>
             {googleLoading
@@ -214,24 +203,13 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
                 </>}
           </button>
 
-          <button onClick={handleFacebook} disabled={facebookLoading || !termsAccepted}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: 'none', background: '#1877F2', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'white', opacity: termsAccepted ? 1 : 0.45 }}>
-            {facebookLoading
-              ? <div style={{ width: 20, height: 20, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%' }} />
-              : <>
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  Continuar com Facebook
-                </>}
-          </button>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>ou use email</span>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
 
+          {/* Email */}
           <button onClick={() => setMode('email')} disabled={!termsAccepted}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: termsAccepted ? 'pointer' : 'not-allowed', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)', opacity: termsAccepted ? 1 : 0.45 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -243,22 +221,21 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
 
           {error && <div style={{ fontSize: 13, color: '#ef4444', textAlign: 'center' }}>{error}</div>}
 
-          {/* Termos e Privacidade */}
-          <TermsBlock />
+          {/* Aceite de termos — links inline, sem dropdowns */}
           <label
             onClick={() => setTermsAccepted(v => !v)}
             style={{
               display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginTop: 8,
-              background: termsAccepted ? 'rgba(26,171,171,0.08)' : 'rgba(26,171,171,0.04)',
-              border: termsAccepted ? '2px solid var(--green)' : '2px solid #33CCCC',
+              background: termsAccepted ? 'rgba(51,204,204,0.08)' : 'rgba(51,204,204,0.04)',
+              border: termsAccepted ? '2px solid #33CCCC' : '2px solid #33CCCC',
               borderRadius: 12, padding: '12px 14px', transition: 'all 0.15s',
             }}
           >
             <div
               style={{
                 width: 24, height: 24, borderRadius: 7, flexShrink: 0,
-                background: termsAccepted ? 'var(--green)' : 'white',
-                border: termsAccepted ? '2px solid var(--green)' : '2.5px solid #33CCCC',
+                background: termsAccepted ? '#33CCCC' : 'white',
+                border: termsAccepted ? '2px solid #33CCCC' : '2.5px solid #33CCCC',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.15s',
               }}
@@ -270,11 +247,28 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
               )}
             </div>
             <span style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5, fontWeight: 500 }}>
-              Li e aceito os <strong style={{ color: 'var(--green-dark)' }}>Termos de Uso</strong> e a <strong style={{ color: 'var(--green-dark)' }}>Política de Privacidade</strong>
+              Li e aceito os{' '}
+              <Link
+                href="/privacidade#termos"
+                onClick={e => e.stopPropagation()}
+                style={{ color: '#1aabab', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                Termos de Uso
+              </Link>
+              {' '}e a{' '}
+              <Link
+                href="/privacidade"
+                onClick={e => e.stopPropagation()}
+                style={{ color: '#1aabab', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                Política de Privacidade
+              </Link>
             </span>
           </label>
 
-          <button className="btn-secondary" onClick={onSkip} disabled={!termsAccepted} style={{ marginTop: 4, opacity: termsAccepted ? 1 : 0.45 }}>Continuar sem conta</button>
+          <button className="btn-secondary" onClick={onSkip} disabled={!termsAccepted} style={{ marginTop: 4, opacity: termsAccepted ? 1 : 0.45 }}>
+            Continuar sem conta
+          </button>
         </div>
       )}
 
