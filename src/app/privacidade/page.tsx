@@ -1,140 +1,307 @@
-import Link from 'next/link'
+// Copie este arquivo para:
+// C:\Fora do Ninho\src\app\privacidade\page.tsx
 
 export const metadata = {
-  title: 'Política de Privacidade — Fora do Ninho',
-  description: 'Política de Privacidade do aplicativo Fora do Ninho',
-}
+  title: 'Termos e Privacidade — Fora do Ninho',
+  description: 'Termos de Uso e Política de Privacidade do aplicativo Fora do Ninho.',
+};
 
 export default function PrivacidadePage() {
   return (
-    <main style={{
-      minHeight: '100vh',
-      background: '#f8fafc',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      padding: '0 0 60px',
-    }}>
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #33CCCC, #1aabab)',
-        padding: '32px 24px 28px',
-        textAlign: 'center',
-      }}>
+    <main
+      style={{
+        maxWidth: '720px',
+        margin: '0 auto',
+        padding: '2rem 1.5rem 5rem',
+        fontFamily: 'system-ui, sans-serif',
+        color: '#1a1a1a',
+        lineHeight: '1.7',
+        overflowY: 'auto',
+      }}
+    >
+      {/* Cabeçalho */}
+      <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
         <img
-          src="/icon-192.png"
+          src="/icons/icon-512-store.png"
           alt="Fora do Ninho"
-          style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'contain', marginBottom: 12 }}
+          style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 12 }}
         />
-        <h1 style={{ color: 'white', fontSize: 22, fontWeight: 700, margin: '0 0 4px' }}>
-          Política de Privacidade
-        </h1>
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, margin: 0 }}>
-          Fora do Ninho · Atualizada em maio de 2026
-        </p>
+        <div style={{ fontSize: 22, fontWeight: 800, color: '#1aabab' }}>Fora do Ninho</div>
       </div>
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px' }}>
+      {/* Navegação rápida */}
+      <nav style={{
+        display: 'flex',
+        gap: '1rem',
+        marginBottom: '2.5rem',
+        borderBottom: '2px solid #e8f8f8',
+        paddingBottom: '1rem',
+      }}>
+        <a
+          href="#termos"
+          style={{
+            color: '#1aabab',
+            fontWeight: 700,
+            textDecoration: 'none',
+            fontSize: 15,
+            padding: '6px 14px',
+            borderRadius: 20,
+            background: '#e8f8f8',
+          }}
+        >
+          📋 Termos de Uso
+        </a>
+        <a
+          href="#privacidade"
+          style={{
+            color: '#1aabab',
+            fontWeight: 700,
+            textDecoration: 'none',
+            fontSize: 15,
+            padding: '6px 14px',
+            borderRadius: 20,
+            background: '#e8f8f8',
+          }}
+        >
+          🔒 Política de Privacidade
+        </a>
+      </nav>
 
-        <Section title="1. Quem somos">
-          <p>O <strong>Fora do Ninho</strong> é um aplicativo colaborativo que ajuda pais, mães e cuidadores a encontrar locais baby-friendly durante viagens e passeios. O responsável pelo tratamento dos seus dados é o desenvolvedor do aplicativo, acessível pelo e-mail <a href="mailto:contato@foradoninho.com.br" style={{ color: '#33CCCC' }}>contato@foradoninho.com.br</a>.</p>
-        </Section>
+      {/* ===================== TERMOS DE USO ===================== */}
+      <section id="termos">
+        <h1 style={{ color: '#33CCCC', marginBottom: '0.25rem' }}>Termos de Uso</h1>
+        <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '2rem' }}>
+          Última atualização: maio de 2026
+        </p>
 
-        <Section title="2. Dados que coletamos">
-          <p>Coletamos apenas os dados necessários para o funcionamento do app:</p>
-          <ul>
-            <li><strong>Nome e endereço de e-mail:</strong> fornecidos no cadastro via e-mail/senha ou login com Google.</li>
-            <li><strong>ID de usuário:</strong> identificador interno gerado automaticamente pelo sistema.</li>
-            <li><strong>Localização:</strong> usada para exibir locais próximos no mapa, somente quando você autoriza.</li>
-            <li><strong>Fotos e avaliações:</strong> conteúdo que você opta por enviar sobre locais visitados.</li>
-          </ul>
-        </Section>
+        <p>
+          Bem-vindo ao <strong>Fora do Ninho</strong>! Ao usar o aplicativo, você concorda com estes
+          Termos de Uso. Leia com atenção antes de criar sua conta.
+        </p>
 
-        <Section title="3. Como usamos seus dados">
-          <ul>
-            <li>Criar e gerenciar sua conta no aplicativo.</li>
-            <li>Exibir locais baby-friendly próximos à sua localização.</li>
-            <li>Publicar suas avaliações e fotos no mapa colaborativo.</li>
-            <li>Garantir a segurança e autenticidade das contribuições.</li>
-          </ul>
-          <p>Não vendemos, alugamos nem compartilhamos seus dados pessoais com terceiros para fins comerciais ou publicitários.</p>
-        </Section>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>1. O que é o Fora do Ninho</h2>
+        <p>
+          O Fora do Ninho é uma plataforma colaborativa que permite a pais, mães e cuidadores
+          encontrar, cadastrar e avaliar locais baby-friendly durante viagens e passeios — como
+          postos de combustível com fraldário, restaurantes com cadeirão, e hotéis pet-friendly.
+        </p>
 
-        <Section title="4. Compartilhamento de dados">
-          <p>Seus dados são armazenados de forma segura no <strong>Supabase</strong> (infraestrutura de banco de dados e autenticação). O Supabase atua como subprocessador de dados e está sujeito a políticas de privacidade próprias. Não há outro compartilhamento com terceiros.</p>
-          <p>As avaliações e fotos que você publica ficam visíveis para todos os usuários do app — são contribuições públicas ao mapa colaborativo.</p>
-        </Section>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>2. Elegibilidade</h2>
+        <p>
+          Para usar o app, você deve ter 18 anos ou mais. Ao criar uma conta, você confirma que
+          atende a esse requisito. O app é voltado exclusivamente a adultos que atuam como
+          responsáveis por crianças.
+        </p>
 
-        <Section title="5. Localização">
-          <p>A permissão de localização é solicitada apenas para exibir locais próximos a você. Você pode recusar ou revogar essa permissão a qualquer momento nas configurações do seu dispositivo. O app funciona normalmente sem ela — você poderá navegar o mapa manualmente.</p>
-        </Section>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>3. Sua conta</h2>
+        <p>
+          Você é responsável por manter a confidencialidade de suas credenciais de acesso. Não
+          compartilhe sua senha com terceiros. Informe-nos imediatamente se suspeitar de uso não
+          autorizado da sua conta.
+        </p>
 
-        <Section title="6. Retenção de dados">
-          <p>Seus dados são mantidos enquanto sua conta estiver ativa. Após a exclusão da conta, removemos seus dados pessoais em até 30 dias, conforme a legislação aplicável.</p>
-        </Section>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>4. Conteúdo gerado por você</h2>
+        <p>
+          Ao publicar avaliações, fotos ou cadastrar locais, você declara que:
+        </p>
+        <ul>
+          <li>As informações são verdadeiras e correspondem à realidade.</li>
+          <li>Você tem o direito de publicar as fotos enviadas.</li>
+          <li>O conteúdo não viola direitos de terceiros nem a lei brasileira.</li>
+          <li>Você concede ao Fora do Ninho licença gratuita para exibir o conteúdo no app.</li>
+        </ul>
+        <p>
+          Reservamo-nos o direito de remover conteúdo inadequado, falso ou que viole estas regras.
+        </p>
 
-        <Section title="7. Seus direitos (LGPD)">
-          <p>Conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem direito a:</p>
-          <ul>
-            <li>Confirmar a existência de tratamento dos seus dados.</li>
-            <li>Acessar, corrigir ou atualizar seus dados.</li>
-            <li>Solicitar a exclusão dos seus dados pessoais.</li>
-            <li>Revogar o consentimento a qualquer momento.</li>
-            <li>Solicitar a portabilidade dos seus dados.</li>
-          </ul>
-          <p>Para exercer qualquer um desses direitos, entre em contato pelo e-mail <a href="mailto:contato@foradoninho.com.br" style={{ color: '#33CCCC' }}>contato@foradoninho.com.br</a> ou acesse nossa <a href="/excluir-conta" style={{ color: '#33CCCC' }}>página de exclusão de conta</a>.</p>
-        </Section>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>5. Uso adequado</h2>
+        <p>É proibido:</p>
+        <ul>
+          <li>Usar o app para fins comerciais sem autorização prévia.</li>
+          <li>Publicar informações falsas ou enganosas sobre locais.</li>
+          <li>Assediar outros usuários ou criar conteúdo ofensivo.</li>
+          <li>Tentar acessar dados de outros usuários sem autorização.</li>
+          <li>Usar scripts, bots ou automações sem permissão escrita.</li>
+        </ul>
 
-        <Section title="8. Segurança">
-          <p>Todos os dados transmitidos entre o app e nossos servidores são criptografados via HTTPS/TLS. Adotamos boas práticas de segurança para proteger suas informações.</p>
-        </Section>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>6. Isenção de responsabilidade</h2>
+        <p>
+          As informações sobre locais são cadastradas por usuários e podem estar desatualizadas.
+          O Fora do Ninho não se responsabiliza por informações incorretas sobre estabelecimentos,
+          nem por qualquer dano decorrente do uso do app. Sempre confirme as informações
+          diretamente no local antes de visitar.
+        </p>
 
-        <Section title="9. Crianças">
-          <p>O Fora do Ninho é destinado a adultos (pais, mães e cuidadores). Não coletamos intencionalmente dados de menores de 18 anos. Se você acredita que uma criança forneceu dados ao app, entre em contato conosco para remoção imediata.</p>
-        </Section>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>7. Encerramento de conta</h2>
+        <p>
+          Você pode excluir sua conta a qualquer momento na seção{' '}
+          <a href="/excluir-conta" style={{ color: '#33CCCC' }}>Excluir conta</a>.
+          Podemos suspender ou encerrar contas que violem estes Termos.
+        </p>
 
-        <Section title="10. Alterações nesta política">
-          <p>Podemos atualizar esta política periodicamente. Em caso de mudanças significativas, notificaremos os usuários pelo app ou por e-mail. A data da última atualização está indicada no topo desta página.</p>
-        </Section>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>8. Alterações nos Termos</h2>
+        <p>
+          Podemos atualizar estes Termos periodicamente. Informaremos sobre mudanças significativas
+          por e-mail ou aviso no app. O uso continuado após a notificação constitui aceite das
+          alterações.
+        </p>
 
-        <Section title="11. Contato">
-          <p>Dúvidas sobre privacidade? Fale conosco:</p>
-          <p>
-            📧 <a href="mailto:contato@foradoninho.com.br" style={{ color: '#33CCCC' }}>contato@foradoninho.com.br</a><br />
-            🌐 <a href="https://foradoninho.com.br" style={{ color: '#33CCCC' }}>foradoninho.com.br</a>
-          </p>
-        </Section>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>9. Lei aplicável</h2>
+        <p>
+          Estes Termos são regidos pelas leis brasileiras. Qualquer controvérsia será resolvida no
+          foro da comarca de domicílio do usuário, conforme o Código de Defesa do Consumidor.
+        </p>
 
-        <div style={{
-          borderTop: '1px solid #e2e8f0',
-          paddingTop: 24,
-          marginTop: 8,
-          textAlign: 'center',
-        }}>
-          <Link href="/" style={{ color: '#33CCCC', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
-            ← Voltar ao Fora do Ninho
-          </Link>
-        </div>
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>10. Contato</h2>
+        <p>
+          Dúvidas sobre os Termos:{' '}
+          <a href="mailto:contato@foradoninho.com.br" style={{ color: '#33CCCC' }}>
+            contato@foradoninho.com.br
+          </a>
+        </p>
+      </section>
+
+      <hr style={{ border: 'none', borderTop: '2px solid #e8f8f8', margin: '3rem 0' }} />
+
+      {/* ===================== POLÍTICA DE PRIVACIDADE ===================== */}
+      <section id="privacidade">
+        <h1 style={{ color: '#33CCCC', marginBottom: '0.25rem' }}>Política de Privacidade</h1>
+        <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '2rem' }}>
+          Última atualização: maio de 2026
+        </p>
+
+        <p>
+          O <strong>Fora do Ninho</strong> ("nós", "nosso") é uma plataforma colaborativa que ajuda
+          pais e mães a encontrar locais seguros para bebês durante viagens. Esta Política de
+          Privacidade explica quais dados coletamos, como os usamos e quais são os seus direitos.
+        </p>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>1. Dados que coletamos</h2>
+        <p>Ao usar o Fora do Ninho, podemos coletar:</p>
+        <ul>
+          <li>
+            <strong>Dados de cadastro:</strong> nome, endereço de e-mail e foto de perfil (quando
+            você cria uma conta ou faz login com Google).
+          </li>
+          <li>
+            <strong>Dados de localização:</strong> sua localização geográfica aproximada, somente
+            quando você usa o mapa ou cadastra um local novo. Nunca rastreamos sua localização em
+            segundo plano.
+          </li>
+          <li>
+            <strong>Conteúdo que você cria:</strong> avaliações, fotos e informações de locais que
+            você cadastra ou edita na plataforma.
+          </li>
+          <li>
+            <strong>Dados do perfil familiar (opcionais):</strong> cidade, função
+            (mamãe/papai/outro), informações sobre bebês (apenas data de nascimento e sexo). Nunca
+            coletamos nome ou dados de identificação de crianças.
+          </li>
+          <li>
+            <strong>Dados de uso:</strong> páginas visitadas e interações, coletados de forma
+            agregada e anônima para melhorar o app.
+          </li>
+        </ul>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>2. Como usamos seus dados</h2>
+        <ul>
+          <li>Autenticar sua conta e manter sua sessão ativa.</li>
+          <li>Exibir e personalizar o mapa de locais próximos à sua posição.</li>
+          <li>Permitir que você avalie locais, cadastre novos pontos e interaja com a comunidade.</li>
+          <li>Enviar notificações relevantes (somente com sua autorização).</li>
+          <li>Melhorar a plataforma com base em dados agregados de uso.</li>
+          <li>Cumprir obrigações legais e prevenir fraudes ou abusos.</li>
+        </ul>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>3. Compartilhamento de dados</h2>
+        <p>
+          <strong>Não vendemos seus dados.</strong> Podemos compartilhá-los apenas com:
+        </p>
+        <ul>
+          <li>
+            <strong>Provedores de serviço:</strong> Supabase (banco de dados e autenticação) e
+            Vercel (hospedagem), que processam dados em nosso nome com contratos de
+            confidencialidade.
+          </li>
+          <li>
+            <strong>Autoridades competentes:</strong> quando exigido por lei ou ordem judicial.
+          </li>
+        </ul>
+        <p>
+          Avaliações e fotos que você publica ficam visíveis publicamente para todos os usuários.
+        </p>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>4. Localização</h2>
+        <p>
+          O acesso à sua localização é solicitado somente quando necessário. Você pode negar ou
+          revogar essa permissão a qualquer momento nas configurações do seu dispositivo. O app
+          funciona normalmente sem localização — o mapa apenas não centraliza automaticamente.
+        </p>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>5. Crianças</h2>
+        <p>
+          O Fora do Ninho é destinado a adultos maiores de 18 anos. Não coletamos dados pessoais
+          de crianças. As informações sobre bebês no perfil são fornecidas pelos próprios
+          responsáveis e são opcionais.
+        </p>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>6. Seus direitos (LGPD)</h2>
+        <p>
+          Conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem direito a:
+        </p>
+        <ul>
+          <li>Acessar os dados que temos sobre você.</li>
+          <li>Corrigir dados incompletos ou incorretos.</li>
+          <li>Solicitar a exclusão dos seus dados.</li>
+          <li>Revogar o consentimento para uso dos seus dados.</li>
+          <li>Portabilidade dos dados para outro serviço.</li>
+        </ul>
+        <p>
+          Para exercer qualquer desses direitos:{' '}
+          <a href="mailto:contato@foradoninho.com.br" style={{ color: '#33CCCC' }}>
+            contato@foradoninho.com.br
+          </a>{' '}
+          ou acesse a{' '}
+          <a href="/excluir-conta" style={{ color: '#33CCCC' }}>
+            página de exclusão de conta
+          </a>
+          .
+        </p>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>7. Retenção de dados</h2>
+        <p>
+          Mantemos seus dados enquanto sua conta estiver ativa. Ao excluir sua conta, seus dados
+          pessoais são removidos em até 30 dias. Avaliações e locais cadastrados podem ser mantidos
+          de forma anônima para preservar a integridade da base colaborativa.
+        </p>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>8. Segurança</h2>
+        <p>
+          Utilizamos criptografia em trânsito (HTTPS/TLS) e em repouso para proteger seus dados.
+          O acesso ao banco de dados é restrito por políticas de Row Level Security (RLS) no
+          Supabase.
+        </p>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>9. Alterações nesta política</h2>
+        <p>
+          Podemos atualizar esta política periodicamente. Notificaremos sobre mudanças significativas
+          por e-mail ou aviso no app. O uso continuado após a notificação constitui aceite.
+        </p>
+
+        <h2 style={{ color: '#1AABAB', marginTop: '2rem' }}>10. Contato</h2>
+        <p>
+          Dúvidas sobre privacidade:{' '}
+          <a href="mailto:contato@foradoninho.com.br" style={{ color: '#33CCCC' }}>
+            contato@foradoninho.com.br
+          </a>
+        </p>
+      </section>
+
+      <div style={{ marginTop: '3rem', textAlign: 'center' }}>
+        <a href="/" style={{ color: '#33CCCC', textDecoration: 'none', fontWeight: 600 }}>
+          ← Voltar ao Fora do Ninho
+        </a>
       </div>
     </main>
-  )
+  );
 }
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: 32 }}>
-      <h2 style={{
-        fontSize: 16,
-        fontWeight: 700,
-        color: '#1a2b1a',
-        marginBottom: 10,
-        paddingBottom: 6,
-        borderBottom: '2px solid #e2f7f7',
-      }}>
-        {title}
-      </h2>
-      <div style={{ fontSize: 14, color: '#374151', lineHeight: 1.7 }}>
-        {children}
-      </div>
-    </div>
-  )
-}
-
