@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import BottomNav from '@/components/BottomNav'
+import InstallBanner from '@/components/InstallBanner'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -385,6 +386,8 @@ export default function PerfilPage() {
     <div className="app-shell">
       <div className="page">
         <div style={{ padding: '20px 16px 0' }}>
+
+          <InstallBanner />
 
           {/* Avatar + nome */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>

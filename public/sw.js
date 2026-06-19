@@ -1,13 +1,14 @@
 // Service Worker — Fora do Ninho
-const CACHE_NAME = 'fdn-v1'
+const CACHE_NAME = 'fdn-v2'
 
 const STATIC_ASSETS = [
   '/',
   '/mapa',
   '/locais',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/pwa-192x192.png',
+  '/pwa-512x512.png',
+  '/apple-touch-icon.png',
   '/love-birds.png',
 ]
 
