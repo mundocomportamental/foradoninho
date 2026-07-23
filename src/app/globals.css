@@ -951,25 +951,25 @@ html, body {
 .landing-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(70px);
+  filter: blur(100px);
 }
 
 .landing-blob-1 {
   width: 260px;
   height: 260px;
   background: var(--green);
-  opacity: 0.28;
-  top: -70px;
-  left: -70px;
+  opacity: 0.14;
+  top: -110px;
+  left: -110px;
 }
 
 .landing-blob-2 {
   width: 300px;
   height: 300px;
   background: #7c3aed;
-  opacity: 0.14;
-  bottom: -90px;
-  right: -100px;
+  opacity: 0.08;
+  bottom: -120px;
+  right: -130px;
 }
 
 .landing-hero-text {
@@ -1050,6 +1050,62 @@ html, body {
   font-size: 15px;
   cursor: pointer;
   transition: border-color 0.15s;
+}
+
+.btn-install {
+  background: none;
+  color: var(--green-dark);
+  border: 1.5px dashed var(--green);
+  border-radius: 50px;
+  padding: 14px 24px;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.landing-ios-guide-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.landing-ios-guide-sheet {
+  background: var(--bg-card);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  width: 100%;
+  max-width: 480px;
+  padding: 24px 20px calc(32px + env(safe-area-inset-bottom));
+}
+
+.landing-ios-guide-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.landing-ios-guide-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.landing-ios-guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text);
+  margin: 0 0 24px 20px;
+  line-height: 1.5;
 }
 
 .landing-hero-visual {
@@ -1167,7 +1223,7 @@ html, body {
 .landing-marquee {
   width: 100%;
   overflow: hidden;
-  padding: 8px 0 32px;
+  padding: 48px 0 40px;
   -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
   mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
 }
@@ -1653,6 +1709,18 @@ html, body {
   }
 }
 
+/* Landing — o hero/banner principal usa mais largura em telas bem grandes */
+@media (min-width: 1280px) {
+  .landing-header,
+  .landing-hero {
+    max-width: 1440px;
+  }
+
+  .landing-hero-visual-box {
+    max-width: 460px;
+  }
+}
+
 /* Landing — hover dinamismo (só em telas com mouse) */
 @media (hover: hover) {
   .btn-signup, .btn-hero-primary, .btn-pro-cta {
@@ -1668,6 +1736,13 @@ html, body {
   .btn-hero-secondary:hover {
     border-color: var(--green);
     color: var(--green-dark);
+    transform: translateY(-2px);
+  }
+  .btn-install {
+    transition: background 0.15s, transform 0.15s;
+  }
+  .btn-install:hover {
+    background: var(--green-soft);
     transform: translateY(-2px);
   }
   .btn-pro-cta:hover {

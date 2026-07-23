@@ -4,6 +4,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { AMENIDADES } from '@/lib/types'
+import LandingInstallButton from './LandingInstallButton'
 
 const LandingMapPreview = dynamic(() => import('./LandingMapPreview'), { ssr: false })
 
@@ -27,6 +28,11 @@ const DORES = [
     icon: '💬',
     title: 'Informação espalhada em grupos de WhatsApp',
     desc: 'Indicações soltas, desatualizadas ou genéricas — sem saber se aquele lugar é mesmo preparado para crianças pequenas.',
+  },
+  {
+    icon: '🌙',
+    title: 'Sair à noite sem saber se o lugar é preparado',
+    desc: 'Vontade de jantar fora em casal ou em família, mas sem saber se o restaurante tem espaço kids pra garantir a tranquilidade de todo mundo.',
   },
 ]
 
@@ -143,15 +149,16 @@ export default function Landing() {
         </div>
 
         <div className="landing-hero-text reveal">
-          <span className="landing-hero-badge">🍼 Feito por e para famílias viajantes</span>
+          <span className="landing-hero-badge">🍼 Feito por e para famílias criando seus ninhos</span>
           <h1>Encontre locais baby-friendly em todas as cidades do Brasil</h1>
           <p>
             Fraldários, microondas, espaço kids e profissionais como consultoras de amamentação e pediatras —
-            tudo mapeado colaborativamente por pais, mães e cuidadores em viagem.
+            tudo mapeado colaborativamente por pais, mães e cuidadores em casa ou em viagem.
           </p>
           <div className="landing-hero-actions">
             <button className="btn-hero-primary" onClick={goMap}>Ver o mapa</button>
             <button className="btn-hero-secondary" onClick={() => goAuth('signup')}>Criar conta grátis</button>
+            <LandingInstallButton />
           </div>
         </div>
 
@@ -167,7 +174,7 @@ export default function Landing() {
             </div>
             <span className="landing-hero-chip landing-hero-chip-1" style={{ top: '10%', left: '2%' }}>🚼 Fraldário</span>
             <span className="landing-hero-chip landing-hero-chip-2" style={{ bottom: '20%', right: '2%' }}>⭐ 4.8</span>
-            <span className="landing-hero-chip landing-hero-chip-3" style={{ bottom: '6%', left: '10%' }}>🍽️ Microondas</span>
+            <span className="landing-hero-chip landing-hero-chip-3" style={{ bottom: '6%', left: '10%' }}>🛝 Espaço Kids</span>
           </div>
         </div>
       </section>
@@ -259,10 +266,9 @@ export default function Landing() {
             <h2>É profissional e ajuda mamães e bebês?</h2>
             <p>
               Consultoras de amamentação, doulas, pediatras e outros profissionais da primeira infância podem
-              criar um perfil gratuito e ser encontrados por famílias da sua região. Seja encontrada pela
-              comunidade que mais cresce no Brasil.
+              criar um perfil e ser encontrados por famílias da sua região.
             </p>
-            <Link href="/cadastro-profissional" className="btn-pro-cta">Cadastrar meu serviço</Link>
+            <Link href="/cadastro-profissional" className="btn-pro-cta">Cadastrar seu serviço</Link>
           </div>
         </section>
       </div>
