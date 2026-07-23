@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
@@ -65,8 +66,35 @@ const FEATURES = [
   },
 ]
 
+function Wave({ color, flip }: { color: string; flip?: boolean }) {
+  return (
+    <div aria-hidden="true" className="landing-wave" style={{ transform: flip ? 'scaleY(-1)' : undefined }}>
+      <svg viewBox="0 0 1200 60" preserveAspectRatio="none">
+        <path d="M0,30 C300,70 900,-10 1200,30 L1200,60 L0,60 Z" fill={color} />
+      </svg>
+    </div>
+  )
+}
+
 export default function Landing() {
   const router = useRouter()
+
+  useEffect(() => {
+    const els = document.querySelectorAll('.reveal')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.15 }
+    )
+    els.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
 
   function goAuth(type: 'login' | 'signup') {
     router.push(`/onboarding?auth=${type}`)
@@ -93,7 +121,7 @@ export default function Landing() {
       </header>
 
       <section className="landing-hero">
-        <div className="landing-hero-text">
+        <div className="landing-hero-text reveal">
           <span className="landing-hero-badge">🍼 Feito por e para famílias viajantes</span>
           <h1>Encontre locais baby-friendly em todas as cidades do Brasil</h1>
           <p>
@@ -106,52 +134,58 @@ export default function Landing() {
           </div>
         </div>
 
-        <div className="landing-hero-visual" aria-hidden="true">
+        <div className="landing-hero-visual reveal" aria-hidden="true">
           <div className="landing-hero-visual-box">
-            <div className="landing-hero-visual-map">
-              <LandingMapPreview />
+            <div className="landing-hero-visual-frame">
+              <div className="landing-hero-visual-map">
+                <LandingMapPreview />
+              </div>
+              <div className="landing-hero-icon-badge">
+                <img src="/icons/icon-512-store.png" alt="" style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 16 }} />
+              </div>
             </div>
-            <div className="landing-hero-icon-badge">
-              <img src="/icons/icon-512-store.png" alt="" style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 16 }} />
-            </div>
-            <span className="landing-hero-chip" style={{ top: '12%', left: '-6%' }}>🚼 Fraldário</span>
-            <span className="landing-hero-chip" style={{ bottom: '18%', right: '-8%' }}>⭐ 4.8</span>
-            <span className="landing-hero-chip" style={{ bottom: '6%', left: '4%' }}>🍽️ Microondas</span>
+            <span className="landing-hero-chip landing-hero-chip-1" style={{ top: '10%', left: '2%' }}>🚼 Fraldário</span>
+            <span className="landing-hero-chip landing-hero-chip-2" style={{ bottom: '20%', right: '2%' }}>⭐ 4.8</span>
+            <span className="landing-hero-chip landing-hero-chip-3" style={{ bottom: '6%', left: '10%' }}>🍽️ Microondas</span>
           </div>
         </div>
       </section>
 
-      <section className="landing-section">
-        <div className="landing-section-header">
-          <span className="landing-section-eyebrow">A dor que a gente conhece</span>
-          <h2>Viajar ou sair de casa com bebê não devia ser um desafio de logística</h2>
-          <p>
-            Quem já cuidou de um bebê fora de casa conhece essas cenas. O Fora do Ninho nasceu para
-            resolver exatamente isso.
-          </p>
-        </div>
-        <div className="landing-pain-grid">
-          {DORES.map((d) => (
-            <div className="landing-pain-item" key={d.title}>
-              <div className="landing-pain-icon">{d.icon}</div>
-              <div>
-                <strong>{d.title}</strong>
-                <span>{d.desc}</span>
+      <Wave color="var(--bg-card)" />
+      <div className="landing-band" style={{ background: 'var(--bg-card)' }}>
+        <section className="landing-section">
+          <div className="landing-section-header reveal">
+            <span className="landing-section-eyebrow">A dor que a gente conhece</span>
+            <h2>Viajar ou sair de casa com bebê não devia ser um desafio de logística</h2>
+            <p>
+              Quem já cuidou de um bebê fora de casa conhece essas cenas. O Fora do Ninho nasceu para
+              resolver exatamente isso.
+            </p>
+          </div>
+          <div className="landing-pain-grid reveal">
+            {DORES.map((d) => (
+              <div className="landing-pain-item" key={d.title}>
+                <div className="landing-pain-icon">{d.icon}</div>
+                <div>
+                  <strong>{d.title}</strong>
+                  <span>{d.desc}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <div className="landing-community-banner">
-          <h3>Uma comunidade de pais, mães e cuidadores que se ajudam mutuamente</h3>
-          <p>
-            Cada local, cada avaliação e cada dica vem de quem já passou por ali — não é uma lista genérica,
-            é gente cuidando de gente. Quanto mais famílias usam, mais forte a comunidade fica para todo mundo.
-          </p>
-        </div>
-      </section>
+          <div className="landing-community-banner reveal">
+            <h3>Uma comunidade de pais, mães e cuidadores que se ajudam mutuamente</h3>
+            <p>
+              Cada local, cada avaliação e cada dica vem de quem já passou por ali — não é uma lista genérica,
+              é gente cuidando de gente. Quanto mais famílias usam, mais forte a comunidade fica para todo mundo.
+            </p>
+          </div>
+        </section>
+      </div>
+      <Wave color="var(--bg)" flip />
 
-      <section className="landing-features">
+      <section className="landing-features reveal">
         {FEATURES.map((f) => (
           <div className="landing-feature-card" key={f.title}>
             <div className="landing-feature-icon" style={{ background: f.bg }}>{f.icon}</div>
@@ -161,17 +195,21 @@ export default function Landing() {
         ))}
       </section>
 
-      <section className="landing-section">
-        <div className="landing-pro-section">
-          <h2>É profissional e ajuda mamães e bebês?</h2>
-          <p>
-            Consultoras de amamentação, doulas, pediatras e outros profissionais da primeira infância podem
-            criar um perfil gratuito e ser encontrados por famílias da sua região. Seja encontrada pela
-            comunidade que mais cresce no Brasil.
-          </p>
-          <Link href="/cadastro-profissional" className="btn-pro-cta">Cadastrar meu serviço</Link>
-        </div>
-      </section>
+      <Wave color="var(--green-soft)" />
+      <div className="landing-band" style={{ background: 'var(--green-soft)' }}>
+        <section className="landing-section">
+          <div className="landing-pro-section reveal">
+            <h2>É profissional e ajuda mamães e bebês?</h2>
+            <p>
+              Consultoras de amamentação, doulas, pediatras e outros profissionais da primeira infância podem
+              criar um perfil gratuito e ser encontrados por famílias da sua região. Seja encontrada pela
+              comunidade que mais cresce no Brasil.
+            </p>
+            <Link href="/cadastro-profissional" className="btn-pro-cta">Cadastrar meu serviço</Link>
+          </div>
+        </section>
+      </div>
+      <Wave color="var(--bg)" flip />
 
       <footer className="landing-footer">
         © {new Date().getFullYear()} Fora do Ninho —{' '}
