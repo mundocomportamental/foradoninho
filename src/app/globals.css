@@ -857,10 +857,12 @@ html, body {
 
 /* Landing page */
 .landing {
-  min-height: 100dvh;
+  position: fixed;
+  inset: 0;
   background: var(--bg);
   overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .landing-header {
@@ -1025,14 +1027,34 @@ html, body {
   max-width: 320px;
   aspect-ratio: 1;
   border-radius: 32px;
-  background: linear-gradient(135deg, #e0f7f7 0%, #b2eded 100%);
+  background: #e5e7eb;
   box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.landing-hero-visual-map {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.landing-hero-icon-badge {
+  position: relative;
+  z-index: 2;
+  background: white;
+  border-radius: 22px;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .landing-hero-chip {
+  z-index: 2;
   position: absolute;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -1087,6 +1109,207 @@ html, body {
   font-size: 14px;
   color: var(--text-muted);
   line-height: 1.55;
+}
+
+/* Landing — dores, comunidade, depoimentos, profissionais */
+.landing-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px 56px;
+}
+
+.landing-section-header {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 28px;
+}
+
+.landing-section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green-dark);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.landing-section-header h2 {
+  font-size: 23px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.landing-section-header p {
+  font-size: 14.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.landing-pain-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.landing-pain-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.landing-pain-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: #fdeeee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.landing-pain-item strong {
+  display: block;
+  font-size: 14.5px;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.landing-pain-item span {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.landing-community-banner {
+  background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-light) 100%);
+  border: 1px solid var(--green-light);
+  border-radius: var(--radius-lg);
+  padding: 30px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.landing-community-banner h3 {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--green-dark);
+  max-width: 480px;
+}
+
+.landing-community-banner p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 480px;
+  line-height: 1.6;
+}
+
+.landing-testimonials-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.landing-testimonial-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.landing-testimonial-quote {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.landing-testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.landing-testimonial-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--green-light);
+  color: var(--green-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.landing-testimonial-author strong {
+  font-size: 13px;
+  color: var(--text);
+  display: block;
+}
+
+.landing-testimonial-author span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.landing-pro-section {
+  background: linear-gradient(135deg, #1aabab 0%, #0d7a7a 100%);
+  border-radius: var(--radius-lg);
+  padding: 36px 26px;
+  text-align: center;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-pro-section h2 {
+  font-size: 21px;
+  font-weight: 800;
+  max-width: 520px;
+  line-height: 1.3;
+}
+
+.landing-pro-section p {
+  font-size: 14.5px;
+  opacity: 0.92;
+  max-width: 460px;
+  line-height: 1.6;
+}
+
+.btn-pro-cta {
+  background: white;
+  color: #0d7a7a;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 26px;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 14.5px;
+  cursor: pointer;
+  margin-top: 4px;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .landing-footer {
@@ -1158,6 +1381,26 @@ html, body {
 
   .landing-features {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .landing-section-header h2 {
+    font-size: 28px;
+  }
+
+  .landing-pain-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing-testimonials-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .landing-pro-section {
+    padding: 44px 40px;
+  }
+
+  .landing-pro-section h2 {
+    font-size: 26px;
   }
 }
 
