@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
+import { AMENIDADES } from '@/lib/types'
 
 const LandingMapPreview = dynamic(() => import('./LandingMapPreview'), { ssr: false })
 
@@ -26,6 +27,21 @@ const DORES = [
     icon: '💬',
     title: 'Informação espalhada em grupos de WhatsApp',
     desc: 'Indicações soltas, desatualizadas ou genéricas — sem saber se aquele lugar é mesmo preparado para crianças pequenas.',
+  },
+]
+
+const PASSOS = [
+  {
+    title: 'Abra o mapa perto de você',
+    desc: 'O app detecta sua localização e mostra na hora os locais e profissionais mais próximos.',
+  },
+  {
+    title: 'Escolha com confiança',
+    desc: 'Veja amenidades, fotos e avaliações de quem já esteve lá antes de decidir para onde ir.',
+  },
+  {
+    title: 'Faça check-in e ajude quem vem depois',
+    desc: 'Confirme que o local está ativo e deixe sua avaliação — a comunidade cresce com cada contribuição.',
   },
 ]
 
@@ -80,7 +96,7 @@ export default function Landing() {
   const router = useRouter()
 
   useEffect(() => {
-    const els = document.querySelectorAll('.reveal')
+    const els = document.querySelectorAll('.reveal, .reveal-pop')
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -121,6 +137,11 @@ export default function Landing() {
       </header>
 
       <section className="landing-hero">
+        <div className="landing-hero-blobs" aria-hidden="true">
+          <span className="landing-blob landing-blob-1" />
+          <span className="landing-blob landing-blob-2" />
+        </div>
+
         <div className="landing-hero-text reveal">
           <span className="landing-hero-badge">🍼 Feito por e para famílias viajantes</span>
           <h1>Encontre locais baby-friendly em todas as cidades do Brasil</h1>
@@ -134,7 +155,7 @@ export default function Landing() {
           </div>
         </div>
 
-        <div className="landing-hero-visual reveal" aria-hidden="true">
+        <div className="landing-hero-visual reveal-pop" style={{ transitionDelay: '0.1s' }} aria-hidden="true">
           <div className="landing-hero-visual-box">
             <div className="landing-hero-visual-frame">
               <div className="landing-hero-visual-map">
@@ -151,6 +172,16 @@ export default function Landing() {
         </div>
       </section>
 
+      <div className="landing-marquee" aria-hidden="true">
+        <div className="landing-marquee-track">
+          {[...AMENIDADES, ...AMENIDADES].map((a, i) => (
+            <span className="landing-amenity-chip" key={`${a.key}-${i}`}>
+              <span>{a.icon}</span>{a.label}
+            </span>
+          ))}
+        </div>
+      </div>
+
       <Wave color="var(--bg-card)" />
       <div className="landing-band" style={{ background: 'var(--bg-card)' }}>
         <section className="landing-section">
@@ -162,9 +193,9 @@ export default function Landing() {
               resolver exatamente isso.
             </p>
           </div>
-          <div className="landing-pain-grid reveal">
-            {DORES.map((d) => (
-              <div className="landing-pain-item" key={d.title}>
+          <div className="landing-pain-grid">
+            {DORES.map((d, i) => (
+              <div className="landing-pain-item reveal-pop" style={{ transitionDelay: `${i * 0.08}s` }} key={d.title}>
                 <div className="landing-pain-icon">{d.icon}</div>
                 <div>
                   <strong>{d.title}</strong>
@@ -185,20 +216,46 @@ export default function Landing() {
       </div>
       <Wave color="var(--bg)" flip />
 
-      <section className="landing-features reveal">
-        {FEATURES.map((f) => (
-          <div className="landing-feature-card" key={f.title}>
-            <div className="landing-feature-icon" style={{ background: f.bg }}>{f.icon}</div>
-            <h3>{f.title}</h3>
-            <p>{f.desc}</p>
-          </div>
-        ))}
+      <section className="landing-section">
+        <div className="landing-section-header reveal">
+          <span className="landing-section-eyebrow">Simples assim</span>
+          <h2>Como funciona</h2>
+          <p>Do primeiro acesso até ajudar a próxima família, em três passos.</p>
+        </div>
+        <div className="landing-steps">
+          {PASSOS.map((p, i) => (
+            <div className="landing-step reveal-pop" style={{ transitionDelay: `${i * 0.1}s` }} key={p.title}>
+              <div className="landing-step-number">{i + 1}</div>
+              <div>
+                <h3>{p.title}</h3>
+                <p>{p.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-section">
+        <div className="landing-section-header reveal">
+          <span className="landing-section-eyebrow">O que você encontra</span>
+          <h2>Tudo o que uma família precisa, num só lugar</h2>
+        </div>
+        <div className="landing-features">
+          {FEATURES.map((f, i) => (
+            <div className="landing-feature-card reveal-pop" style={{ transitionDelay: `${i * 0.08}s` }} key={f.title}>
+              <div className="landing-feature-icon" style={{ background: f.bg }}>{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+        <p className="landing-swipe-hint">← arraste para o lado →</p>
       </section>
 
       <Wave color="var(--green-soft)" />
       <div className="landing-band" style={{ background: 'var(--green-soft)' }}>
         <section className="landing-section">
-          <div className="landing-pro-section reveal">
+          <div className="landing-pro-section reveal-pop">
             <h2>É profissional e ajuda mamães e bebês?</h2>
             <p>
               Consultoras de amamentação, doulas, pediatras e outros profissionais da primeira infância podem
@@ -210,6 +267,17 @@ export default function Landing() {
         </section>
       </div>
       <Wave color="var(--bg)" flip />
+
+      <section className="landing-section">
+        <div className="landing-final-cta reveal">
+          <h2>Pronto para nunca mais ficar na mão?</h2>
+          <p>Crie sua conta gratuita ou explore o mapa agora mesmo — sem compromisso.</p>
+          <div className="landing-hero-actions" style={{ justifyContent: 'center' }}>
+            <button className="btn-hero-primary" onClick={() => goAuth('signup')}>Criar conta grátis</button>
+            <button className="btn-hero-secondary" onClick={goMap}>Ver o mapa</button>
+          </div>
+        </div>
+      </section>
 
       <footer className="landing-footer">
         © {new Date().getFullYear()} Fora do Ninho —{' '}
