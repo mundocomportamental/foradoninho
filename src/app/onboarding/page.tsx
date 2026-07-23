@@ -1,7 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const SLIDES = [
@@ -100,9 +100,9 @@ function Carrossel({ onDone }: { onDone: () => void }) {
   )
 }
 
-function AuthScreen({ onSkip }: { onSkip: () => void }) {
+function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsLogin: boolean }) {
   const [mode, setMode] = useState<'choose' | 'email'>('choose')
-  const [isLogin, setIsLogin] = useState(true)
+  const [isLogin, setIsLogin] = useState(defaultIsLogin)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -295,8 +295,10 @@ function AuthScreen({ onSkip }: { onSkip: () => void }) {
   )
 }
 
-export default function OnboardingPage() {
-  const [phase, setPhase] = useState<'slides' | 'auth'>('slides')
+function OnboardingInner() {
+  const searchParams = useSearchParams()
+  const authParam = searchParams.get('auth')
+  const [phase, setPhase] = useState<'slides' | 'auth'>(authParam ? 'auth' : 'slides')
   const router = useRouter()
 
   function skipToApp() {
@@ -308,8 +310,16 @@ export default function OnboardingPage() {
     <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font)' }}>
       {phase === 'slides'
         ? <Carrossel onDone={() => setPhase('auth')} />
-        : <AuthScreen onSkip={skipToApp} />
+        : <AuthScreen onSkip={skipToApp} defaultIsLogin={authParam !== 'signup'} />
       }
     </div>
+  )
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={null}>
+      <OnboardingInner />
+    </Suspense>
   )
 }
