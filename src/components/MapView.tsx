@@ -51,9 +51,6 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
         zoom: 11,
         zoomControl: false,
         attributionControl: false,
-        // Evita desync dos pins durante pinch-zoom em mobile (markers "saltam"
-        // para a posição correta ao fim do gesto, em vez de animar junto com os tiles)
-        markerZoomAnimation: false,
       })
 
       L.tileLayer(
