@@ -49,13 +49,19 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
       const map = L.map(containerRef.current!, {
         center: [center.lat, center.lng],
         zoom: 11,
+        // Impede zoom-out a ponto de mostrar cópias repetidas do mapa-múndi —
+        // em zoom muito baixo os marcadores podem "grudar" na cópia errada do
+        // mundo e aparecer deslocados (ex: no meio do oceano).
+        minZoom: 4,
+        maxBounds: [[-85, -180], [85, 180]],
+        maxBoundsViscosity: 1.0,
         zoomControl: false,
         attributionControl: false,
       })
 
       L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        { attribution: '© CartoDB' }
+        { attribution: '© CartoDB', noWrap: true }
       ).addTo(map)
 
       map.on('click', () => onMapClickRef.current?.())
