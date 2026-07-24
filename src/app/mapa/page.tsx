@@ -281,14 +281,20 @@ function NavModal({ local, onClose }: { local: Local; onClose: () => void }) {
   )
 }
 
-const MapView = dynamic(() => import('@/components/MapView'), { ssr: false })
+const MapView = dynamic(() => import('@/components/MapView'), {
+  ssr: false,
+  loading: () => <div style={{ width: '100%', height: '100%', background: '#e5e7eb' }} />,
+})
+
+const DEFAULT_CENTER = { lat: -23.22, lng: -46.58 }
+const LAST_POS_KEY = 'last_pos'
 
 export default function MapaPage() {
   const [locais, setLocais] = useState<Local[]>([])
   const [filtro, setFiltro] = useState<string | null>(null)
   const [filtroProfissionais, setFiltroProfissionais] = useState(false)
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
-  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null)
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>(DEFAULT_CENTER)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedLocal, setSelectedLocal] = useState<Local | null>(null)
@@ -329,19 +335,35 @@ export default function MapaPage() {
   }, [supabase])
 
   useEffect(() => {
+    // Renderiza o mapa e busca os locais na hora, com o centro padrão ou o
+    // último centro conhecido — sem esperar o GPS responder antes de mostrar algo.
+    let cachedCenter: { lat: number; lng: number } | null = null
+    try {
+      const raw = localStorage.getItem(LAST_POS_KEY)
+      if (raw) cachedCenter = JSON.parse(raw)
+    } catch {}
+
+    if (cachedCenter) {
+      setMapCenter(cachedCenter)
+      setFlyTrigger(t => t + 1)
+      fetchLocais(cachedCenter.lat, cachedCenter.lng)
+    } else {
+      fetchLocais(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng)
+    }
+
+    // Localização precisa chega em seguida e só então reposiciona o mapa (fly-to)
+    // e reordena os locais por distância real — sem bloquear a primeira renderização.
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         const pos = { lat: coords.latitude, lng: coords.longitude }
         setUserPos(pos)
         setMapCenter(pos)
+        setFlyTrigger(t => t + 1)
         fetchLocais(pos.lat, pos.lng)
+        try { localStorage.setItem(LAST_POS_KEY, JSON.stringify(pos)) } catch {}
       },
-      () => {
-        const def = { lat: -23.22, lng: -46.58 }
-        setUserPos(def)
-        setMapCenter(def)
-        fetchLocais(def.lat, def.lng)
-      }
+      () => {},
+      { timeout: 6000, maximumAge: 5 * 60 * 1000 }
     )
   }, [fetchLocais])
 
@@ -416,16 +438,14 @@ export default function MapaPage() {
       )}
 
       <div className="map-wrapper">
-        {mapCenter && (
-          <MapView
-            locais={filtered}
-            userPos={userPos}
-            center={mapCenter}
-            onMarkerClick={handleMarkerClick}
-            onMapClick={handleMapClick}
-            flyTrigger={flyTrigger}
-          />
-        )}
+        <MapView
+          locais={filtered}
+          userPos={userPos}
+          center={mapCenter}
+          onMarkerClick={handleMarkerClick}
+          onMapClick={handleMapClick}
+          flyTrigger={flyTrigger}
+        />
       </div>
 
       <div className="map-overlay-top">

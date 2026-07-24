@@ -102,6 +102,18 @@ export default function Landing() {
   const router = useRouter()
 
   useEffect(() => {
+    // Aquece o chunk pesado do mapa (Leaflet) em segundo plano, sem competir
+    // com o carregamento da própria landing — assim "Ver o mapa" abre na hora.
+    const warm = () => {
+      import('@/components/MapView')
+      import('leaflet')
+    }
+    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void }).requestIdleCallback
+    if (ric) ric(warm, { timeout: 2000 })
+    else setTimeout(warm, 1200)
+  }, [])
+
+  useEffect(() => {
     const els = document.querySelectorAll('.reveal, .reveal-pop')
     const observer = new IntersectionObserver(
       (entries) => {
