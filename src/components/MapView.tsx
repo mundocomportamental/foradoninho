@@ -51,10 +51,11 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
         zoom: 11,
         // Impede zoom-out a ponto de mostrar cópias repetidas do mapa-múndi —
         // em zoom muito baixo os marcadores podem "grudar" na cópia errada do
-        // mundo e aparecer deslocados (ex: no meio do oceano).
+        // mundo e aparecer deslocados (ex: no meio do oceano). Não usamos
+        // maxBounds/maxBoundsViscosity aqui: em testes reais, o "clamping" de
+        // bounds durante um gesto de pinça (zoom + pan simultâneos) travava o
+        // reposicionamento dos marcadores no meio do gesto.
         minZoom: 4,
-        maxBounds: [[-85, -180], [85, 180]],
-        maxBoundsViscosity: 1.0,
         zoomControl: false,
         attributionControl: false,
       })
