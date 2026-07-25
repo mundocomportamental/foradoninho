@@ -66,6 +66,15 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
       ).addTo(map)
 
       map.on('click', () => onMapClickRef.current?.())
+
+      // Reforço defensivo: força o recálculo da posição de cada marcador ao
+      // fim de qualquer zoom/movimento (setLatLng com o mesmo valor obriga o
+      // Leaflet a reposicionar o marcador do zero), independente de o gesto
+      // ter sido feito com 1 dedo (pan) ou 2 dedos (pinch-zoom).
+      map.on('zoomend moveend', () => {
+        markersRef.current.forEach(m => m.setLatLng(m.getLatLng()))
+      })
+
       mapRef.current = map
     }
 
