@@ -126,6 +126,17 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
 
       // Todos os locais com pin simples
       locais.forEach(local => {
+        // Local sem coordenadas válidas: pular. Um marcador com lat/lng nulo
+        // lança exceção dentro do Leaflet durante animações de zoom, o que
+        // interrompe o reposicionamento de TODOS os marcadores registrados
+        // depois dele naquele mesmo evento — os pins ficam "congelados" na
+        // tela até o próximo zoom (raiz do bug de pins não acompanharem
+        // o pinch-zoom).
+        if (
+          typeof local.lat !== 'number' || typeof local.lng !== 'number' ||
+          Number.isNaN(local.lat) || Number.isNaN(local.lng)
+        ) return
+
         const isProfissional = !!local.is_servico
         const isPending = local.aprovado === false
         const pinColor = isPending ? '#aaaaaa' : isProfissional ? '#7c3aed' : '#33cccc'
