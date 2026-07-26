@@ -93,7 +93,16 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
     if (!flyTrigger) return
     const map = mapRef.current
     if (!map) return
-    map.flyTo([center.lat, center.lng], Math.max(map.getZoom(), 13), { animate: true, duration: 0.8 })
+    const zoom = Math.max(map.getZoom(), 13)
+    const size = map.getSize()
+    // flyTo faz um cálculo de curva que gera NaN se o container ainda não
+    // tem tamanho real (ex: chamado logo no mount, antes do layout assentar).
+    // Nesse caso, centraliza direto (sem animação) em vez de quebrar.
+    if (size.x === 0 || size.y === 0) {
+      map.setView([center.lat, center.lng], zoom)
+      return
+    }
+    map.flyTo([center.lat, center.lng], zoom, { animate: true, duration: 0.8 })
   }, [flyTrigger])
 
   useEffect(() => {
