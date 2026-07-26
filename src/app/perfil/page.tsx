@@ -1138,9 +1138,9 @@ export default function PerfilPage() {
                   <div style={{ fontSize: 16, fontWeight: 800, color: '#059669' }}>Grátis</div>
                 </div>
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.</div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Faça seu negócio ser encontrado pela comunidade de pais e mamães que estão esperando um novo membro da família ou que acabaram de ter um!</div>
               <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.5, marginTop: 8 }}>
-                Sem cartão de crédito. Garantido até <strong>dezembro de 2026</strong> pra quem entrar agora.
+                Cadastro gratuito. Não é necessário cartão de crédito.
               </div>
             </div>
             <a
