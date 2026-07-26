@@ -148,6 +148,23 @@ export default function PerfilPage() {
 
   useEffect(() => {
     async function load() {
+      try {
+        await loadProfileData()
+      } catch (err) {
+        console.error('[perfil] erro ao carregar dados', err)
+      } finally {
+        // Garante que a página nunca fique presa em "carregando" pra sempre —
+        // se algo falhou acima (ex: linha de perfil ausente/erro de rede) e
+        // `profile` nunca foi setado, cai num perfil padrão em vez de deixar
+        // a tela em branco indefinidamente.
+        setProfile(prev => prev ?? {
+          display_name: null, username: null, avatar_url: null,
+          plano: 'gratis', role: null, cidade: null, idade: null,
+        })
+      }
+    }
+
+    async function loadProfileData() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         setIsLoggedIn(true)
@@ -188,6 +205,10 @@ export default function PerfilPage() {
         setAvaliacoes(a.count || 0)
 
         // Verifica se o usuário tem perfil profissional
+        // Nota: a tabela `profissionais` hoje não tem coluna `user_id` — o
+        // cadastro via cadastro-profissional.html é anônimo e não vincula a
+        // nenhuma conta logada, então esta consulta nunca encontra nada no
+        // momento. "Meu Negócio" fica pendente até essa vinculação existir.
         const { data: profData } = await supabase
           .from('profissionais')
           .select('*')

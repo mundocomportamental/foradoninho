@@ -345,6 +345,12 @@ export default function MapaPage() {
 
     if (cachedCenter) {
       setMapCenter(cachedCenter)
+      // Mostra o ícone de "você está aqui" já na primeira renderização, usando
+      // a última posição conhecida — antes disso, o ícone só existia depois
+      // que o GPS respondia (podia levar segundos, ou nem aparecer se a
+      // pessoa saísse da tela antes disso). O fix do GPS ao vivo corrige a
+      // posição exata assim que chega.
+      setUserPos(cachedCenter)
       setFlyTrigger(t => t + 1)
       fetchLocais(cachedCenter.lat, cachedCenter.lng)
     } else {
