@@ -215,7 +215,7 @@
       <span class="step-label">Endereço</span>
       <span class="step-label">Serviços</span>
       <span class="step-label">Presença</span>
-      <span class="step-label">Pagamento</span>
+      <span class="step-label">Finalizar</span>
     </div>
     <div class="progress-bar-bg">
       <div class="progress-bar-fill" id="progress-fill" style="width: 8%"></div>
@@ -478,7 +478,7 @@
     <div class="step-section" id="step-6">
       <div class="step-header">
         <div class="step-num">Passo 6 de 6</div>
-        <h2>💳 Plano e pagamento</h2>
+        <h2>🚀 Lançamento gratuito</h2>
         <p>Você está quase lá! Finalize seu cadastro.</p>
       </div>
 
@@ -487,69 +487,20 @@
           <div class="plan-name">Plano Profissional</div>
           <div class="plan-desc">Perfil público + visibilidade no app</div>
         </div>
-        <div class="plan-price" id="plan-price">R$34,90<span style="font-size:0.75rem;font-weight:400">/mês</span></div>
+        <div class="plan-price" id="plan-price"><span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$34,90</span> <span style="color:var(--success)">Grátis</span></div>
       </div>
 
-      <!-- Cupom -->
-      <div class="field-group">
-        <label>Possui cupom de desconto? <span class="optional">(opcional)</span></label>
-        <div class="coupon-row">
-          <input type="text" id="coupon-input" placeholder="Digite seu cupom" maxlength="20" oninput="this.value=this.value.toUpperCase()" />
-          <button class="btn-coupon" onclick="applyCoupon()">Aplicar</button>
-        </div>
-        <div class="coupon-msg" id="coupon-msg"></div>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- Card preview + fields -->
-      <div id="card-fields">
-        <div class="card-preview" id="card-visual">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-            <div style="font-size:0.75rem;opacity:0.7;">Fora do Ninho</div>
-            <div style="font-size:1.5rem;">💳</div>
-          </div>
-          <div class="card-num" id="preview-num">•••• •••• •••• ••••</div>
-          <div class="card-bottom">
-            <div>
-              <div style="font-size:0.65rem;opacity:0.7;">TITULAR</div>
-              <div class="card-holder" id="preview-holder">SEU NOME</div>
-            </div>
-            <div>
-              <div style="font-size:0.65rem;opacity:0.7;text-align:right">VALIDADE</div>
-              <div id="preview-exp">MM/AA</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label>Nome no cartão</label>
-          <input type="text" id="card-name" placeholder="NOME COMO ESTÁ NO CARTÃO"
-            oninput="document.getElementById('preview-holder').textContent=this.value.toUpperCase()||'SEU NOME'" />
-        </div>
-        <div class="field-group">
-          <label>Número do cartão</label>
-          <input type="text" id="card-num-input" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCard(this)" />
-        </div>
-        <div class="row-2">
-          <div class="field-group">
-            <label>Validade</label>
-            <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5" oninput="formatExp(this)" />
-          </div>
-          <div class="field-group">
-            <label>CVV</label>
-            <input type="text" id="card-cvv" placeholder="000" maxlength="4" />
-          </div>
-        </div>
-        <div class="divider"></div>
-        <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.6;">
-          🔒 Seus dados são protegidos por criptografia SSL. O pagamento é processado pelo <strong>Asaas</strong>, plataforma certificada pelo Banco Central. O Fora do Ninho não armazena dados do seu cartão.
+      <div style="background:var(--success-light);border:1.5px solid #6ee7b7;border-radius:12px;padding:1rem 1.1rem;margin-bottom:1.25rem;">
+        <div style="font-weight:700;color:var(--success);margin-bottom:6px;">🎉 Sem cartão de crédito</div>
+        <p style="font-size:0.85rem;color:var(--text);line-height:1.6;">
+          Seu cadastro é <strong>gratuito, garantido até dezembro de 2026</strong>. Nenhum dado de pagamento é coletado agora.
+          Quanto antes seu perfil estiver no ar, mais cedo as famílias da sua região te encontram — antes que a concorrência chegue.
         </p>
       </div>
 
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="goTo(5)">← Voltar</button>
-        <button class="btn btn-success" id="submit-btn" onclick="submitForm()">✓ Finalizar cadastro</button>
+        <button class="btn btn-success" id="submit-btn" onclick="submitForm()">✓ Finalizar cadastro grátis</button>
       </div>
     </div>
 
@@ -590,14 +541,8 @@ const SERVICES = [
   "Yoga para gestantes",
 ];
 
-const COUPONS = {
-  'NINHO00': { type: 'free', label: '🎉 Cupom aplicado! Seu cadastro está gratuito — nenhum dado de cartão é necessário.' },
-  'NINHO29': { type: 'discount', label: '🎉 Cupom aplicado! Você pagará R$29/mês nos primeiros 3 meses, depois o valor normal de R$34,90/mês. Os dados do cartão são obrigatórios para ativar o desconto.' },
-};
-
 let currentStep = 1;
 let selectedServices = new Set();
-let appliedCoupon = null;
 
 function init() {
   const grid = document.getElementById('service-grid');
@@ -690,52 +635,6 @@ function buscaCep() {
   }
 }
 
-function applyCoupon() {
-  const code = document.getElementById('coupon-input').value.trim().toUpperCase();
-  const msgEl = document.getElementById('coupon-msg');
-  const cardFields = document.getElementById('card-fields');
-  const submitBtn = document.getElementById('submit-btn');
-  const planPrice = document.getElementById('plan-price');
-
-  msgEl.className = 'coupon-msg';
-  msgEl.textContent = '';
-
-  if (!code) {
-    msgEl.className = 'coupon-msg error';
-    msgEl.textContent = 'Digite um cupom antes de aplicar.';
-    return;
-  }
-
-  const coupon = COUPONS[code];
-  if (!coupon) {
-    msgEl.className = 'coupon-msg error';
-    msgEl.textContent = '❌ Cupom inválido. Verifique o código e tente novamente.';
-    appliedCoupon = null;
-    cardFields.classList.remove('hidden');
-    planPrice.innerHTML = 'R$34,90<span style="font-size:0.75rem;font-weight:400">/mês</span>';
-    submitBtn.textContent = '✓ Finalizar cadastro';
-    return;
-  }
-
-  appliedCoupon = code;
-
-  if (coupon.type === 'free') {
-    msgEl.className = 'coupon-msg success';
-    msgEl.textContent = coupon.label;
-    cardFields.classList.add('hidden');
-    planPrice.innerHTML = '<span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$34,90</span> <span style="color:var(--success)">Grátis</span>';
-    submitBtn.textContent = '✓ Finalizar cadastro (gratuito)';
-    submitBtn.style.background = 'var(--success)';
-  } else if (coupon.type === 'discount') {
-    msgEl.className = 'coupon-msg warning';
-    msgEl.textContent = coupon.label;
-    cardFields.classList.remove('hidden');
-    planPrice.innerHTML = '<span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$34,90</span> <span style="color:var(--warning)">R$29</span><span style="font-size:0.75rem;font-weight:400;color:var(--warning)"> /mês (3 meses)</span>';
-    submitBtn.textContent = '✓ Finalizar cadastro com desconto';
-    submitBtn.style.background = '';
-  }
-}
-
 function previewPhoto(input, slotId) {
   const slot = document.getElementById(slotId);
   if (input.files && input.files[0]) {
@@ -759,19 +658,6 @@ function removePhoto(e, slotId) {
   slot.querySelector('.plus').style.display = '';
   slot.querySelector('.photo-label').style.display = '';
   slot.querySelector('input[type="file"]').value = '';
-}
-
-function formatCard(input) {
-  let v = input.value.replace(/\D/g, '').substring(0, 16);
-  input.value = v.replace(/(.{4})/g, '$1 ').trim();
-  document.getElementById('preview-num').textContent = input.value || '•••• •••• •••• ••••';
-}
-
-function formatExp(input) {
-  let v = input.value.replace(/\D/g, '');
-  if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2,4);
-  input.value = v;
-  document.getElementById('preview-exp').textContent = v || 'MM/AA';
 }
 
 async function submitForm() {
@@ -817,19 +703,7 @@ async function submitForm() {
       site: document.getElementById('site').value || null,
       whatsapp: document.getElementById('whatsapp').value || null,
       fotos: [],
-      // Cupom
-      cupom: appliedCoupon || null,
     };
-
-    // Cartão (apenas se não for cupom gratuito)
-    if (appliedCoupon !== 'NINHO00') {
-      payload.cartao = {
-        nome: document.getElementById('card-name').value,
-        numero: document.getElementById('card-num-input').value,
-        validade: document.getElementById('card-exp').value,
-        cvv: document.getElementById('card-cvv').value,
-      };
-    }
 
     const res = await fetch(
       'https://ndyujambnaskelklulwa.supabase.co/functions/v1/cadastrar-profissional',
@@ -847,21 +721,18 @@ async function submitForm() {
     }
 
     // Sucesso
-    const isFree = appliedCoupon === 'NINHO00';
     document.querySelector('.card').style.display = 'none';
     document.getElementById('progress-wrap').style.display = 'none';
-    if (isFree) {
-      document.getElementById('success-title').textContent = 'Cadastro enviado gratuitamente!';
-      document.getElementById('success-msg').innerHTML =
-        'Recebemos seu cadastro com sucesso. Seu cupom de acesso gratuito foi aplicado.<br><br>' +
-        'Nossa equipe vai revisar suas informações e você receberá um e-mail de confirmação em até <strong>24 horas</strong>.';
-    }
+    document.getElementById('success-title').textContent = 'Cadastro enviado gratuitamente!';
+    document.getElementById('success-msg').innerHTML =
+      'Recebemos seu cadastro com sucesso — grátis, garantido até <strong>dezembro de 2026</strong>, sem cartão de crédito.<br><br>' +
+      'Nossa equipe vai revisar suas informações e você receberá um e-mail de confirmação em até <strong>24 horas</strong>.';
     document.getElementById('success-screen').classList.add('visible');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
   } catch (err) {
     btn.disabled = false;
-    btn.textContent = '✓ Finalizar cadastro';
+    btn.textContent = '✓ Finalizar cadastro grátis';
     // Mostrar erro inline
     let errDiv = document.getElementById('submit-error');
     if (!errDiv) {

@@ -275,12 +275,14 @@ export default function Landing() {
       <div className="landing-band" style={{ background: 'var(--green-soft)' }}>
         <section className="landing-section">
           <div className="landing-pro-section reveal-pop">
+            <span className="landing-pro-badge">🚀 Grátis no lançamento — sem cartão de crédito</span>
             <h2>É profissional e ajuda mamães e bebês?</h2>
             <p>
               Consultoras de amamentação, doulas, pediatras e outros profissionais da primeira infância podem
-              criar um perfil e ser encontrados por famílias da sua região.
+              criar um perfil e ser encontrados por famílias da sua região. Garantido gratuito até dezembro de
+              2026 pra quem entrar agora — quanto antes seu perfil estiver no ar, mais cedo as famílias te encontram.
             </p>
-            <Link href="/cadastro-profissional" className="btn-pro-cta">Cadastrar seu serviço</Link>
+            <Link href="/cadastro-profissional" className="btn-pro-cta">Garantir minha vaga grátis</Link>
           </div>
         </section>
       </div>

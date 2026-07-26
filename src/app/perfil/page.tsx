@@ -1104,11 +1104,23 @@ export default function PerfilPage() {
               Alcance pais, mães e cuidadores que precisam de profissionais de confiança na sua cidade.
             </div>
             <div style={{ padding: '16px', background: '#f3e8ff', borderRadius: 16, border: '1.5px solid #7c3aed30', marginBottom: 12 }}>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, background: '#7c3aed', color: 'white',
+                fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 20, marginBottom: 8,
+              }}>
+                🚀 Grátis no lançamento
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <div style={{ fontSize: 16, fontWeight: 700, color: '#7c3aed' }}>Plano Profissional</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#7c3aed' }}>R$ 34,90/mês</div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 12, color: '#a78bfa', textDecoration: 'line-through' }}>R$ 34,90/mês</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: '#059669' }}>Grátis</div>
+                </div>
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Perfil no app, listagem em "Profissionais", até 5 fotos, contato direto via WhatsApp.</div>
+              <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.5, marginTop: 8 }}>
+                Sem cartão de crédito. Garantido até <strong>dezembro de 2026</strong> pra quem entrar agora.
+              </div>
             </div>
             <a
               href="/cadastro-profissional"
@@ -1117,7 +1129,7 @@ export default function PerfilPage() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
                 <path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/>
               </svg>
-              Quero anunciar meu serviço
+              Garantir minha vaga grátis
             </a>
           </div>
         </div>

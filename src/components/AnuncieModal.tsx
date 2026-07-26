@@ -121,16 +121,23 @@ export default function AnuncieModal({ onClose }: AnuncieModalProps) {
               border: '2px solid #a78bfa',
               borderRadius: 20,
               padding: '20px 18px',
-              marginBottom: 20,
+              marginBottom: 12,
             }}>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, background: '#7c3aed', color: 'white',
+                fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 20, marginBottom: 12,
+              }}>
+                🚀 Grátis no lançamento
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                 <div>
                   <div style={{ fontSize: 17, fontWeight: 800, color: '#5b21b6' }}>Plano Profissional</div>
-                  <div style={{ fontSize: 12, color: '#7c3aed', marginTop: 3 }}>Sem fidelidade · cancele quando quiser</div>
+                  <div style={{ fontSize: 12, color: '#7c3aed', marginTop: 3 }}>Sem cartão de crédito · sem fidelidade</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: '#7c3aed', lineHeight: 1 }}>R$ 34,90</div>
-                  <div style={{ fontSize: 12, color: '#7c3aed' }}>/mês</div>
+                  <div style={{ fontSize: 13, color: '#a78bfa', textDecoration: 'line-through' }}>R$ 34,90/mês</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#059669', lineHeight: 1 }}>Grátis</div>
                 </div>
               </div>
 
@@ -152,12 +159,16 @@ export default function AnuncieModal({ onClose }: AnuncieModalProps) {
               </div>
             </div>
 
+            <p style={{ fontSize: 12.5, color: '#7c3aed', lineHeight: 1.6, marginBottom: 20, textAlign: 'center' }}>
+              Garantido gratuito até <strong>dezembro de 2026</strong> pra quem entrar agora. Quanto antes seu perfil estiver no ar, mais cedo as famílias da sua região te encontram — antes que a concorrência chegue.
+            </p>
+
             <Link
               href="/cadastro-profissional"
               onClick={onClose}
               style={{ display: 'block', textAlign: 'center', background: '#7c3aed', color: 'white', padding: '14px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}
             >
-              Começar meu cadastro →
+              Garantir minha vaga grátis →
             </Link>
 
             <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginTop: 14 }}>

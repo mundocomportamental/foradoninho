@@ -92,7 +92,10 @@ export default function PlanosPage() {
                 <span style={{ fontSize: 22 }}>👩‍⚕️</span>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#5b21b6', marginBottom: 2 }}>Anuncie seu serviço</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#5b21b6' }}>Anuncie seu serviço</div>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: 'white', background: '#7c3aed', padding: '2px 8px', borderRadius: 20 }}>GRÁTIS</span>
+                </div>
                 <div style={{ fontSize: 13, color: '#7c3aed', lineHeight: 1.4 }}>Doula, consultora, pediatra e mais — alcance famílias e cuidadores na sua cidade</div>
               </div>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>

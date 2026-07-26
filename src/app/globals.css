@@ -1579,6 +1579,18 @@ html, body {
   gap: 12px;
 }
 
+.landing-pro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .landing-pro-section h2 {
   font-size: 21px;
   font-weight: 800;
