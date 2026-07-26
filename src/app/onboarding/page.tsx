@@ -187,11 +187,15 @@ function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsL
         </div>
       </div>
 
-      {mode === 'choose' && (
+      {mode === 'choose' && (() => {
+        // Aceite de termos só é exigido na criação de conta — quem já tem
+        // conta e está só entrando já aceitou isso no cadastro original.
+        const canProceed = isLogin || termsAccepted
+        return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Google */}
-          <button onClick={handleGoogle} disabled={googleLoading || !termsAccepted}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)', opacity: termsAccepted ? 1 : 0.45 }}>
+          <button onClick={handleGoogle} disabled={googleLoading || !canProceed}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)', opacity: canProceed ? 1 : 0.45 }}>
             {googleLoading
               ? <div style={{ width: 20, height: 20, border: '2px solid var(--border)', borderTopColor: 'var(--text)', borderRadius: '50%' }} />
               : <>
@@ -212,8 +216,8 @@ function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsL
           </div>
 
           {/* Email */}
-          <button onClick={() => setMode('email')} disabled={!termsAccepted}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: termsAccepted ? 'pointer' : 'not-allowed', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)', opacity: termsAccepted ? 1 : 0.45 }}>
+          <button onClick={() => setMode('email')} disabled={!canProceed}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 14, border: '1.5px solid var(--border)', background: 'var(--bg-card)', cursor: canProceed ? 'pointer' : 'not-allowed', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 600, color: 'var(--text)', opacity: canProceed ? 1 : 0.45 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
               <polyline points="22,6 12,13 2,6"/>
@@ -223,56 +227,59 @@ function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsL
 
           {error && <div style={{ fontSize: 13, color: '#ef4444', textAlign: 'center' }}>{error}</div>}
 
-          {/* Aceite de termos — links inline, sem dropdowns */}
-          <label
-            onClick={() => setTermsAccepted(v => !v)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginTop: 8,
-              background: termsAccepted ? 'rgba(51,204,204,0.08)' : 'rgba(51,204,204,0.04)',
-              border: termsAccepted ? '2px solid #33CCCC' : '2px solid #33CCCC',
-              borderRadius: 12, padding: '12px 14px', transition: 'all 0.15s',
-            }}
-          >
-            <div
+          {/* Aceite de termos — só exigido ao criar conta, links inline, sem dropdowns */}
+          {!isLogin && (
+            <label
+              onClick={() => setTermsAccepted(v => !v)}
               style={{
-                width: 24, height: 24, borderRadius: 7, flexShrink: 0,
-                background: termsAccepted ? '#33CCCC' : 'white',
-                border: termsAccepted ? '2px solid #33CCCC' : '2.5px solid #33CCCC',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginTop: 8,
+                background: termsAccepted ? 'rgba(51,204,204,0.08)' : 'rgba(51,204,204,0.04)',
+                border: termsAccepted ? '2px solid #33CCCC' : '2px solid #33CCCC',
+                borderRadius: 12, padding: '12px 14px', transition: 'all 0.15s',
               }}
             >
-              {termsAccepted && (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              )}
-            </div>
-            <span style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5, fontWeight: 500 }}>
-              Li e aceito os{' '}
-              <Link
-                href="/privacidade#termos"
-                onClick={e => e.stopPropagation()}
-                style={{ color: '#1aabab', fontWeight: 700, textDecoration: 'underline' }}
+              <div
+                style={{
+                  width: 24, height: 24, borderRadius: 7, flexShrink: 0,
+                  background: termsAccepted ? '#33CCCC' : 'white',
+                  border: termsAccepted ? '2px solid #33CCCC' : '2.5px solid #33CCCC',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.15s',
+                }}
               >
-                Termos de Uso
-              </Link>
-              {' '}e a{' '}
-              <Link
-                href="/privacidade"
-                onClick={e => e.stopPropagation()}
-                style={{ color: '#1aabab', fontWeight: 700, textDecoration: 'underline' }}
-              >
-                Política de Privacidade
-              </Link>
-            </span>
-          </label>
+                {termsAccepted && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                )}
+              </div>
+              <span style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5, fontWeight: 500 }}>
+                Li e aceito os{' '}
+                <Link
+                  href="/privacidade#termos"
+                  onClick={e => e.stopPropagation()}
+                  style={{ color: '#1aabab', fontWeight: 700, textDecoration: 'underline' }}
+                >
+                  Termos de Uso
+                </Link>
+                {' '}e a{' '}
+                <Link
+                  href="/privacidade"
+                  onClick={e => e.stopPropagation()}
+                  style={{ color: '#1aabab', fontWeight: 700, textDecoration: 'underline' }}
+                >
+                  Política de Privacidade
+                </Link>
+              </span>
+            </label>
+          )}
 
-          <button className="btn-secondary" onClick={onSkip} disabled={!termsAccepted} style={{ marginTop: 4, opacity: termsAccepted ? 1 : 0.45 }}>
+          <button className="btn-secondary" onClick={onSkip} disabled={!canProceed} style={{ marginTop: 4, opacity: canProceed ? 1 : 0.45 }}>
             Continuar sem conta
           </button>
         </div>
-      )}
+        )
+      })()}
 
       {mode === 'email' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -287,7 +294,25 @@ function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsL
           <input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
           <input type="password" placeholder={isLogin ? 'Senha (opcional — aceita link mágico)' : 'Criar senha'} value={password} onChange={e => setPassword(e.target.value)} style={inputStyle} />
           {error && <div style={{ fontSize: 13, color: '#ef4444' }}>{error}</div>}
-          <button className="btn-primary" onClick={handleEmail} disabled={loading}>
+
+          {/* Só aparece se alguém trocar de "Entrar" para "Criar conta" aqui
+              dentro sem ter passado pela tela anterior com o aceite */}
+          {!isLogin && !termsAccepted && (
+            <label
+              onClick={() => setTermsAccepted(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', background: 'rgba(51,204,204,0.04)', border: '2px solid #33CCCC', borderRadius: 12, padding: '12px 14px' }}
+            >
+              <div style={{ width: 24, height: 24, borderRadius: 7, flexShrink: 0, background: 'white', border: '2.5px solid #33CCCC' }} />
+              <span style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.5, fontWeight: 500 }}>
+                Li e aceito os{' '}
+                <Link href="/privacidade#termos" onClick={e => e.stopPropagation()} style={{ color: '#1aabab', fontWeight: 700, textDecoration: 'underline' }}>Termos de Uso</Link>
+                {' '}e a{' '}
+                <Link href="/privacidade" onClick={e => e.stopPropagation()} style={{ color: '#1aabab', fontWeight: 700, textDecoration: 'underline' }}>Política de Privacidade</Link>
+              </span>
+            </label>
+          )}
+
+          <button className="btn-primary" onClick={handleEmail} disabled={loading || (!isLogin && !termsAccepted)}>
             {loading ? 'Aguarde...' : isLogin ? 'Entrar' : 'Criar conta'}
           </button>
           <button className="btn-secondary" onClick={() => { setMode('choose'); setError('') }}>← Voltar</button>
