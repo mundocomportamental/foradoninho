@@ -1,5 +1,10 @@
 // Service Worker — Fora do Ninho
-const CACHE_NAME = 'fdn-v2'
+// Importante: mude este valor a cada deploy que corrija um bug real —
+// é o que força o navegador a descartar o cache antigo (que pode conter
+// uma versão quebrada do app) em vez de continuar servindo-o offline/em
+// caso de falha de rede (mais comum em dados móveis do que no wifi do
+// desktop, o que explica bugs que "só acontecem no celular").
+const CACHE_NAME = 'fdn-v3'
 
 const STATIC_ASSETS = [
   '/',
