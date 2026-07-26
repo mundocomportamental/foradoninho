@@ -9,11 +9,8 @@ import AnuncieModal from '@/components/AnuncieModal'
 
 const FILTROS_ESTABELECIMENTOS = [
   { key: 'todos', label: 'Todos' },
-  { key: 'fraldario', label: '🧷 Fraldário/Trocador' },
-  { key: 'microondas', label: '🥣 Microondas' },
-  { key: 'cadeirão', label: '🪑 Cadeirão' },
-  { key: 'amamentacao', label: '🤱 Amamentação' },
-  { key: 'playground', label: '🛝 Playground' },
+  ...AMENIDADES.map(a => ({ key: a.key, label: `${a.icon} ${a.label}` })),
+  { key: 'profissionais', label: '👩‍⚕️ Profissionais' },
 ]
 
 const TIPO_SERVICO_LABELS: Record<string, string> = {
@@ -39,9 +36,16 @@ export default function LocaisPage() {
   const [locais, setLocais] = useState<Local[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [filtro, setFiltro] = useState('todos')
+  const [filtro, setFiltroState] = useState('todos')
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
   const [showAnuncio, setShowAnuncio] = useState(false)
+  const [estabExpanded, setEstabExpanded] = useState(false)
+
+  // Reseta o "ver mais" sempre que o filtro muda, pra não começar já expandido
+  function setFiltro(v: string) {
+    setEstabExpanded(false)
+    setFiltroState(v)
+  }
   const supabase = createClient()
 
   useEffect(() => {
@@ -70,9 +74,11 @@ export default function LocaisPage() {
     ['consultora','doula','pediatra','fisioterapeuta','fonoaudiologa','psicologa'].includes(l.tipo)
   )
 
+  const isProfFilter = filtro === 'profissionais'
+
   const filteredEstab = estabelecimentos
     .filter(l => {
-      if (filtro !== 'todos' && !l[filtro as keyof Local]) return false
+      if (filtro !== 'todos' && !isProfFilter && !l[filtro as keyof Local]) return false
       if (search) {
         const q = search.toLowerCase()
         const tipoLabel = (TIPO_LABELS[l.tipo] || l.tipo || '').toLowerCase()
@@ -132,7 +138,7 @@ export default function LocaisPage() {
             className="search-bar"
             placeholder="Buscar local, cidade..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setEstabExpanded(false) }}
           />
         </div>
 
@@ -153,6 +159,12 @@ export default function LocaisPage() {
             ))}
           </div>
 
+          {isProfFilter ? (
+            <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+              Veja os profissionais na seção "👶 Serviços para bebês", logo abaixo ↓
+            </div>
+          ) : (
+          <>
           {/* Em Destaque */}
           {destaques.length > 0 && filtro === 'todos' && !search && (
             <div style={{ marginBottom: 16 }}>
@@ -186,7 +198,7 @@ export default function LocaisPage() {
             <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>Nenhum local encontrado</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {filteredEstab.slice(0, 5).map(local => (
+              {filteredEstab.slice(0, estabExpanded ? undefined : 5).map(local => (
                 <Link key={local.id} href={`/local/${local.id}`} style={{ textDecoration: 'none' }}>
                   <div className="card" style={{ padding: '14px 14px 12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
@@ -229,6 +241,16 @@ export default function LocaisPage() {
                 </Link>
               ))}
             </div>
+          )}
+          {!estabExpanded && filteredEstab.length > 5 && (
+            <button
+              onClick={() => setEstabExpanded(true)}
+              style={{ width: '100%', marginTop: 10, padding: '11px', background: 'none', border: '1.5px solid var(--border)', borderRadius: 50, fontSize: 13, fontWeight: 600, color: 'var(--green-dark)', cursor: 'pointer', fontFamily: 'var(--font)' }}
+            >
+              Ver mais {filteredEstab.length - 5} locais
+            </button>
+          )}
+          </>
           )}
         </div>
 

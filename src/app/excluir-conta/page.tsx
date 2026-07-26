@@ -206,8 +206,8 @@ export default function ExcluirContaPage() {
             </div>
             <p style={{ fontSize: 14, color: '#64748b', marginBottom: 20 }}>
               Se o problema persistir, entre em contato:{' '}
-              <a href="mailto:contato@foradoninho.com.br" style={{ color: '#33CCCC' }}>
-                contato@foradoninho.com.br
+              <a href="mailto:foradoninho.app@gmail.com" style={{ color: '#33CCCC' }}>
+                foradoninho.app@gmail.com
               </a>
             </p>
             <button

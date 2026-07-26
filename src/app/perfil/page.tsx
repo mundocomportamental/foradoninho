@@ -205,15 +205,26 @@ export default function PerfilPage() {
         setAvaliacoes(a.count || 0)
 
         // Verifica se o usuário tem perfil profissional
-        // Nota: a tabela `profissionais` hoje não tem coluna `user_id` — o
-        // cadastro via cadastro-profissional.html é anônimo e não vincula a
-        // nenhuma conta logada, então esta consulta nunca encontra nada no
-        // momento. "Meu Negócio" fica pendente até essa vinculação existir.
-        const { data: profData } = await supabase
+        let { data: profData } = await supabase
           .from('profissionais')
           .select('*')
           .eq('user_id', user.id)
           .maybeSingle()
+
+        // O cadastro via cadastro-profissional.html é anônimo e não vincula
+        // user_id no momento do envio. Se não achou nada pelo user_id direto,
+        // tenta "reivindicar" um registro órfão com o mesmo e-mail da conta
+        // logada (RPC restrita — só vincula à própria conta) e busca de novo.
+        if (!profData) {
+          await supabase.rpc('claim_profissional_by_email')
+          const retry = await supabase
+            .from('profissionais')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle()
+          profData = retry.data
+        }
+
         if (profData) {
           setProfissional(profData)
           setEditProf({

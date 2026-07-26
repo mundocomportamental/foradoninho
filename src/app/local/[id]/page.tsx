@@ -871,7 +871,10 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         {totalRatings > 0 && (
           <div style={{ margin: '0 16px 4px' }}>
             <div className="card" style={{ padding: 16 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Avaliações da comunidade</div>
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>Avaliações da comunidade</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.5 }}>
+                Notas sobre o quanto este local acolhe famílias com crianças pequenas — não uma avaliação geral do estabelecimento.
+              </div>
               <SmileBar label="Limpeza" value={m('limpeza')} />
               <SmileBar label="Atendimento" value={m('atendimento')} />
               <SmileBar label="Instalações" value={m('instalacoes')} />

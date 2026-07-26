@@ -3,10 +3,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 export default function PrivacidadePage() {
+  // Padrão é 'privacidade' (bate com o nome da própria página); só cai em
+  // 'termos' quando o link pede isso explicitamente via #termos. Antes o
+  // padrão era o oposto, então o link "Política de Privacidade" (que aponta
+  // pra /privacidade sem hash) acabava abrindo a aba de Termos por engano.
   const [aba, setAba] = useState<'termos' | 'privacidade'>(
-    typeof window !== 'undefined' && window.location.hash === '#privacidade'
-      ? 'privacidade'
-      : 'termos'
+    typeof window !== 'undefined' && window.location.hash === '#termos'
+      ? 'termos'
+      : 'privacidade'
   )
 
   return (
@@ -94,8 +98,8 @@ export default function PrivacidadePage() {
                 Você é responsável por manter a confidencialidade de suas credenciais. Não compartilhe
                 sua senha com terceiros. Caso suspeite de acesso não autorizado, entre em contato
                 imediatamente pelo e-mail{' '}
-                <a href="mailto:contato@foradoninho.com.br" style={{ color: 'var(--green-dark)' }}>
-                  contato@foradoninho.com.br
+                <a href="mailto:foradoninho.app@gmail.com" style={{ color: 'var(--green-dark)' }}>
+                  foradoninho.app@gmail.com
                 </a>.
               </Section>
 
@@ -159,8 +163,8 @@ export default function PrivacidadePage() {
 
               <Section title="10. Contato">
                 Dúvidas sobre os Termos:{' '}
-                <a href="mailto:contato@foradoninho.com.br" style={{ color: 'var(--green-dark)' }}>
-                  contato@foradoninho.com.br
+                <a href="mailto:foradoninho.app@gmail.com" style={{ color: 'var(--green-dark)' }}>
+                  foradoninho.app@gmail.com
                 </a>
               </Section>
             </article>
@@ -266,8 +270,8 @@ export default function PrivacidadePage() {
                     página de exclusão de conta
                   </Link>{' '}
                   ou envie um e-mail para{' '}
-                  <a href="mailto:contato@foradoninho.com.br" style={{ color: 'var(--green-dark)' }}>
-                    contato@foradoninho.com.br
+                  <a href="mailto:foradoninho.app@gmail.com" style={{ color: 'var(--green-dark)' }}>
+                    foradoninho.app@gmail.com
                   </a>.
                 </p>
               </Section>
@@ -290,8 +294,8 @@ export default function PrivacidadePage() {
 
               <Section title="10. Contato">
                 Dúvidas sobre privacidade:{' '}
-                <a href="mailto:contato@foradoninho.com.br" style={{ color: 'var(--green-dark)' }}>
-                  contato@foradoninho.com.br
+                <a href="mailto:foradoninho.app@gmail.com" style={{ color: 'var(--green-dark)' }}>
+                  foradoninho.app@gmail.com
                 </a>
               </Section>
             </article>

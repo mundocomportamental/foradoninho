@@ -291,7 +291,9 @@ export default function NovoLocalPage() {
           <div style={{ fontSize: 72, marginBottom: 12 }}>🎉</div>
           <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Parabéns!</div>
           <div style={{ fontSize: 15, color: 'var(--text-muted)', marginBottom: 28, lineHeight: 1.6, maxWidth: 320 }}>
-            Você adicionou um novo local ao mapa! Ele será revisado pela nossa equipe antes de aparecer para todos. Agradecemos sua contribuição!
+            {lat == null || lng == null
+              ? 'Obrigado por contribuir! Como não conseguimos captar sua localização automaticamente, vamos confirmar as coordenadas desse local nos próximos dias para que ele apareça corretamente no mapa. Assim que revisado, ele fica visível para todos.'
+              : 'Você adicionou um novo local ao mapa! Ele será revisado pela nossa equipe antes de aparecer para todos. Agradecemos sua contribuição!'}
           </div>
 
           {/* +1 estrela */}
