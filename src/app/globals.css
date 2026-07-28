@@ -1637,6 +1637,8 @@ html, body {
 @media (min-width: 860px) {
   .landing-header {
     padding-top: 28px;
+    padding-left: 40px;
+    padding-right: 40px;
   }
 
   .landing-logo {
@@ -1657,6 +1659,8 @@ html, body {
     align-items: center;
     padding-top: 48px;
     padding-bottom: 88px;
+    padding-left: 40px;
+    padding-right: 40px;
     gap: 56px;
   }
 
@@ -1726,6 +1730,8 @@ html, body {
   .landing-header,
   .landing-hero {
     max-width: 1440px;
+    padding-left: 56px;
+    padding-right: 56px;
   }
 
   .landing-hero-visual-box {
