@@ -14,6 +14,7 @@ interface Profile {
   role: string | null
   cidade: string | null
   idade: number | null
+  is_admin?: boolean
 }
 
 interface Filho {
@@ -816,6 +817,28 @@ export default function PerfilPage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* ── Painel Admin (só visível pra conta com is_admin=true) ── */}
+        {isLoggedIn && profile?.is_admin && (
+          <div style={{ margin: '0 16px 12px' }}>
+            <Link href="/admin" style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              borderRadius: 16, border: '1.5px solid #1f2937', background: '#111827',
+              padding: '14px 16px', textDecoration: 'none',
+            }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 20 }}>🛠️</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: 'white' }}>Painel Admin</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>Métricas, moderação e usuários</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </Link>
           </div>
         )}
 
