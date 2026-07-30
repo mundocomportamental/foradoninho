@@ -24,6 +24,12 @@
 .DS_Store
 *.pem
 
+# keystores de assinatura Android — nunca commitar. O CI já decodifica o
+# keystore a partir de um GitHub Secret (ver .github/workflows/build-android.yml)
+*.jks
+*.jks.b64
+*.keystore
+
 # debug
 npm-debug.log*
 yarn-debug.log*
