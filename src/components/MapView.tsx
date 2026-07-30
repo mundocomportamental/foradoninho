@@ -130,7 +130,8 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
           iconAnchor: [20, 20],
           className: '',
         })
-        L.marker([userPos.lat, userPos.lng], { icon: userIcon }).addTo(map)
+        const userMarker = L.marker([userPos.lat, userPos.lng], { icon: userIcon }).addTo(map)
+        markersRef.current.push(userMarker)
       }
 
       // Todos os locais com pin simples

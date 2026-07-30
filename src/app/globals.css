@@ -343,7 +343,6 @@ html, body {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 12px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }

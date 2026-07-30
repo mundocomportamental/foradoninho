@@ -467,7 +467,7 @@ export default function MapaPage() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 12 }}>
           <FiltrosInfoButton />
           <div className="map-chips-row" style={{ flex: 1, overflowX: 'auto' }}>
             <button
