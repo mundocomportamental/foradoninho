@@ -101,8 +101,9 @@ function Carrossel({ onDone }: { onDone: () => void }) {
 }
 
 function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsLogin: boolean }) {
-  const [mode, setMode] = useState<'choose' | 'email'>('choose')
+  const [mode, setMode] = useState<'choose' | 'email' | 'reset'>('choose')
   const [isLogin, setIsLogin] = useState(defaultIsLogin)
+  const [resetSent, setResetSent] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -149,6 +150,48 @@ function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsL
         setMagicSent(true)
       }
     } finally { setLoading(false) }
+  }
+
+  async function handleResetPassword() {
+    if (!email) { setError('Digite seu email'); return }
+    setLoading(true); setError('')
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/redefinir-senha`,
+      })
+      if (error) { setError('Erro ao enviar o link. Tente novamente.'); return }
+      setResetSent(true)
+    } finally { setLoading(false) }
+  }
+
+  if (mode === 'reset') {
+    if (resetSent) return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 28px', textAlign: 'center' }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>📬</div>
+        <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 10 }}>Verifique seu email</div>
+        <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 24 }}>
+          Se <strong>{email}</strong> tiver uma conta com a gente, enviamos um link para redefinir sua senha.
+        </div>
+        <button className="btn-secondary" onClick={() => { setMode('email'); setResetSent(false) }}>← Voltar para o login</button>
+      </div>
+    )
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '40px 24px 32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <img src="/icons/icon-512-store.png" alt="Fora do Ninho" style={{ width: 88, height: 88, objectFit: 'contain', borderRadius: 22, margin: '0 auto 14px', display: 'block' }} />
+          <div style={{ fontSize: 22, fontWeight: 800 }}>Redefinir senha</div>
+          <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>Digite seu e-mail e enviamos um link para você criar uma nova senha.</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} style={{ height: 48, padding: '0 14px', borderRadius: 12, border: '1.5px solid var(--border)', fontFamily: 'var(--font)', fontSize: 14, color: 'var(--text)', background: 'var(--bg-card)', outline: 'none', width: '100%' }} />
+          {error && <div style={{ fontSize: 13, color: '#ef4444' }}>{error}</div>}
+          <button className="btn-primary" onClick={handleResetPassword} disabled={loading}>
+            {loading ? 'Aguarde...' : 'Enviar link de redefinição'}
+          </button>
+          <button className="btn-secondary" onClick={() => { setMode('email'); setError('') }}>← Voltar</button>
+        </div>
+      </div>
+    )
   }
 
   if (magicSent) return (
@@ -293,6 +336,14 @@ function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsL
           </div>
           <input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
           <input type="password" placeholder={isLogin ? 'Senha (opcional — aceita link mágico)' : 'Criar senha'} value={password} onChange={e => setPassword(e.target.value)} style={inputStyle} />
+          {isLogin && (
+            <button
+              onClick={() => { setMode('reset'); setError('') }}
+              style={{ alignSelf: 'flex-end', background: 'none', border: 'none', color: '#1aabab', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font)', padding: 0 }}
+            >
+              Esqueci minha senha
+            </button>
+          )}
           {error && <div style={{ fontSize: 13, color: '#ef4444' }}>{error}</div>}
 
           {/* Só aparece se alguém trocar de "Entrar" para "Criar conta" aqui

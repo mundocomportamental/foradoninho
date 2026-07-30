@@ -192,6 +192,21 @@
   .cnpj-toggle { font-size: 0.82rem; color: var(--primary); cursor: pointer; text-decoration: underline; margin-bottom: 1rem; display: inline-block; }
   #cnpj-section { display: none; }
 
+  /* Gate de login */
+  #gate-screen { display: none; text-align: center; padding: 2.5rem 2rem; }
+  #gate-screen.visible { display: block; }
+  #app-content { display: none; }
+  #app-content.visible { display: block; }
+  .gate-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+  #gate-screen h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+  #gate-screen p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; max-width: 420px; margin: 0 auto; }
+  .btn-login-link {
+    display: inline-block; margin-top: 1.5rem; padding: 0.75rem 1.75rem;
+    background: var(--primary); color: white; border-radius: 10px; font-weight: 600;
+    font-size: 0.9rem; text-decoration: none;
+  }
+  .btn-login-link:hover { background: var(--primary-dark); }
+
   @media (max-width: 480px) {
     .row-2, .row-3 { grid-template-columns: 1fr; }
     .card { padding: 1.25rem; }
@@ -208,6 +223,20 @@
     <p>Cadastro de profissional</p>
   </div>
 
+  <!-- Gate de login -->
+  <div class="card" id="gate-screen">
+    <div class="gate-icon">🔒</div>
+    <h2>Entre na sua conta para se cadastrar</h2>
+    <p>Pra manter o cadastro seguro e evitar perfis falsos, agora é preciso estar logado na sua conta Fora do Ninho antes de se cadastrar como profissional.</p>
+    <a class="btn-login-link" id="gate-login-link" href="/onboarding?auth=login">Entrar ou criar conta →</a>
+  </div>
+
+  <!-- Verificando sessão -->
+  <div class="card" id="checking-screen">
+    <p style="text-align:center;color:var(--text-muted);padding:2rem 0;">Verificando sua sessão…</p>
+  </div>
+
+  <div id="app-content">
   <div class="progress-wrap" id="progress-wrap">
     <div class="step-labels">
       <span class="step-label active">Dados</span>
@@ -515,8 +544,36 @@
     <button class="btn btn-primary" style="margin-top:2rem;width:100%;" onclick="location.reload()">Cadastrar outro profissional</button>
   </div>
 
+  </div><!-- /app-content -->
+
 </div>
 
+<script type="module">
+import { createBrowserClient } from 'https://esm.sh/@supabase/ssr@0.10.3';
+
+// Mesmo client (mesma leitura de sessão via cookie) usado no resto do app
+// em src/lib/supabase/client.ts — garante que uma sessão já aberta no app
+// principal seja reconhecida aqui também, no mesmo domínio.
+const supabase = createBrowserClient(
+  'https://ndyujambnaskelklulwa.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5keXVqYW1ibmFza2Vsa2x1bHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NDk2ODIsImV4cCI6MjA5NDAyNTY4Mn0.PTt6VAAbeDDdoLTHBgm4UsA4M9A4Q9cuLuqeF2qRlrI'
+);
+
+async function checkSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  document.getElementById('checking-screen').style.display = 'none';
+  if (!session) {
+    document.getElementById('gate-login-link').href = '/onboarding?auth=login';
+    document.getElementById('gate-screen').classList.add('visible');
+    return;
+  }
+  window.__ninhoSession = session;
+  document.getElementById('app-content').classList.add('visible');
+  window.initForm();
+}
+
+checkSession();
+</script>
 <script>
 const SERVICES = [
   "Acupuntura",
@@ -709,7 +766,10 @@ async function submitForm() {
       'https://ndyujambnaskelklulwa.supabase.co/functions/v1/cadastrar-profissional',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + (window.__ninhoSession && window.__ninhoSession.access_token || ''),
+        },
         body: JSON.stringify(payload),
       }
     );
@@ -745,7 +805,8 @@ async function submitForm() {
   }
 }
 
-init();
+// Só inicializa o formulário depois que o módulo acima confirmar sessão ativa
+window.initForm = init;
 </script>
 </body>
 </html>

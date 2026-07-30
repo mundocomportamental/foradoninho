@@ -72,13 +72,19 @@ export default function PrivacidadePage() {
                 Termos de Uso
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 36 }}>
-                Última atualização: maio de 2026
+                Última atualização: julho de 2026
               </p>
 
-              <p style={{ marginBottom: 24, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+              <p style={{ marginBottom: 12, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                 Bem-vindo ao <strong style={{ color: 'var(--text)' }}>Fora do Ninho</strong>. Ao
                 acessar ou usar o aplicativo, você concorda com estes Termos de Uso. Se não concordar,
                 não utilize o app.
+              </p>
+
+              <p style={{ marginBottom: 24, color: 'var(--text-muted)', lineHeight: 1.6, fontSize: 13 }}>
+                O Fora do Ninho é operado por <strong>FORA DO NINHO INOVA SIMPLES (I.S.)</strong>,
+                CNPJ 66.770.352/0001-34, com sede na Av. Dona Gertrudes, 181, Alvinópolis, Atibaia/SP,
+                CEP 12.942-540.
               </p>
 
               <Section title="1. O serviço">
@@ -135,10 +141,24 @@ export default function PrivacidadePage() {
               </Section>
 
               <Section title="6. Isenção de responsabilidade">
-                As informações sobre locais são cadastradas por usuários e podem estar desatualizadas
-                ou incorretas. O Fora do Ninho não garante a precisão dessas informações e não se
-                responsabiliza por danos decorrentes do uso do app. Sempre confirme as informações
-                diretamente no local antes de visitar.
+                <p style={{ marginBottom: 12 }}>
+                  As informações sobre locais são cadastradas por usuários e podem estar desatualizadas
+                  ou incorretas. O Fora do Ninho não garante a precisão dessas informações e não se
+                  responsabiliza por danos decorrentes do uso do app. Sempre confirme as informações
+                  diretamente no local antes de visitar.
+                </p>
+                <p style={{ marginBottom: 12 }}>
+                  O Fora do Ninho é uma plataforma de conexão entre usuários — não somos parte nas
+                  interações, avaliações, encontros ou negócios realizados entre você e outros
+                  usuários ou profissionais cadastrados. Você usa o app e interage com outras pessoas
+                  por sua conta e risco, e é o único responsável por verificar a idoneidade de
+                  informações, produtos ou serviços de terceiros antes de utilizá-los.
+                </p>
+                <p>
+                  Não nos responsabilizamos por condutas de outros usuários, incluindo informações
+                  falsas, comportamento inadequado dentro ou fora do app, ou danos decorrentes de
+                  contato ou negócio fechado com profissionais cadastrados na plataforma.
+                </p>
               </Section>
 
               <Section title="7. Encerramento de conta">
@@ -177,13 +197,19 @@ export default function PrivacidadePage() {
                 Política de Privacidade
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 36 }}>
-                Última atualização: maio de 2026
+                Última atualização: julho de 2026
               </p>
 
-              <p style={{ marginBottom: 24, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+              <p style={{ marginBottom: 12, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                 O <strong style={{ color: 'var(--text)' }}>Fora do Ninho</strong> é uma plataforma
                 colaborativa que ajuda pais e mães a encontrar locais baby-friendly em viagens. Esta
                 Política explica quais dados coletamos, como os usamos e quais são os seus direitos.
+              </p>
+
+              <p style={{ marginBottom: 24, color: 'var(--text-muted)', lineHeight: 1.6, fontSize: 13 }}>
+                Controlador dos dados: <strong>FORA DO NINHO INOVA SIMPLES (I.S.)</strong>,
+                CNPJ 66.770.352/0001-34, Av. Dona Gertrudes, 181, Alvinópolis, Atibaia/SP,
+                CEP 12.942-540.
               </p>
 
               <Section title="1. Dados que coletamos">
@@ -202,11 +228,25 @@ export default function PrivacidadePage() {
                   </li>
                   <li>
                     <strong>Perfil familiar (opcional):</strong> função (mamãe/papai/outro) e dados
-                    do bebê (apenas data de nascimento e sexo). Nunca coletamos nome de crianças.
+                    do bebê que você quiser adicionar (nome, data de nascimento e sexo). Todos esses
+                    campos são opcionais — você pode usar o app sem preenchê-los, e pode remover ou
+                    editar essas informações a qualquer momento no seu perfil.
                   </li>
                   <li>
-                    <strong>Dados de uso:</strong> páginas visitadas e interações, coletados de
-                    forma agregada e anônima.
+                    <strong>Dados técnicos de sessão:</strong> endereço IP e informações do
+                    navegador/dispositivo, coletados automaticamente pelo nosso provedor de
+                    autenticação (Supabase) por motivos de segurança.
+                  </li>
+                  <li>
+                    <strong>Armazenamento local no dispositivo:</strong> usamos o armazenamento local
+                    do seu navegador (localStorage) para lembrar preferências como a última posição
+                    do mapa e se você já viu a introdução do app — esses dados não saem do seu
+                    dispositivo.
+                  </li>
+                  <li>
+                    <strong>Dados de uso:</strong> caso venhamos a usar uma ferramenta de analytics no
+                    futuro, páginas visitadas e interações serão coletadas de forma agregada. Esta
+                    política será atualizada antes disso entrar em vigor.
                   </li>
                 </ul>
               </Section>
@@ -248,9 +288,17 @@ export default function PrivacidadePage() {
               </Section>
 
               <Section title="5. Crianças">
-                O app é destinado a adultos maiores de 18 anos. Não coletamos dados pessoais de
-                crianças. As informações sobre bebês são fornecidas pelos próprios responsáveis e
-                são totalmente opcionais.
+                <p style={{ marginBottom: 12 }}>
+                  O app é destinado a adultos maiores de 18 anos — crianças não criam conta nem usam
+                  o app diretamente. Os únicos dados de crianças que existem na plataforma são os que
+                  o próprio responsável opcionalmente adiciona ao seu "Perfil familiar" (nome, data de
+                  nascimento e sexo do bebê), só pra personalizar a experiência dele no app.
+                </p>
+                <p>
+                  Esses dados têm proteção reforçada pela LGPD (art. 14) por serem de uma criança:
+                  são sempre opcionais, fornecidos pelo responsável legal, e podem ser editados ou
+                  removidos a qualquer momento no perfil, sem afetar o uso do restante do app.
+                </p>
               </Section>
 
               <Section title="6. Seus direitos (LGPD)">
@@ -264,7 +312,7 @@ export default function PrivacidadePage() {
                   <li>Revogar o consentimento para uso dos seus dados.</li>
                   <li>Portabilidade dos dados para outro serviço.</li>
                 </ul>
-                <p style={{ marginTop: 12 }}>
+                <p style={{ marginTop: 12, marginBottom: 12 }}>
                   Para exercer esses direitos, use a{' '}
                   <Link href="/excluir-conta" style={{ color: 'var(--green-dark)' }}>
                     página de exclusão de conta
@@ -273,6 +321,11 @@ export default function PrivacidadePage() {
                   <a href="mailto:foradoninho.app@gmail.com" style={{ color: 'var(--green-dark)' }}>
                     foradoninho.app@gmail.com
                   </a>.
+                </p>
+                <p>
+                  <strong>Encarregado de Dados (DPO):</strong> a Equipe de Dados da Fora do Ninho
+                  Inova Simples (I.S.) é responsável por questões de proteção de dados e pode ser
+                  contatada pelo mesmo e-mail acima.
                 </p>
               </Section>
 
