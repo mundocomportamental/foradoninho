@@ -66,6 +66,10 @@ export default function NovoLocalPage() {
   const [cidade, setCidade] = useState('')
   const [estado, setEstado] = useState('')
   const [endereco, setEndereco] = useState('')
+  const [mapLink, setMapLink] = useState('')
+  const [mapLinkLoading, setMapLinkLoading] = useState(false)
+  const [mapLinkError, setMapLinkError] = useState('')
+  const [mapLinkSuccess, setMapLinkSuccess] = useState(false)
 
   // Step 1: info básica
   const [nome, setNome] = useState('')
@@ -160,6 +164,44 @@ export default function NovoLocalPage() {
         setError('Não foi possível obter sua localização. Preencha manualmente.')
       }
     )
+  }
+
+  async function handleMapLink() {
+    const link = mapLink.trim()
+    if (!link) return
+    setMapLinkLoading(true)
+    setMapLinkError('')
+    setMapLinkSuccess(false)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(
+        'https://ndyujambnaskelklulwa.supabase.co/functions/v1/resolver-link-mapa',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token || ''}`,
+          },
+          body: JSON.stringify({ url: link }),
+        }
+      )
+      const result = await res.json()
+      if (!result.success) {
+        setMapLinkError(result.error || 'Não foi possível ler esse link.')
+        return
+      }
+      setLat(result.lat)
+      setLng(result.lng)
+      if (result.cidade) setCidade(result.cidade)
+      if (result.estado) setEstado(result.estado)
+      if (result.endereco) setEndereco(result.endereco)
+      if (result.nome) setNome(result.nome)
+      setMapLinkSuccess(true)
+    } catch {
+      setMapLinkError('Erro ao processar o link. Tente novamente ou preencha manualmente.')
+    } finally {
+      setMapLinkLoading(false)
+    }
   }
 
   function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -435,6 +477,61 @@ export default function NovoLocalPage() {
                   </>
                 )}
               </button>
+
+              {/* Divisor "ou" */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 16px' }}>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>ou</span>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              </div>
+
+              {/* Colar link do Google Maps / Apple Maps */}
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6, color: 'var(--text-muted)' }}>
+                  Cole o link do Google Maps ou Apple Maps
+                </label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    value={mapLink}
+                    onChange={e => { setMapLink(e.target.value); setMapLinkError(''); setMapLinkSuccess(false) }}
+                    placeholder="https://maps.app.goo.gl/... ou https://maps.apple.com/..."
+                    style={{ flex: 1, minWidth: 0, padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'var(--bg-card)', fontFamily: 'var(--font)', fontSize: 14, color: 'var(--text)', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                  <button
+                    onClick={handleMapLink}
+                    disabled={!mapLink.trim() || mapLinkLoading}
+                    style={{
+                      padding: '0 18px', borderRadius: 12, border: 'none',
+                      background: 'var(--green)', color: 'white', fontWeight: 700, fontSize: 13,
+                      cursor: (!mapLink.trim() || mapLinkLoading) ? 'default' : 'pointer',
+                      fontFamily: 'var(--font)', whiteSpace: 'nowrap', flexShrink: 0,
+                      opacity: (!mapLink.trim() || mapLinkLoading) ? 0.6 : 1,
+                    }}
+                  >
+                    {mapLinkLoading ? '...' : 'Usar link'}
+                  </button>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5 }}>
+                  Copie o link de "Compartilhar" no Google Maps ou Apple Maps — preenchemos nome, endereço e coordenadas automaticamente.
+                </div>
+                {mapLinkError && (
+                  <div style={{ marginTop: 8, padding: '8px 12px', background: '#fff1f0', border: '1px solid #fecaca', borderRadius: 10, color: '#dc2626', fontSize: 12 }}>
+                    {mapLinkError}
+                  </div>
+                )}
+                {mapLinkSuccess && (
+                  <div style={{ marginTop: 8, padding: '8px 12px', background: 'var(--green-soft)', border: '1px solid var(--green)', borderRadius: 10, color: 'var(--green-dark)', fontSize: 12, fontWeight: 600 }}>
+                    ✓ Localização preenchida a partir do link!
+                  </div>
+                )}
+              </div>
+
+              {/* Divisor "ou preencha manualmente" */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 16px' }}>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>ou preencha manualmente</span>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              </div>
 
               {/* Campos: Cidade, Estado, Endereço (opcional) */}
               <div style={{ marginBottom: 14 }}>
