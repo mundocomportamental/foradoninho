@@ -562,6 +562,9 @@ const supabase = createBrowserClient(
   'https://app.foradoninho.com.br',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5keXVqYW1ibmFza2Vsa2x1bHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NDk2ODIsImV4cCI6MjA5NDAyNTY4Mn0.PTt6VAAbeDDdoLTHBgm4UsA4M9A4Q9cuLuqeF2qRlrI'
 );
+// Exposto em window pro <script> clássico abaixo (fora deste módulo) usar,
+// já que os dois <script>s não compartilham escopo automaticamente.
+window.supabase = supabase;
 
 function checkSession() {
   let settled = false;
@@ -627,6 +630,45 @@ const SERVICES = [
 
 let currentStep = 1;
 let selectedServices = new Set();
+// Fotos já comprimidas, prontas pra upload (preenchido por previewPhoto)
+const photoFiles = { 'slot-1': null, 'slot-2': null, 'slot-3': null };
+
+// Redimensiona/recomprime a foto no navegador antes de guardar — uma foto de
+// câmera de celular moderna facilmente passa de 5-8MB, e nada limitava isso
+// antes (nem aqui, nem no bucket do Supabase). Mesma lógica usada no app
+// principal (src/lib/compressImage.ts), reescrita em JS puro aqui porque
+// esta página é um HTML standalone, fora do bundle do Next.
+function compressImage(file, maxDim, quality) {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) { resolve(file); return; }
+    const reader = new FileReader();
+    reader.onerror = () => resolve(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => resolve(file);
+      img.onload = () => {
+        let width = img.width, height = img.height;
+        if (width > maxDim || height > maxDim) {
+          const scale = maxDim / Math.max(width, height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(file); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (!blob) { resolve(file); return; }
+          const newName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+          resolve(new File([blob], newName, { type: 'image/jpeg' }));
+        }, 'image/jpeg', quality);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 function init() {
   const grid = document.getElementById('service-grid');
@@ -719,23 +761,30 @@ function buscaCep() {
   }
 }
 
-function previewPhoto(input, slotId) {
+async function previewPhoto(input, slotId) {
   const slot = document.getElementById(slotId);
   if (input.files && input.files[0]) {
+    const labelEl = slot.querySelector('.photo-label');
+    const originalLabel = labelEl.textContent;
+    labelEl.textContent = 'Otimizando...';
+    const compressed = await compressImage(input.files[0], 1600, 0.8);
+    photoFiles[slotId] = compressed;
     const reader = new FileReader();
     reader.onload = e => {
       slot.querySelector('.plus').style.display = 'none';
-      slot.querySelector('.photo-label').style.display = 'none';
+      labelEl.style.display = 'none';
+      labelEl.textContent = originalLabel;
       let img = slot.querySelector('img');
       if (!img) { img = document.createElement('img'); slot.appendChild(img); }
       img.src = e.target.result;
     };
-    reader.readAsDataURL(input.files[0]);
+    reader.readAsDataURL(compressed);
   }
 }
 
 function removePhoto(e, slotId) {
   e.stopPropagation();
+  photoFiles[slotId] = null;
   const slot = document.getElementById(slotId);
   const img = slot.querySelector('img');
   if (img) img.remove();
@@ -805,6 +854,33 @@ async function submitForm() {
 
     if (!result.success) {
       throw new Error(result.error || 'Erro ao processar o cadastro.');
+    }
+
+    // Fotos são enviadas depois do cadastro — o caminho no Storage usa o id
+    // do profissional, que só existe depois do insert acima. Se o upload
+    // falhar, não bloqueia o cadastro (a pessoa já está cadastrada, só sem
+    // foto por enquanto — dá pra adicionar depois editando o perfil).
+    const arquivosFotos = Object.values(photoFiles).filter(Boolean);
+    if (arquivosFotos.length > 0 && window.supabase) {
+      btn.textContent = '⏳ Enviando fotos...';
+      try {
+        const urls = [];
+        for (let i = 0; i < arquivosFotos.length; i++) {
+          const path = 'profissionais/' + result.id + '/' + Date.now() + '-' + i + '.jpg';
+          const { data: up, error: upErr } = await window.supabase.storage
+            .from('locais-fotos')
+            .upload(path, arquivosFotos[i], { upsert: false, contentType: 'image/jpeg' });
+          if (!upErr && up) {
+            const { data: pub } = window.supabase.storage.from('locais-fotos').getPublicUrl(up.path);
+            if (pub && pub.publicUrl) urls.push(pub.publicUrl);
+          }
+        }
+        if (urls.length > 0) {
+          await window.supabase.from('profissionais').update({ fotos: urls }).eq('id', result.id);
+        }
+      } catch (fotoErr) {
+        console.error('[cadastro-profissional] erro ao enviar fotos', fotoErr);
+      }
     }
 
     // Sucesso

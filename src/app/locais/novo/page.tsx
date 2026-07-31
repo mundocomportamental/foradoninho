@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AMENIDADES, TIPO_LABELS } from '@/lib/types'
+import { compressImage } from '@/lib/compressImage'
 
 const TIPOS = Object.entries(TIPO_LABELS)
 
@@ -90,6 +91,7 @@ export default function NovoLocalPage() {
   // Step 4: fotos (último)
   const [fotos, setFotos] = useState<File[]>([])
   const [fotoURLs, setFotoURLs] = useState<string[]>([])
+  const [comprimindoFotos, setComprimindoFotos] = useState(false)
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -204,12 +206,18 @@ export default function NovoLocalPage() {
     }
   }
 
-  function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])
-    setFotos(prev => [...prev, ...files].slice(0, 10))
-    files.forEach(f => {
-      setFotoURLs(prev => [...prev, URL.createObjectURL(f)].slice(0, 10))
-    })
+    e.target.value = '' // permite selecionar o mesmo arquivo de novo depois de remover
+    if (files.length === 0) return
+    setComprimindoFotos(true)
+    // Redimensiona/recomprime cada foto no navegador antes de guardar — sem
+    // isso, uma foto de câmera de celular (facilmente 5-8MB) subiria do
+    // jeito que está, sem limite nenhum no lado do servidor.
+    const comprimidas = await Promise.all(files.map(f => compressImage(f)))
+    setComprimindoFotos(false)
+    setFotos(prev => [...prev, ...comprimidas].slice(0, 10))
+    setFotoURLs(prev => [...prev, ...comprimidas.map(f => URL.createObjectURL(f))].slice(0, 10))
   }
 
   async function handleSubmit() {
@@ -783,16 +791,16 @@ export default function NovoLocalPage() {
               )}
 
               {fotos.length < 10 && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', border: '1.5px dashed var(--border)', borderRadius: 12, cursor: 'pointer', marginBottom: 20 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', border: '1.5px dashed var(--border)', borderRadius: 12, cursor: comprimindoFotos ? 'default' : 'pointer', marginBottom: 20, opacity: comprimindoFotos ? 0.6 : 1 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round">
                     <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
                     <polyline points="21 15 16 10 5 21"/>
                   </svg>
                   <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-                    Adicionar fotos ({fotos.length}/10)
-                    {fotos.length === 0 && <span style={{ color: '#888', fontSize: 12 }}> · 1ª foto vira capa do local</span>}
+                    {comprimindoFotos ? 'Otimizando fotos...' : `Adicionar fotos (${fotos.length}/10)`}
+                    {!comprimindoFotos && fotos.length === 0 && <span style={{ color: '#888', fontSize: 12 }}> · 1ª foto vira capa do local</span>}
                   </span>
-                  <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleFotoSelect} />
+                  <input type="file" accept="image/*" multiple disabled={comprimindoFotos} style={{ display: 'none' }} onChange={handleFotoSelect} />
                 </label>
               )}
 
