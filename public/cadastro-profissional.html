@@ -229,6 +229,7 @@
     <h2>Entre na sua conta para se cadastrar</h2>
     <p>Pra manter o cadastro seguro e evitar perfis falsos, agora é preciso estar logado na sua conta Fora do Ninho antes de se cadastrar como profissional.</p>
     <a class="btn-login-link" id="gate-login-link" href="/onboarding?auth=login">Entrar ou criar conta →</a>
+    <p id="gate-debug" style="margin-top:1.5rem;font-size:0.7rem;color:#bbb;text-align:left;white-space:pre-wrap;word-break:break-all;"></p>
   </div>
 
   <!-- Verificando sessão -->
@@ -559,15 +560,29 @@ const supabase = createBrowserClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5keXVqYW1ibmFza2Vsa2x1bHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NDk2ODIsImV4cCI6MjA5NDAyNTY4Mn0.PTt6VAAbeDDdoLTHBgm4UsA4M9A4Q9cuLuqeF2qRlrI'
 );
 
+function showDebug(extra) {
+  const el = document.getElementById('gate-debug');
+  if (!el) return;
+  const cookieNames = document.cookie.split(';').map(c => c.trim().split('=')[0]).filter(Boolean);
+  const authCookies = cookieNames.filter(n => n.includes('auth-token'));
+  el.textContent = [
+    'debug: host=' + location.hostname,
+    'cookies totais=' + cookieNames.length,
+    'cookies de auth encontrados=' + JSON.stringify(authCookies),
+    extra || '',
+  ].join('\n');
+}
+
 function checkSession() {
   let settled = false;
-  function finish(session) {
+  function finish(session, source) {
     if (settled) return;
     settled = true;
     document.getElementById('checking-screen').style.display = 'none';
     if (!session) {
       document.getElementById('gate-login-link').href = '/onboarding?auth=login';
       document.getElementById('gate-screen').classList.add('visible');
+      showDebug('fonte=' + source + ' sessão=null');
       return;
     }
     window.__ninhoSession = session;
@@ -583,15 +598,20 @@ function checkSession() {
   // sessão válida já aberta no resto do site. onAuthStateChange é a forma
   // recomendada pela própria Supabase para esse cenário.
   supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'INITIAL_SESSION') finish(session);
+    if (event === 'INITIAL_SESSION') finish(session, 'onAuthStateChange');
   });
 
   // Rede de segurança: se o evento acima nunca disparar por algum motivo,
   // tenta getSession() diretamente depois de dar tempo do client inicializar.
   setTimeout(async () => {
     if (settled) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    finish(session);
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      finish(session, 'getSession-fallback');
+    } catch (err) {
+      finish(null, 'erro: ' + (err && err.message || String(err)));
+    }
   }, 1200);
 }
 
