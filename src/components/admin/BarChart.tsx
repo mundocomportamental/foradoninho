@@ -7,9 +7,9 @@ interface BarChartProps {
   height?: number
 }
 
-export default function BarChart({ data, color = '#33CCCC', formatLabel, height = 140 }: BarChartProps) {
+export default function BarChart({ data, color = 'var(--green)', formatLabel, height = 140 }: BarChartProps) {
   if (data.length === 0) {
-    return <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>Sem dados no período</div>
+    return <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Sem dados no período</div>
   }
 
   const max = Math.max(...data.map(d => d.valor), 1)
@@ -30,13 +30,13 @@ export default function BarChart({ data, color = '#33CCCC', formatLabel, height 
                 height={Math.max(barH, d.valor > 0 ? 1.5 : 0)}
                 rx={1.5}
                 fill={color}
-                opacity={0.85}
+                opacity={0.9}
               />
               <text
                 x={x + barWidth / 2}
                 y={height - 20 - barH - 4}
                 fontSize={5.5}
-                fill="rgba(255,255,255,0.7)"
+                fill="var(--text-secondary)"
                 textAnchor="middle"
               >
                 {d.valor > 0 ? d.valor : ''}
@@ -47,7 +47,7 @@ export default function BarChart({ data, color = '#33CCCC', formatLabel, height 
       </svg>
       <div style={{ display: 'flex', marginTop: 4 }}>
         {data.map((d, i) => (
-          <div key={i} style={{ width: `${barWidth}%`, textAlign: 'center', fontSize: 10, color: 'rgba(255,255,255,0.4)', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+          <div key={i} style={{ width: `${barWidth}%`, textAlign: 'center', fontSize: 10, color: 'var(--text-muted)', overflow: 'hidden', whiteSpace: 'nowrap' }}>
             {formatLabel ? formatLabel(d.periodo) : d.periodo}
           </div>
         ))}

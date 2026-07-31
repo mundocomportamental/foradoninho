@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
+import { cardStyle, btn } from '@/components/admin/theme'
 
 interface Detail {
   profissional: {
@@ -50,49 +51,49 @@ export default function AdminProfissionalDetailPage() {
     router.push('/admin/profissionais')
   }
 
-  if (loading) return <div style={{ color: 'rgba(255,255,255,0.4)' }}>Carregando…</div>
-  if (erro || !detail) return <div style={{ color: '#f87171' }}>{erro}</div>
+  if (loading) return <div style={{ color: 'var(--text-muted)' }}>Carregando…</div>
+  if (erro || !detail) return <div style={{ color: '#dc2626' }}>{erro}</div>
 
   const p = detail.profissional
 
   return (
     <div>
-      <Link href="/admin/profissionais" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, textDecoration: 'none' }}>← Voltar</Link>
+      <Link href="/admin/profissionais" style={{ color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none', fontWeight: 600 }}>← Voltar</Link>
 
-      <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 14, padding: 20, marginTop: 12, marginBottom: 20 }}>
+      <div style={{ ...cardStyle, padding: 20, marginTop: 12, marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: 'white' }}>{p.nome_negocio || p.nome}</div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)' }}>{p.nome_negocio || p.nome}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
               {p.nome} · {p.email} · {p.telefone}
             </div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
               {p.cidade}{p.uf ? `/${p.uf}` : ''} · {p.tipo_perfil === 'pj' ? 'Pessoa Jurídica' : 'Pessoa Física'} · pagamento: {p.pagamento_status}
             </div>
-            {p.resumo && <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 8, maxWidth: 480 }}>{p.resumo}</div>}
+            {p.resumo && <div style={{ fontSize: 13, color: 'var(--text)', marginTop: 8, maxWidth: 480 }}>{p.resumo}</div>}
             {p.servicos && p.servicos.length > 0 && (
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 8 }}>Serviços: {p.servicos.join(', ')}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>Serviços: {p.servicos.join(', ')}</div>
             )}
             {detail.conta_vinculada && (
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 8 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
                 Conta vinculada:{' '}
-                <Link href={`/admin/usuarios/${detail.conta_vinculada.id}`} style={{ color: '#33CCCC', textDecoration: 'none', fontWeight: 700 }}>
+                <Link href={`/admin/usuarios/${detail.conta_vinculada.id}`} style={{ color: 'var(--green-dark)', textDecoration: 'none', fontWeight: 700 }}>
                   {detail.conta_vinculada.display_name || detail.conta_vinculada.email}
                 </Link>
               </div>
             )}
             {!detail.conta_vinculada && (
-              <div style={{ fontSize: 12, color: '#fbbf24', marginTop: 8 }}>Sem conta de usuário vinculada ainda (cadastro anônimo).</div>
+              <div style={{ fontSize: 12, color: '#92400e', marginTop: 8 }}>Sem conta de usuário vinculada ainda (cadastro anônimo).</div>
             )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
             <div style={{ display: 'flex', gap: 6 }}>
-              {p.status_aprovacao !== 'aprovado' && <button onClick={() => moderar('aprovar')} style={btnStyle('#059669')}>Aprovar</button>}
-              {p.status_aprovacao !== 'rejeitado' && <button onClick={() => moderar('rejeitar')} style={btnStyle('#92400e')}>Rejeitar</button>}
-              <button onClick={() => setExcluir(true)} style={btnStyle('#991b1b')}>Excluir</button>
+              {p.status_aprovacao !== 'aprovado' && <button onClick={() => moderar('aprovar')} style={btn('success')}>Aprovar</button>}
+              {p.status_aprovacao !== 'rejeitado' && <button onClick={() => moderar('rejeitar')} style={btn('warn')}>Rejeitar</button>}
+              <button onClick={() => setExcluir(true)} style={btn('danger')}>Excluir</button>
             </div>
             {detail.local_sincronizado_id && (
-              <Link href={`/admin/locais/${detail.local_sincronizado_id}`} style={{ fontSize: 12, color: '#33CCCC', textDecoration: 'none' }}>
+              <Link href={`/admin/locais/${detail.local_sincronizado_id}`} style={{ fontSize: 12, color: 'var(--green-dark)', textDecoration: 'none', fontWeight: 600 }}>
                 Ver listagem sincronizada →
               </Link>
             )}
@@ -100,20 +101,20 @@ export default function AdminProfissionalDetailPage() {
         </div>
       </div>
 
-      <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: 10 }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10 }}>
         Avaliações recentes ({detail.avaliacoes_recentes.length})
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {detail.avaliacoes_recentes.length === 0 && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Nenhuma avaliação ainda.</div>}
+        {detail.avaliacoes_recentes.length === 0 && <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Nenhuma avaliação ainda.</div>}
         {detail.avaliacoes_recentes.map(a => (
-          <div key={a.id} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 10, padding: 12 }}>
-            <Link href={`/admin/usuarios/${a.user_id}`} style={{ color: '#33CCCC', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
+          <div key={a.id} style={{ ...cardStyle, padding: 12 }}>
+            <Link href={`/admin/usuarios/${a.user_id}`} style={{ color: 'var(--green-dark)', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
               {a.user_nome || a.user_email}
             </Link>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
               experiência {a.experiencia ?? '—'}/10 {a.comentario ? `· "${a.comentario}"` : ''}
             </div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>{new Date(a.created_at).toLocaleString('pt-BR')}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{new Date(a.created_at).toLocaleString('pt-BR')}</div>
           </div>
         ))}
       </div>
@@ -128,11 +129,4 @@ export default function AdminProfissionalDetailPage() {
       )}
     </div>
   )
-}
-
-function btnStyle(color: string): React.CSSProperties {
-  return {
-    padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-    border: 'none', background: color, color: 'white', fontFamily: 'inherit',
-  }
 }

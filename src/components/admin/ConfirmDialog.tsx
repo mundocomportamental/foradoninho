@@ -31,12 +31,12 @@ export default function ConfirmDialog({
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000,
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000,
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
     }}>
-      <div style={{ background: '#111827', border: '1px solid #374151', borderRadius: 16, padding: 24, maxWidth: 420, width: '100%' }}>
-        <div style={{ fontSize: 16, fontWeight: 800, color: 'white', marginBottom: 8 }}>{title}</div>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: 16 }}>{description}</div>
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', padding: 24, maxWidth: 420, width: '100%', fontFamily: 'var(--font)' }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>{title}</div>
+        <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 16 }}>{description}</div>
 
         {askMotivo && (
           <input
@@ -45,15 +45,15 @@ export default function ConfirmDialog({
             onChange={e => setMotivo(e.target.value)}
             placeholder="Motivo (opcional)"
             style={{
-              width: '100%', height: 40, padding: '0 12px', borderRadius: 10, marginBottom: 12,
-              border: '1px solid #374151', background: '#0b0f19', color: 'white', fontSize: 13,
-              boxSizing: 'border-box', fontFamily: 'inherit',
+              width: '100%', height: 40, padding: '0 12px', borderRadius: 'var(--radius-sm)', marginBottom: 12,
+              border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: 13,
+              boxSizing: 'border-box', fontFamily: 'var(--font)', outline: 'none',
             }}
           />
         )}
 
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>
-          Digite <strong style={{ color: 'white' }}>{confirmWord}</strong> para confirmar:
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
+          Digite <strong style={{ color: 'var(--text)' }}>{confirmWord}</strong> para confirmar:
         </div>
         <input
           type="text"
@@ -61,21 +61,21 @@ export default function ConfirmDialog({
           onChange={e => setTexto(e.target.value)}
           autoFocus
           style={{
-            width: '100%', height: 44, padding: '0 12px', borderRadius: 10, marginBottom: 16,
-            border: '1px solid #374151', background: '#0b0f19', color: 'white', fontSize: 14,
-            boxSizing: 'border-box', fontFamily: 'inherit', letterSpacing: 1,
+            width: '100%', height: 44, padding: '0 12px', borderRadius: 'var(--radius-sm)', marginBottom: 16,
+            border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: 14,
+            boxSizing: 'border-box', fontFamily: 'var(--font)', letterSpacing: 1, outline: 'none',
           }}
         />
 
-        {erro && <div style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{erro}</div>}
+        {erro && <div style={{ fontSize: 12, color: '#dc2626', marginBottom: 12 }}>{erro}</div>}
 
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={onCancel}
             disabled={loading}
             style={{
-              flex: 1, height: 42, borderRadius: 10, border: '1px solid #374151', background: 'transparent',
-              color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
+              flex: 1, height: 42, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent',
+              color: 'var(--text-secondary)', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)',
             }}
           >
             Cancelar
@@ -84,12 +84,12 @@ export default function ConfirmDialog({
             onClick={handleConfirm}
             disabled={texto !== confirmWord || loading}
             style={{
-              flex: 1, height: 42, borderRadius: 10, border: 'none',
-              background: texto === confirmWord ? '#dc2626' : '#374151',
-              color: texto === confirmWord ? 'white' : 'rgba(255,255,255,0.4)',
+              flex: 1, height: 42, borderRadius: 'var(--radius-sm)', border: 'none',
+              background: texto === confirmWord ? '#dc2626' : 'var(--border)',
+              color: texto === confirmWord ? 'white' : 'var(--text-muted)',
               fontWeight: 700, fontSize: 13,
               cursor: texto === confirmWord && !loading ? 'pointer' : 'not-allowed',
-              fontFamily: 'inherit',
+              fontFamily: 'var(--font)',
             }}
           >
             {loading ? 'Aplicando…' : 'Confirmar'}

@@ -1,9 +1,11 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useDebouncedValue } from '@/lib/useDebouncedValue'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
+import { cardStyle, btn, badge, pillStyle, inputStyle } from '@/components/admin/theme'
 
 type Filtro = 'pendentes' | 'ativos' | 'todos'
 
@@ -30,9 +32,11 @@ const FILTROS: { key: Filtro; label: string }[] = [
   { key: 'todos', label: 'Todos' },
 ]
 
-export default function AdminLocaisPage() {
+function AdminLocaisInner() {
   const supabase = createClient()
-  const [filtro, setFiltro] = useState<Filtro>('pendentes')
+  const searchParams = useSearchParams()
+  const initialFiltro = (searchParams.get('filtro') as Filtro) || 'pendentes'
+  const [filtro, setFiltro] = useState<Filtro>(FILTROS.some(f => f.key === initialFiltro) ? initialFiltro : 'pendentes')
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search, 300)
   const [items, setItems] = useState<LocalItem[]>([])
@@ -78,12 +82,7 @@ export default function AdminLocaisPage() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: 6 }}>
           {FILTROS.map(f => (
-            <button key={f.key} onClick={() => setFiltro(f.key)} style={{
-              padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              border: '1px solid #374151', fontFamily: 'inherit',
-              background: filtro === f.key ? '#1f2937' : 'transparent',
-              color: filtro === f.key ? 'white' : 'rgba(255,255,255,0.5)',
-            }}>
+            <button key={f.key} onClick={() => setFiltro(f.key)} style={pillStyle(filtro === f.key)}>
               {f.label}
             </button>
           ))}
@@ -92,60 +91,53 @@ export default function AdminLocaisPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar por nome ou cidade…"
-          style={{
-            flex: '1 1 220px', height: 36, padding: '0 12px', borderRadius: 8,
-            border: '1px solid #374151', background: '#111827', color: 'white', fontSize: 13,
-            fontFamily: 'inherit',
-          }}
+          style={{ ...inputStyle, flex: '1 1 220px' }}
         />
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{total} resultado{total !== 1 ? 's' : ''}</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{total} resultado{total !== 1 ? 's' : ''}</div>
       </div>
 
       {loading ? (
-        <div style={{ color: 'rgba(255,255,255,0.4)' }}>Carregando…</div>
+        <div style={{ color: 'var(--text-muted)' }}>Carregando…</div>
       ) : items.length === 0 ? (
-        <div style={{ color: 'rgba(255,255,255,0.4)' }}>Nenhum local encontrado.</div>
+        <div style={{ color: 'var(--text-muted)' }}>Nenhum local encontrado.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {items.map(item => (
-            <div key={item.id} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <Link key={item.id} href={`/admin/locais/${item.id}`} style={{
+              ...cardStyle, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+              textDecoration: 'none', color: 'inherit',
+            }}>
               <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-                <Link href={`/admin/locais/${item.id}`} style={{ color: 'white', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-                  {item.nome}
-                </Link>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
+                <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>{item.nome}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                   {item.cidade}{item.estado ? `/${item.estado}` : ''} · {item.tipo} · adicionado por {item.added_by_nome || item.added_by_email || 'desconhecido'}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 6, fontSize: 11 }}>
-                <span style={{ padding: '3px 9px', borderRadius: 20, fontWeight: 700, background: item.is_active ? '#064e3b' : '#78350f', color: item.is_active ? '#34d399' : '#fbbf24' }}>
-                  {item.is_active ? 'ativo' : 'pendente'}
-                </span>
-                {!item.aprovado && (
-                  <span style={{ padding: '3px 9px', borderRadius: 20, fontWeight: 700, background: '#1e3a8a', color: '#93c5fd' }}>fotos pendentes</span>
-                )}
+                <span style={badge(item.is_active ? 'success' : 'warn')}>{item.is_active ? 'ativo' : 'pendente'}</span>
+                {!item.aprovado && <span style={badge('info')}>fotos pendentes</span>}
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                 ⭐ {item.rating?.toFixed(1) ?? '0.0'} ({item.total_ratings}) · {item.total_checkins} check-ins
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 6 }} onClick={e => e.preventDefault()}>
                 {!item.is_active && (
-                  <button disabled={busy === item.id} onClick={() => moderar(item.id, 'aprovar')} style={btnStyle('#059669')}>Aprovar</button>
+                  <button disabled={busy === item.id} onClick={() => moderar(item.id, 'aprovar')} style={btn('success')}>Aprovar</button>
                 )}
                 {item.is_active && (
-                  <button disabled={busy === item.id} onClick={() => moderar(item.id, 'rejeitar')} style={btnStyle('#92400e')}>Desativar</button>
+                  <button disabled={busy === item.id} onClick={() => moderar(item.id, 'rejeitar')} style={btn('warn')}>Desativar</button>
                 )}
-                <button disabled={busy === item.id} onClick={() => setExcluirAlvo(item)} style={btnStyle('#991b1b')}>Excluir</button>
+                <button disabled={busy === item.id} onClick={() => setExcluirAlvo(item)} style={btn('danger')}>Excluir</button>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
 
       {total > limit && (
         <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'center' }}>
-          <button disabled={offset === 0} onClick={() => setOffset(o => Math.max(0, o - limit))} style={btnStyle('#374151')}>← Anterior</button>
-          <button disabled={offset + limit >= total} onClick={() => setOffset(o => o + limit)} style={btnStyle('#374151')}>Próxima →</button>
+          <button disabled={offset === 0} onClick={() => setOffset(o => Math.max(0, o - limit))} style={btn('neutral')}>← Anterior</button>
+          <button disabled={offset + limit >= total} onClick={() => setOffset(o => o + limit)} style={btn('neutral')}>Próxima →</button>
         </div>
       )}
 
@@ -162,9 +154,10 @@ export default function AdminLocaisPage() {
   )
 }
 
-function btnStyle(color: string): React.CSSProperties {
-  return {
-    padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-    border: 'none', background: color, color: 'white', fontFamily: 'inherit',
-  }
+export default function AdminLocaisPage() {
+  return (
+    <Suspense fallback={<div style={{ color: 'var(--text-muted)' }}>Carregando…</div>}>
+      <AdminLocaisInner />
+    </Suspense>
+  )
 }

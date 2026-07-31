@@ -1,9 +1,11 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useDebouncedValue } from '@/lib/useDebouncedValue'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
+import { cardStyle, btn, badge, pillStyle, inputStyle } from '@/components/admin/theme'
 
 type Filtro = 'pendentes' | 'aprovados' | 'rejeitados' | 'todos'
 
@@ -27,16 +29,18 @@ const FILTROS: { key: Filtro; label: string }[] = [
   { key: 'todos', label: 'Todos' },
 ]
 
-const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
-  aguardando: { label: 'aguardando', bg: '#78350f', fg: '#fbbf24' },
-  edicao_pendente: { label: 'edição pendente', bg: '#1e3a8a', fg: '#93c5fd' },
-  aprovado: { label: 'aprovado', bg: '#064e3b', fg: '#34d399' },
-  rejeitado: { label: 'rejeitado', bg: '#7f1d1d', fg: '#fca5a5' },
+const STATUS_BADGE: Record<string, { label: string; variant: 'warn' | 'info' | 'success' | 'danger' }> = {
+  aguardando: { label: 'aguardando', variant: 'warn' },
+  edicao_pendente: { label: 'edição pendente', variant: 'info' },
+  aprovado: { label: 'aprovado', variant: 'success' },
+  rejeitado: { label: 'rejeitado', variant: 'danger' },
 }
 
-export default function AdminProfissionaisPage() {
+function AdminProfissionaisInner() {
   const supabase = createClient()
-  const [filtro, setFiltro] = useState<Filtro>('pendentes')
+  const searchParams = useSearchParams()
+  const initialFiltro = (searchParams.get('filtro') as Filtro) || 'pendentes'
+  const [filtro, setFiltro] = useState<Filtro>(FILTROS.some(f => f.key === initialFiltro) ? initialFiltro : 'pendentes')
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search, 300)
   const [items, setItems] = useState<ProfItem[]>([])
@@ -82,12 +86,7 @@ export default function AdminProfissionaisPage() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {FILTROS.map(f => (
-            <button key={f.key} onClick={() => setFiltro(f.key)} style={{
-              padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              border: '1px solid #374151', fontFamily: 'inherit',
-              background: filtro === f.key ? '#1f2937' : 'transparent',
-              color: filtro === f.key ? 'white' : 'rgba(255,255,255,0.5)',
-            }}>
+            <button key={f.key} onClick={() => setFiltro(f.key)} style={pillStyle(filtro === f.key)}>
               {f.label}
             </button>
           ))}
@@ -96,44 +95,41 @@ export default function AdminProfissionaisPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar por nome, negócio ou cidade…"
-          style={{
-            flex: '1 1 220px', height: 36, padding: '0 12px', borderRadius: 8,
-            border: '1px solid #374151', background: '#111827', color: 'white', fontSize: 13,
-            fontFamily: 'inherit',
-          }}
+          style={{ ...inputStyle, flex: '1 1 220px' }}
         />
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{total} resultado{total !== 1 ? 's' : ''}</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{total} resultado{total !== 1 ? 's' : ''}</div>
       </div>
 
       {loading ? (
-        <div style={{ color: 'rgba(255,255,255,0.4)' }}>Carregando…</div>
+        <div style={{ color: 'var(--text-muted)' }}>Carregando…</div>
       ) : items.length === 0 ? (
-        <div style={{ color: 'rgba(255,255,255,0.4)' }}>Nenhum profissional encontrado.</div>
+        <div style={{ color: 'var(--text-muted)' }}>Nenhum profissional encontrado.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {items.map(item => {
-            const st = STATUS_LABEL[item.status_aprovacao] || { label: item.status_aprovacao, bg: '#374151', fg: 'white' }
+            const st = STATUS_BADGE[item.status_aprovacao] || { label: item.status_aprovacao, variant: 'neutral' as const }
             return (
-              <div key={item.id} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <Link key={item.id} href={`/admin/profissionais/${item.id}`} style={{
+                ...cardStyle, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+                textDecoration: 'none', color: 'inherit',
+              }}>
                 <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-                  <Link href={`/admin/profissionais/${item.id}`} style={{ color: 'white', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-                    {item.nome_negocio || item.nome}
-                  </Link>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
+                  <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>{item.nome_negocio || item.nome}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                     {item.nome} · {item.email} · {item.cidade}{item.uf ? `/${item.uf}` : ''}
                   </div>
                 </div>
-                <span style={{ padding: '3px 9px', borderRadius: 20, fontWeight: 700, fontSize: 11, background: st.bg, color: st.fg }}>{st.label}</span>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <span style={badge(st.variant)}>{st.label}</span>
+                <div style={{ display: 'flex', gap: 6 }} onClick={e => e.preventDefault()}>
                   {item.status_aprovacao !== 'aprovado' && (
-                    <button disabled={busy === item.id} onClick={() => moderar(item.id, 'aprovar')} style={btnStyle('#059669')}>Aprovar</button>
+                    <button disabled={busy === item.id} onClick={() => moderar(item.id, 'aprovar')} style={btn('success')}>Aprovar</button>
                   )}
                   {item.status_aprovacao !== 'rejeitado' && (
-                    <button disabled={busy === item.id} onClick={() => moderar(item.id, 'rejeitar')} style={btnStyle('#92400e')}>Rejeitar</button>
+                    <button disabled={busy === item.id} onClick={() => moderar(item.id, 'rejeitar')} style={btn('warn')}>Rejeitar</button>
                   )}
-                  <button disabled={busy === item.id} onClick={() => setExcluirAlvo(item)} style={btnStyle('#991b1b')}>Excluir</button>
+                  <button disabled={busy === item.id} onClick={() => setExcluirAlvo(item)} style={btn('danger')}>Excluir</button>
                 </div>
-              </div>
+              </Link>
             )
           })}
         </div>
@@ -141,8 +137,8 @@ export default function AdminProfissionaisPage() {
 
       {total > limit && (
         <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'center' }}>
-          <button disabled={offset === 0} onClick={() => setOffset(o => Math.max(0, o - limit))} style={btnStyle('#374151')}>← Anterior</button>
-          <button disabled={offset + limit >= total} onClick={() => setOffset(o => o + limit)} style={btnStyle('#374151')}>Próxima →</button>
+          <button disabled={offset === 0} onClick={() => setOffset(o => Math.max(0, o - limit))} style={btn('neutral')}>← Anterior</button>
+          <button disabled={offset + limit >= total} onClick={() => setOffset(o => o + limit)} style={btn('neutral')}>Próxima →</button>
         </div>
       )}
 
@@ -159,9 +155,10 @@ export default function AdminProfissionaisPage() {
   )
 }
 
-function btnStyle(color: string): React.CSSProperties {
-  return {
-    padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-    border: 'none', background: color, color: 'white', fontFamily: 'inherit',
-  }
+export default function AdminProfissionaisPage() {
+  return (
+    <Suspense fallback={<div style={{ color: 'var(--text-muted)' }}>Carregando…</div>}>
+      <AdminProfissionaisInner />
+    </Suspense>
+  )
 }

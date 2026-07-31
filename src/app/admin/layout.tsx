@@ -5,10 +5,10 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const NAV = [
-  { href: '/admin', label: 'Overview' },
-  { href: '/admin/locais', label: 'Locais' },
-  { href: '/admin/profissionais', label: 'Profissionais' },
-  { href: '/admin/usuarios', label: 'Usuários' },
+  { href: '/admin', label: 'Overview', icon: '📊' },
+  { href: '/admin/locais', label: 'Locais', icon: '📍' },
+  { href: '/admin/profissionais', label: 'Profissionais', icon: '👩‍⚕️' },
+  { href: '/admin/usuarios', label: 'Usuários', icon: '👥' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -37,8 +37,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (status !== 'ok') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0b0f19', fontFamily: 'system-ui, sans-serif' }}>
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', fontFamily: 'var(--font)' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>
           {status === 'checking' ? 'Verificando acesso…' : 'Acesso restrito.'}
         </div>
       </div>
@@ -46,31 +46,87 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0b0f19', fontFamily: 'system-ui, -apple-system, sans-serif', paddingBottom: 40 }}>
-      <header style={{ borderBottom: '1px solid #1f2937', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-        <Link href="/perfil" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
-          ← Voltar ao app
-        </Link>
-        <div style={{ fontSize: 15, fontWeight: 800, color: 'white' }}>🛠️ Painel Admin</div>
-        <nav style={{ display: 'flex', gap: 4, marginLeft: 'auto', flexWrap: 'wrap' }}>
+    <div style={{ position: 'fixed', inset: 0, display: 'flex', background: 'var(--bg)', fontFamily: 'var(--font)' }}>
+      <style>{`
+        .admin-sidebar { display: none; }
+        .admin-topbar { display: flex; }
+        @media (min-width: 880px) {
+          .admin-sidebar { display: flex; }
+          .admin-topbar { display: none; }
+        }
+      `}</style>
+
+      {/* Sidebar — desktop */}
+      <aside className="admin-sidebar" style={{
+        width: 220, flexShrink: 0, flexDirection: 'column',
+        background: 'var(--bg-card)', borderRight: '1px solid var(--border)',
+        padding: '20px 14px', height: '100%',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px', marginBottom: 24 }}>
+          <span style={{ fontSize: 20 }}>🛠️</span>
+          <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>Painel Admin</span>
+        </div>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
           {NAV.map(item => {
             const active = item.href === '/admin' ? path === '/admin' : path.startsWith(item.href)
             return (
               <Link key={item.href} href={item.href} style={{
-                padding: '8px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 12px', borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 700,
                 textDecoration: 'none',
-                background: active ? '#1f2937' : 'transparent',
-                color: active ? 'white' : 'rgba(255,255,255,0.5)',
+                background: active ? 'var(--green-soft)' : 'transparent',
+                color: active ? 'var(--green-dark)' : 'var(--text-secondary)',
               }}>
+                <span style={{ fontSize: 16 }}>{item.icon}</span>
                 {item.label}
               </Link>
             )
           })}
         </nav>
-      </header>
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 20px' }}>
-        {children}
-      </main>
+        <Link href="/perfil" style={{
+          display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)',
+          textDecoration: 'none', fontSize: 13, fontWeight: 600, padding: '10px 12px',
+        }}>
+          ← Voltar ao app
+        </Link>
+      </aside>
+
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        {/* Top bar — mobile */}
+        <header className="admin-topbar" style={{
+          borderBottom: '1px solid var(--border)', background: 'var(--bg-card)',
+          padding: '14px 16px', alignItems: 'center', gap: 16, flexWrap: 'wrap', flexShrink: 0,
+        }}>
+          <Link href="/perfil" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
+            ← Voltar
+          </Link>
+          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>🛠️ Painel Admin</div>
+          <nav style={{ display: 'flex', gap: 4, marginLeft: 'auto', flexWrap: 'wrap' }}>
+            {NAV.map(item => {
+              const active = item.href === '/admin' ? path === '/admin' : path.startsWith(item.href)
+              return (
+                <Link key={item.href} href={item.href} style={{
+                  padding: '7px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700,
+                  textDecoration: 'none',
+                  background: active ? 'var(--green-soft)' : 'transparent',
+                  color: active ? 'var(--green-dark)' : 'var(--text-muted)',
+                }}>
+                  {item.label}
+                </Link>
+              )
+            })}
+          </nav>
+        </header>
+
+        {/* Área com scroll próprio — o app inteiro roda com html/body overflow:hidden
+            (padrão de PWA mobile), então essa div precisa fornecer sua própria
+            barra de rolagem pra funcionar em telas de desktop com mouse/trackpad. */}
+        <main style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 20px 60px' }}>
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

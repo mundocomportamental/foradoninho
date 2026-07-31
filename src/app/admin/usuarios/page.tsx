@@ -1,8 +1,12 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useDebouncedValue } from '@/lib/useDebouncedValue'
+import { cardStyle, btn, pillStyle, inputStyle, tierInfo } from '@/components/admin/theme'
+
+type Sort = 'recentes' | 'ativos'
 
 interface UserItem {
   id: string
@@ -18,15 +22,16 @@ interface UserItem {
   total_locais_adicionados: number
 }
 
-function tierInfo(total: number): { label: string; icon: string } {
-  if (total > 50) return { label: 'Águia', icon: '🦅' }
-  if (total > 15) return { label: 'Gaivota', icon: '🕊️' }
-  if (total > 5) return { label: 'Andorinha', icon: '🐦' }
-  return { label: 'Filhote', icon: '🐣' }
-}
+const SORTS: { key: Sort; label: string }[] = [
+  { key: 'recentes', label: 'Mais recentes' },
+  { key: 'ativos', label: 'Mais ativos' },
+]
 
-export default function AdminUsuariosPage() {
+function AdminUsuariosInner() {
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const initialSort = (searchParams.get('sort') as Sort) || 'recentes'
+  const [sort, setSort] = useState<Sort>(SORTS.some(s => s.key === initialSort) ? initialSort : 'recentes')
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search, 300)
   const [items, setItems] = useState<UserItem[]>([])
@@ -38,58 +43,64 @@ export default function AdminUsuariosPage() {
   const load = useCallback(async () => {
     setLoading(true)
     const { data, error } = await supabase.rpc('admin_list_users', {
-      p_search: debouncedSearch || null, p_limit: limit, p_offset: offset,
+      p_search: debouncedSearch || null, p_limit: limit, p_offset: offset, p_sort: sort,
     })
     if (!error && data) {
       setItems(data.items || [])
       setTotal(data.total || 0)
     }
     setLoading(false)
-  }, [supabase, debouncedSearch, offset])
+  }, [supabase, debouncedSearch, offset, sort])
 
-  useEffect(() => { setOffset(0) }, [debouncedSearch])
+  useEffect(() => { setOffset(0) }, [debouncedSearch, sort])
   useEffect(() => { load() }, [load])
 
   return (
     <div>
       <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {SORTS.map(s => (
+            <button key={s.key} onClick={() => setSort(s.key)} style={pillStyle(sort === s.key)}>
+              {s.label}
+            </button>
+          ))}
+        </div>
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar por nome, username ou e-mail…"
-          style={{
-            flex: '1 1 260px', height: 36, padding: '0 12px', borderRadius: 8,
-            border: '1px solid #374151', background: '#111827', color: 'white', fontSize: 13,
-            fontFamily: 'inherit',
-          }}
+          style={{ ...inputStyle, flex: '1 1 220px' }}
         />
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{total} usuário{total !== 1 ? 's' : ''}</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{total} usuário{total !== 1 ? 's' : ''}</div>
       </div>
 
       {loading ? (
-        <div style={{ color: 'rgba(255,255,255,0.4)' }}>Carregando…</div>
+        <div style={{ color: 'var(--text-muted)' }}>Carregando…</div>
       ) : items.length === 0 ? (
-        <div style={{ color: 'rgba(255,255,255,0.4)' }}>Nenhum usuário encontrado.</div>
+        <div style={{ color: 'var(--text-muted)' }}>Nenhum usuário encontrado.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {items.map(u => {
+          {items.map((u, i) => {
             const tier = tierInfo(u.total_avaliacoes + u.total_checkins)
             return (
               <Link key={u.id} href={`/admin/usuarios/${u.id}`} style={{
-                background: '#111827', border: '1px solid #1f2937', borderRadius: 12, padding: '14px 16px',
-                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', textDecoration: 'none',
+                ...cardStyle, padding: '14px 16px',
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', textDecoration: 'none', color: 'inherit',
               }}>
+                {sort === 'ativos' && (
+                  <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', width: 18 }}>{offset + i + 1}</div>
+                )}
                 <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-                  <div style={{ color: 'white', fontWeight: 700, fontSize: 14 }}>
-                    {u.display_name || u.username || 'Sem nome'} {u.is_admin && <span style={{ fontSize: 11, color: '#fbbf24' }}>· admin</span>}
+                  <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>
+                    {u.display_name || u.username || 'Sem nome'} {u.is_admin && <span style={{ fontSize: 11, color: '#92400e' }}>· admin</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{u.email}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{u.email}</div>
                 </div>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>{tier.icon} {tier.label}</span>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{tier.icon} {tier.label}</span>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                   {u.total_avaliacoes} avaliações · {u.total_checkins} check-ins · {u.total_locais_adicionados} locais
                 </div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                   desde {new Date(u.created_at).toLocaleDateString('pt-BR')}
                 </div>
               </Link>
@@ -100,15 +111,18 @@ export default function AdminUsuariosPage() {
 
       {total > limit && (
         <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'center' }}>
-          <button disabled={offset === 0} onClick={() => setOffset(o => Math.max(0, o - limit))} style={btnStyle}>← Anterior</button>
-          <button disabled={offset + limit >= total} onClick={() => setOffset(o => o + limit)} style={btnStyle}>Próxima →</button>
+          <button disabled={offset === 0} onClick={() => setOffset(o => Math.max(0, o - limit))} style={btn('neutral')}>← Anterior</button>
+          <button disabled={offset + limit >= total} onClick={() => setOffset(o => o + limit)} style={btn('neutral')}>Próxima →</button>
         </div>
       )}
     </div>
   )
 }
 
-const btnStyle: React.CSSProperties = {
-  padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-  border: 'none', background: '#374151', color: 'white', fontFamily: 'inherit',
+export default function AdminUsuariosPage() {
+  return (
+    <Suspense fallback={<div style={{ color: 'var(--text-muted)' }}>Carregando…</div>}>
+      <AdminUsuariosInner />
+    </Suspense>
+  )
 }
