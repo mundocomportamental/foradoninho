@@ -1029,7 +1029,7 @@ export default function PerfilPage() {
                 <div style={{ fontSize: 44, marginBottom: 12 }}>✅</div>
                 <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 8 }}>Salvo com sucesso!</div>
                 <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                  Suas alterações foram enviadas para análise e serão aplicadas em até 3 dias úteis.
+                  Assim que nosso time validar as alterações, elas estarão no app para todas as famílias. Muito obrigado!
                 </div>
               </div>
             ) : (

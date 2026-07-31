@@ -539,8 +539,7 @@
   <div class="card success-screen" id="success-screen">
     <div class="success-icon">🎉</div>
     <h2 id="success-title">Cadastro enviado!</h2>
-    <p style="margin-top:0.75rem;" id="success-msg">Recebemos seu cadastro com sucesso. Nossa equipe vai revisar suas informações e você receberá um e-mail de confirmação em até <strong>24 horas</strong>.</p>
-    <p style="margin-top:1rem;">Assim que aprovado, seu perfil estará visível para as famílias no app. 🐣</p>
+    <p style="margin-top:0.75rem;" id="success-msg">Recebemos seu cadastro com sucesso. Assim que nosso time validar a informação, seu perfil estará no app para todas as famílias. Muito obrigado e parabéns!</p>
     <button class="btn btn-primary" style="margin-top:2rem;width:100%;" onclick="location.reload()">Cadastrar outro profissional</button>
   </div>
 
@@ -889,7 +888,7 @@ async function submitForm() {
     document.getElementById('success-title').textContent = 'Cadastro enviado gratuitamente!';
     document.getElementById('success-msg').innerHTML =
       'Recebemos seu cadastro com sucesso — grátis no lançamento, sem cartão de crédito.<br><br>' +
-      'Nossa equipe vai revisar suas informações e você receberá um e-mail de confirmação em até <strong>24 horas</strong>.';
+      'Assim que nosso time validar a informação, seu perfil estará no app para todas as famílias. Muito obrigado e parabéns!';
     document.getElementById('success-screen').classList.add('visible');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 

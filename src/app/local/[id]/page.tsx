@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import type { Local } from '@/lib/types'
 import { AMENIDADES, TIPO_LABELS } from '@/lib/types'
+import { compressImage } from '@/lib/compressImage'
 
 // ── Tipos ──────────────────────────────────────────────────────────────
 interface Medias {
@@ -367,20 +368,22 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     } catch {}
   }
 
-  function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])
-    setFotos(prev => [...prev, ...files].slice(0, 5))
-    files.forEach(f => {
-      const url = URL.createObjectURL(f)
-      setFotoURLs(prev => [...prev, url].slice(0, 5))
-    })
+    e.target.value = ''
+    if (files.length === 0) return
+    const comprimidas = await Promise.all(files.map(f => compressImage(f)))
+    setFotos(prev => [...prev, ...comprimidas].slice(0, 5))
+    setFotoURLs(prev => [...prev, ...comprimidas.map(f => URL.createObjectURL(f))].slice(0, 5))
   }
 
   async function sendReview() {
     setSending(true)
     try {
-      // Faz upload das fotos para pasta exclusiva do estabelecimento (nome_id)
-      // As fotos ficam no storage para revisão manual — NÃO são adicionadas à tabela locais automaticamente
+      // Fotos ficam guardadas na avaliação (coluna imagens) pra revisão do
+      // admin antes de aparecer pra qualquer outra pessoa — a avaliação
+      // inteira nasce com aprovado:false (ver política de moderação: nada
+      // fica público sem aprovação manual).
       const nomeSlug = (local?.nome ?? 'local')
         .toLowerCase()
         .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -388,25 +391,31 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         .replace(/^-|-$/g, '')
       const storagePath = `${nomeSlug}_${id}`
 
+      const imagens: string[] = []
       for (const foto of fotos) {
         const ext = foto.name.split('.').pop()
         const path = `${storagePath}/${Date.now()}_${Math.random().toString(36).slice(2,7)}.${ext}`
-        await supabase.storage.from('locais-fotos').upload(path, foto, { upsert: false })
-        // Não armazenamos as URLs: as fotos aguardam revisão manual no storage
+        const { data: up } = await supabase.storage.from('locais-fotos').upload(path, foto, { upsert: false, contentType: foto.type })
+        if (up) {
+          const { data: pub } = supabase.storage.from('locais-fotos').getPublicUrl(up.path)
+          if (pub?.publicUrl) imagens.push(pub.publicUrl)
+        }
       }
 
-      await supabase.from('avaliacoes').insert({
+      const { error: reviewError } = await supabase.from('avaliacoes').insert({
         local_id: id,
+        user_id: userId,
         limpeza: rLimpeza || null,
         atendimento: rAtendimento || null,
         instalacoes: rInstalacoes || null,
         experiencia: rExperiencia || null,
         comentario: comment || null,
-        imagens: [],
-        aprovado: true,
+        imagens,
+        aprovado: false,
         amenidades_reportadas: amenReportadas,
         periodo_ref: new Date().toISOString(),
       })
+      if (reviewError) throw reviewError
       try {
         localStorage.setItem(`amen_${id}`, JSON.stringify({ data: amenReportadas, savedAt: Date.now() }))
       } catch {}
@@ -929,7 +938,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           <div style={{ padding: '16px 16px 0' }}>
             {done ? (
               <div style={{ background: '#fff1f0', border: '1.5px solid #ef4444', borderRadius: 50, padding: '14px 20px', textAlign: 'center', fontWeight: 600, color: '#dc2626', fontSize: 14 }}>
-                ❤️ Avaliação enviada! Obrigado pela contribuição.
+                ❤️ Avaliação enviada! Assim que nosso time validar, ela aparecerá para todas as famílias. Muito obrigado!
               </div>
             ) : (
               <button className="btn-primary" onClick={startCheckinFlow} disabled={checkinDone && flowStep === 0}

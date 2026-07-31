@@ -6,12 +6,23 @@ import { createClient } from '@/lib/supabase/client'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
 import { cardStyle, btn } from '@/components/admin/theme'
 
+interface PendingChanges {
+  nome_negocio?: string; resumo?: string; whatsapp?: string; telefone?: string
+  instagram?: string; facebook?: string; site?: string; servicos?: string[]; outros_servicos?: string
+}
+
+const PENDING_FIELD_LABELS: Record<keyof PendingChanges, string> = {
+  nome_negocio: 'Nome do negócio', resumo: 'Descrição / Bio', whatsapp: 'WhatsApp', telefone: 'Telefone',
+  instagram: 'Instagram', facebook: 'Facebook', site: 'Site', servicos: 'Serviços', outros_servicos: 'Outros serviços',
+}
+
 interface Detail {
   profissional: {
     id: string; nome: string; nome_negocio: string | null; email: string; telefone: string
     cidade: string | null; uf: string | null; status_aprovacao: string; ativo: boolean
     pagamento_status: string; tipo_perfil: string; resumo: string | null
     servicos: string[] | null; created_at: string
+    pending_changes: PendingChanges | null; pending_since: string | null
   }
   conta_vinculada: { id: string; email: string; display_name: string | null } | null
   local_sincronizado_id: string | null
@@ -55,6 +66,7 @@ export default function AdminProfissionalDetailPage() {
   if (erro || !detail) return <div style={{ color: '#dc2626' }}>{erro}</div>
 
   const p = detail.profissional
+  const isEdicaoPendente = p.status_aprovacao === 'edicao_pendente' && !!p.pending_changes
 
   return (
     <div>
@@ -88,8 +100,17 @@ export default function AdminProfissionalDetailPage() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
             <div style={{ display: 'flex', gap: 6 }}>
-              {p.status_aprovacao !== 'aprovado' && <button onClick={() => moderar('aprovar')} style={btn('success')}>Aprovar</button>}
-              {p.status_aprovacao !== 'rejeitado' && <button onClick={() => moderar('rejeitar')} style={btn('warn')}>Rejeitar</button>}
+              {isEdicaoPendente ? (
+                <>
+                  <button onClick={() => moderar('aprovar')} style={btn('success')}>Aplicar alterações</button>
+                  <button onClick={() => moderar('rejeitar')} style={btn('warn')}>Descartar alterações</button>
+                </>
+              ) : (
+                <>
+                  {p.status_aprovacao !== 'aprovado' && <button onClick={() => moderar('aprovar')} style={btn('success')}>Aprovar</button>}
+                  {p.status_aprovacao !== 'rejeitado' && <button onClick={() => moderar('rejeitar')} style={btn('warn')}>Rejeitar</button>}
+                </>
+              )}
               <button onClick={() => setExcluir(true)} style={btn('danger')}>Excluir</button>
             </div>
             {detail.local_sincronizado_id && (
@@ -100,6 +121,31 @@ export default function AdminProfissionalDetailPage() {
           </div>
         </div>
       </div>
+
+      {isEdicaoPendente && p.pending_changes && (
+        <div style={{ ...cardStyle, padding: 16, marginBottom: 20, border: '1.5px solid #fbbf24' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#92400e', marginBottom: 4 }}>
+            ✏️ Alterações pendentes de aprovação
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>
+            {p.pending_since && `Enviadas em ${new Date(p.pending_since).toLocaleString('pt-BR')}`} — o perfil público continua mostrando os dados atuais até você aplicar.
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {(Object.keys(PENDING_FIELD_LABELS) as (keyof PendingChanges)[]).map(key => {
+              const atual = key === 'servicos' ? (p.servicos || []).join(', ') : (p as any)[key] || '—'
+              const novo = key === 'servicos' ? (p.pending_changes?.servicos || []).join(', ') : p.pending_changes?.[key] || '—'
+              if (atual === novo) return null
+              return (
+                <div key={key} style={{ fontSize: 12 }}>
+                  <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>{PENDING_FIELD_LABELS[key]}</div>
+                  <div style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{atual || '(vazio)'}</div>
+                  <div style={{ color: 'var(--green-dark)', fontWeight: 600 }}>{novo || '(vazio)'}</div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10 }}>
         Avaliações recentes ({detail.avaliacoes_recentes.length})

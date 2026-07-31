@@ -17,7 +17,7 @@ interface Detail {
   avaliacoes_recentes: {
     id: string; user_id: string; user_email: string; user_nome: string | null
     rating: number | null; experiencia: number | null; limpeza: number | null; atendimento: number | null
-    instalacoes: number | null; comentario: string | null; created_at: string
+    instalacoes: number | null; comentario: string | null; aprovado: boolean; imagens: string[] | null; created_at: string
   }[]
   checkins_recentes: { id: string; user_id: string; user_email: string; user_nome: string | null; created_at: string }[]
 }
@@ -46,6 +46,11 @@ export default function AdminLocalDetailPage() {
 
   async function moderar(acao: 'aprovar' | 'rejeitar') {
     await supabase.rpc('admin_moderate_local', { p_local_id: id, p_acao: acao })
+    load()
+  }
+
+  async function aprovarAvaliacao(avaliacaoId: string) {
+    await supabase.rpc('admin_approve_avaliacao', { p_id: avaliacaoId })
     load()
   }
 
@@ -122,14 +127,29 @@ export default function AdminLocalDetailPage() {
             {detail.avaliacoes_recentes.map(a => (
               <div key={a.id} style={{ ...cardStyle, padding: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                  <Link href={`/admin/usuarios/${a.user_id}`} style={{ color: 'var(--green-dark)', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
-                    {a.user_nome || a.user_email}
-                  </Link>
-                  <button onClick={() => setExcluirAvaliacao(a.id)} style={btn('ghost-danger')}>Excluir</button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <Link href={`/admin/usuarios/${a.user_id}`} style={{ color: 'var(--green-dark)', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
+                      {a.user_nome || a.user_email}
+                    </Link>
+                    <span style={badge(a.aprovado ? 'success' : 'warn')}>{a.aprovado ? 'aprovada' : 'pendente'}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    {!a.aprovado && <button onClick={() => aprovarAvaliacao(a.id)} style={btn('success')}>Aprovar</button>}
+                    <button onClick={() => setExcluirAvaliacao(a.id)} style={btn('ghost-danger')}>Excluir</button>
+                  </div>
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
                   experiência {a.experiencia ?? '—'}/10 {a.comentario ? `· "${a.comentario}"` : ''}
                 </div>
+                {a.imagens && a.imagens.length > 0 && (
+                  <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                    {a.imagens.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noreferrer">
+                        <img src={url} alt="" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border)' }} />
+                      </a>
+                    ))}
+                  </div>
+                )}
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{new Date(a.created_at).toLocaleString('pt-BR')}</div>
               </div>
             ))}
