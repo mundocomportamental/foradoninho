@@ -303,6 +303,7 @@ export default function MapaPage() {
   const [sheetVisible, setSheetVisible] = useState(false)
   const [sheetDragHeight, setSheetDragHeight] = useState<number | null>(null)
   const sheetDragRef = useRef<{ startY: number; startHeight: number } | null>(null)
+  const contentDragStartRef = useRef<{ startY: number } | null>(null)
   const SHEET_OPEN_VH = 60
   const [flyTrigger, setFlyTrigger] = useState(0)
   const router = useRouter()
@@ -472,6 +473,34 @@ export default function MapaPage() {
     }
     sheetDragRef.current = null
     setSheetDragHeight(null)
+  }
+
+  // Fechar arrastando a lista pra baixo (só quando ela já está rolada até o
+  // topo — senão o gesto é um scroll normal da lista, não deve fechar a barra)
+  function handleContentPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    contentDragStartRef.current = { startY: e.clientY }
+  }
+
+  function handleContentPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (sheetDragRef.current) {
+      handleSheetPointerMove(e)
+      return
+    }
+    const start = contentDragStartRef.current
+    if (!start) return
+    const deltaDown = e.clientY - start.startY // positivo = arrastando pra baixo
+    if (deltaDown > 10 && e.currentTarget.scrollTop <= 0) {
+      sheetDragRef.current = { startY: start.startY, startHeight: sheetOpenHeightPx() }
+      e.currentTarget.setPointerCapture(e.pointerId)
+      handleSheetPointerMove(e)
+    }
+  }
+
+  function handleContentPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    contentDragStartRef.current = null
+    if (sheetDragRef.current) {
+      handleSheetPointerUp(e)
+    }
   }
 
   return (
@@ -766,6 +795,9 @@ export default function MapaPage() {
           {/* Lista de locais — visível somente quando aberto */}
           <div
             className="sheet-scroll"
+            onPointerDown={handleContentPointerDown}
+            onPointerMove={handleContentPointerMove}
+            onPointerUp={handleContentPointerUp}
             style={
               sheetDragHeight !== null
                 ? { maxHeight: `${sheetDragHeight}px`, overflow: 'hidden', transition: 'none' }
