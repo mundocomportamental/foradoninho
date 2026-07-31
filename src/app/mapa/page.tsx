@@ -301,6 +301,9 @@ export default function MapaPage() {
   const [showWelcome, setShowWelcome] = useState(false)
   const [showNavModal, setShowNavModal] = useState(false)
   const [sheetVisible, setSheetVisible] = useState(false)
+  const [sheetDragHeight, setSheetDragHeight] = useState<number | null>(null)
+  const sheetDragRef = useRef<{ startY: number; startHeight: number } | null>(null)
+  const SHEET_OPEN_VH = 60
   const [flyTrigger, setFlyTrigger] = useState(0)
   const router = useRouter()
   const supabase = createClient()
@@ -433,6 +436,42 @@ export default function MapaPage() {
     if (l.cadeirão) items.push('Cadeirão')
     if (l.pet_friendly) items.push('Pet-Friendly')
     return items.slice(0, 3)
+  }
+
+  // ── Arrastar a barra de locais pra abrir/fechar (além do toque simples) ──
+  function sheetOpenHeightPx() {
+    return (window.innerHeight * SHEET_OPEN_VH) / 100
+  }
+
+  function handleSheetPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    sheetDragRef.current = {
+      startY: e.clientY,
+      startHeight: sheetVisible ? sheetOpenHeightPx() : 0,
+    }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  function handleSheetPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!sheetDragRef.current) return
+    const maxH = sheetOpenHeightPx()
+    const deltaY = sheetDragRef.current.startY - e.clientY // positivo = arrastando pra cima
+    const newHeight = Math.min(maxH, Math.max(0, sheetDragRef.current.startHeight + deltaY))
+    setSheetDragHeight(newHeight)
+  }
+
+  function handleSheetPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    if (!sheetDragRef.current) return
+    const totalMovement = Math.abs(sheetDragRef.current.startY - e.clientY)
+    if (totalMovement < 8) {
+      // Toque simples (sem arrastar de fato) — alterna como um clique normal
+      setSheetVisible(v => !v)
+    } else {
+      const maxH = sheetOpenHeightPx()
+      const finalHeight = sheetDragHeight ?? (sheetVisible ? maxH : 0)
+      setSheetVisible(finalHeight > maxH * 0.3)
+    }
+    sheetDragRef.current = null
+    setSheetDragHeight(null)
   }
 
   return (
@@ -703,10 +742,13 @@ export default function MapaPage() {
 
       {!selectedLocal && (
         <div className="bottom-sheet">
-          {/* Handle + header clicáveis para abrir/fechar */}
+          {/* Handle + header — clique alterna, e também pode ser arrastado */}
           <div
             onClick={() => setSheetVisible(v => !v)}
-            style={{ cursor: 'pointer' }}
+            onPointerDown={handleSheetPointerDown}
+            onPointerMove={handleSheetPointerMove}
+            onPointerUp={handleSheetPointerUp}
+            style={{ cursor: 'pointer', touchAction: 'none' }}
           >
             <div className="sheet-handle" />
             <div className="sheet-header">
@@ -724,11 +766,15 @@ export default function MapaPage() {
           {/* Lista de locais — visível somente quando aberto */}
           <div
             className="sheet-scroll"
-            style={{
-              maxHeight: sheetVisible ? '60vh' : '0',
-              overflow: sheetVisible ? 'auto' : 'hidden',
-              transition: 'max-height 0.35s cubic-bezier(.32,1,.5,1)',
-            }}
+            style={
+              sheetDragHeight !== null
+                ? { maxHeight: `${sheetDragHeight}px`, overflow: 'hidden', transition: 'none' }
+                : {
+                    maxHeight: sheetVisible ? '60vh' : '0',
+                    overflow: sheetVisible ? 'auto' : 'hidden',
+                    transition: 'max-height 0.35s cubic-bezier(.32,1,.5,1)',
+                  }
+            }
           >
             {filtered.map(local => {
               const amenList = amenLabels(local)
