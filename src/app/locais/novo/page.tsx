@@ -100,7 +100,7 @@ export default function NovoLocalPage() {
   useEffect(() => {
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/onboarding'); return }
+      if (!user) { router.replace('/onboarding?auth=login&unlock=1'); return }
       setAuthReady(true)
     }
     checkAuth()
@@ -218,7 +218,7 @@ export default function NovoLocalPage() {
     try {
       // Buscar usuário logado
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/onboarding'); return }
+      if (!user) { router.replace('/onboarding?auth=login&unlock=1'); return }
 
       const tipoFinal = tipo === 'outro' ? (tipoCustom.trim() || 'outro') : tipo
 

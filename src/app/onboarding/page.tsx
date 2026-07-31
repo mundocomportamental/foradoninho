@@ -100,8 +100,8 @@ function Carrossel({ onDone }: { onDone: () => void }) {
   )
 }
 
-function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsLogin: boolean }) {
-  const [mode, setMode] = useState<'choose' | 'email' | 'reset'>('choose')
+function AuthScreen({ onSkip, defaultIsLogin, startInEmailMode, showUnlockMessage }: { onSkip: () => void; defaultIsLogin: boolean; startInEmailMode?: boolean; showUnlockMessage?: boolean }) {
+  const [mode, setMode] = useState<'choose' | 'email' | 'reset'>(startInEmailMode ? 'email' : 'choose')
   const [isLogin, setIsLogin] = useState(defaultIsLogin)
   const [resetSent, setResetSent] = useState(false)
   const [email, setEmail] = useState('')
@@ -229,6 +229,19 @@ function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsL
             : (isLogin ? 'Que bom te ver de novo — entre na sua conta' : 'Crie sua conta gratuita em segundos')}
         </div>
       </div>
+
+      {showUnlockMessage && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20,
+          background: 'rgba(51,204,204,0.08)', border: '1.5px solid rgba(51,204,204,0.3)',
+          borderRadius: 12, padding: '12px 14px',
+        }}>
+          <span style={{ fontSize: 18 }}>🔓</span>
+          <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, lineHeight: 1.4 }}>
+            Desbloqueie todas as funcionalidades entrando na sua conta
+          </span>
+        </div>
+      )}
 
       {mode === 'choose' && (() => {
         // Aceite de termos só é exigido na criação de conta — quem já tem
@@ -376,6 +389,7 @@ function AuthScreen({ onSkip, defaultIsLogin }: { onSkip: () => void; defaultIsL
 function OnboardingInner() {
   const searchParams = useSearchParams()
   const authParam = searchParams.get('auth')
+  const unlock = searchParams.get('unlock') === '1'
   const [phase, setPhase] = useState<'slides' | 'auth'>(authParam ? 'auth' : 'slides')
   const router = useRouter()
 
@@ -388,7 +402,7 @@ function OnboardingInner() {
     <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font)' }}>
       {phase === 'slides'
         ? <Carrossel onDone={() => setPhase('auth')} />
-        : <AuthScreen onSkip={skipToApp} defaultIsLogin={authParam !== 'signup'} />
+        : <AuthScreen onSkip={skipToApp} defaultIsLogin={authParam !== 'signup'} startInEmailMode={unlock} showUnlockMessage={unlock} />
       }
     </div>
   )
