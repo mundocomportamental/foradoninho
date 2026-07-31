@@ -279,8 +279,8 @@ export default function Landing() {
             <h2>É profissional e ajuda mamães e bebês?</h2>
             <p>
               Consultoras de amamentação, doulas, pediatras e outros profissionais da primeira infância podem
-              criar um perfil e ser encontrados por famílias da sua região. Garantido gratuito até dezembro de
-              2026 pra quem entrar agora — quanto antes seu perfil estiver no ar, mais cedo as famílias te encontram.
+              criar um perfil e ser encontrados por famílias da sua região. Gratuito no lançamento — quanto antes
+              seu perfil estiver no ar, mais cedo as famílias te encontram.
             </p>
             <Link href="/cadastro-profissional" className="btn-pro-cta">Cadastrar meu serviço grátis</Link>
           </div>

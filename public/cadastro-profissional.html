@@ -516,13 +516,13 @@
           <div class="plan-name">Plano Profissional</div>
           <div class="plan-desc">Perfil público + visibilidade no app</div>
         </div>
-        <div class="plan-price" id="plan-price"><span style="text-decoration:line-through;opacity:0.5;font-size:0.9rem">R$34,90</span> <span style="color:var(--success)">Grátis</span></div>
+        <div class="plan-price" id="plan-price"><span style="color:var(--success)">Grátis</span></div>
       </div>
 
       <div style="background:var(--success-light);border:1.5px solid #6ee7b7;border-radius:12px;padding:1rem 1.1rem;margin-bottom:1.25rem;">
         <div style="font-weight:700;color:var(--success);margin-bottom:6px;">🎉 Sem cartão de crédito</div>
         <p style="font-size:0.85rem;color:var(--text);line-height:1.6;">
-          Seu cadastro é <strong>gratuito, garantido até dezembro de 2026</strong>. Nenhum dado de pagamento é coletado agora.
+          Seu cadastro é <strong>gratuito no lançamento</strong>. Nenhum dado de pagamento é coletado agora.
           Quanto antes seu perfil estiver no ar, mais cedo as famílias da sua região te encontram — antes que a concorrência chegue.
         </p>
       </div>
@@ -812,7 +812,7 @@ async function submitForm() {
     document.getElementById('progress-wrap').style.display = 'none';
     document.getElementById('success-title').textContent = 'Cadastro enviado gratuitamente!';
     document.getElementById('success-msg').innerHTML =
-      'Recebemos seu cadastro com sucesso — grátis, garantido até <strong>dezembro de 2026</strong>, sem cartão de crédito.<br><br>' +
+      'Recebemos seu cadastro com sucesso — grátis no lançamento, sem cartão de crédito.<br><br>' +
       'Nossa equipe vai revisar suas informações e você receberá um e-mail de confirmação em até <strong>24 horas</strong>.';
     document.getElementById('success-screen').classList.add('visible');
     window.scrollTo({ top: 0, behavior: 'smooth' });

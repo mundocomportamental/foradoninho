@@ -159,7 +159,7 @@ export default function AnuncieModal({ onClose }: AnuncieModalProps) {
             </div>
 
             <p style={{ fontSize: 12.5, color: '#7c3aed', lineHeight: 1.6, marginBottom: 20, textAlign: 'center' }}>
-              Garantido gratuito até <strong>dezembro de 2026</strong> pra quem entrar agora. Quanto antes seu perfil estiver no ar, mais cedo as famílias da sua região te encontram — antes que a concorrência chegue.
+              Gratuito no lançamento. Quanto antes seu perfil estiver no ar, mais cedo as famílias da sua região te encontram — antes que a concorrência chegue.
             </p>
 
             <Link
