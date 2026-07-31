@@ -6,6 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 export default function RedefinirSenhaPage() {
   const [checking, setChecking] = useState(true)
   const [hasSession, setHasSession] = useState(false)
+  const [tokenHash, setTokenHash] = useState<string | null>(null)
+  const [verifying, setVerifying] = useState(false)
+  const [verifyError, setVerifyError] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,13 +18,34 @@ export default function RedefinirSenhaPage() {
   const supabase = createClient()
 
   useEffect(() => {
-    // O link do e-mail traz a sessão de recuperação no fragmento da URL —
-    // o SDK já processa isso automaticamente ao carregar a página.
+    const params = new URLSearchParams(window.location.search)
+    const hash = params.get('token_hash')
+    if (hash && params.get('type') === 'recovery') {
+      // Fluxo novo (token_hash): só confirma a sessão quando a pessoa clicar
+      // no botão "Confirmar e continuar" — isso evita que scanners de
+      // segurança de e-mail (comuns em contas Outlook/Microsoft 365) gastem
+      // o link sozinhos ao pré-visitá-lo automaticamente antes do clique real.
+      setTokenHash(hash)
+      setChecking(false)
+      return
+    }
+    // Fluxo antigo (?code=), mantido por compatibilidade com links de reset
+    // já enviados antes desta mudança de template.
     supabase.auth.getSession().then(({ data: { session } }) => {
       setHasSession(!!session)
       setChecking(false)
     })
   }, [supabase])
+
+  async function handleConfirmLink() {
+    if (!tokenHash) return
+    setVerifying(true)
+    setVerifyError(false)
+    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+    setVerifying(false)
+    if (error) { setVerifyError(true); return }
+    setHasSession(true)
+  }
 
   async function handleSubmit() {
     if (password.length < 6) { setError('A senha precisa ter pelo menos 6 caracteres'); return }
@@ -42,6 +66,9 @@ export default function RedefinirSenhaPage() {
     outline: 'none', width: '100%', boxSizing: 'border-box',
   }
 
+  const showInvalid = !checking && !hasSession && !done && (verifyError || !tokenHash)
+  const showConfirmButton = !checking && tokenHash && !hasSession && !verifyError && !done
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', fontFamily: 'var(--font)' }}>
       <div style={{ width: '100%', maxWidth: 340 }}>
@@ -54,7 +81,18 @@ export default function RedefinirSenhaPage() {
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>Verificando o link...</div>
         )}
 
-        {!checking && !hasSession && !done && (
+        {showConfirmButton && (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
+              Clique no botão abaixo para confirmar que é você e continuar a redefinição de senha.
+            </div>
+            <button className="btn-primary" onClick={handleConfirmLink} disabled={verifying}>
+              {verifying ? 'Confirmando...' : 'Confirmar e continuar'}
+            </button>
+          </div>
+        )}
+
+        {showInvalid && (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
               Este link é inválido ou já expirou. Peça um novo link de redefinição na tela de login.
