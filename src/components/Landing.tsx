@@ -282,7 +282,7 @@ export default function Landing() {
               criar um perfil e ser encontrados por famílias da sua região. Garantido gratuito até dezembro de
               2026 pra quem entrar agora — quanto antes seu perfil estiver no ar, mais cedo as famílias te encontram.
             </p>
-            <Link href="/cadastro-profissional" className="btn-pro-cta">Garantir minha vaga grátis</Link>
+            <Link href="/cadastro-profissional" className="btn-pro-cta">Cadastrar meu serviço grátis</Link>
           </div>
         </section>
       </div>

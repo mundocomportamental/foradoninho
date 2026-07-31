@@ -1167,10 +1167,7 @@ export default function PerfilPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <div style={{ fontSize: 16, fontWeight: 700, color: '#7c3aed' }}>Plano Profissional</div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 12, color: '#a78bfa', textDecoration: 'line-through' }}>R$ 34,90/mês</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: '#059669' }}>Grátis</div>
-                </div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#059669' }}>Grátis</div>
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Faça seu negócio ser encontrado pela comunidade de pais e mamães que estão esperando um novo membro da família ou que acabaram de ter um!</div>
               <div style={{ fontSize: 12, color: '#7c3aed', lineHeight: 1.5, marginTop: 8 }}>
@@ -1184,7 +1181,7 @@ export default function PerfilPage() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
                 <path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/>
               </svg>
-              Garantir minha vaga grátis
+              Cadastrar meu serviço grátis
             </a>
           </div>
         </div>

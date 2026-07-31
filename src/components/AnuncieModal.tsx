@@ -136,7 +136,6 @@ export default function AnuncieModal({ onClose }: AnuncieModalProps) {
                   <div style={{ fontSize: 12, color: '#7c3aed', marginTop: 3 }}>Sem cartão de crédito · sem fidelidade</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 13, color: '#a78bfa', textDecoration: 'line-through' }}>R$ 34,90/mês</div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: '#059669', lineHeight: 1 }}>Grátis</div>
                 </div>
               </div>
@@ -168,7 +167,7 @@ export default function AnuncieModal({ onClose }: AnuncieModalProps) {
               onClick={onClose}
               style={{ display: 'block', textAlign: 'center', background: '#7c3aed', color: 'white', padding: '14px', borderRadius: 50, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}
             >
-              Garantir minha vaga grátis →
+              Cadastrar meu serviço grátis →
             </Link>
 
             <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginTop: 14 }}>
