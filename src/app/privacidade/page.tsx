@@ -82,9 +82,8 @@ export default function PrivacidadePage() {
               </p>
 
               <p style={{ marginBottom: 24, color: 'var(--text-muted)', lineHeight: 1.6, fontSize: 13 }}>
-                O Fora do Ninho é operado por <strong>FORA DO NINHO INOVA SIMPLES (I.S.)</strong>,
-                CNPJ 66.770.352/0001-34, com sede na Av. Dona Gertrudes, 181, Alvinópolis, Atibaia/SP,
-                CEP 12.942-540.
+                Controlador dos dados: <strong>FORA DO NINHO INOVA SIMPLES (I.S.)</strong>,
+                CNPJ 66.770.352/0001-34.
               </p>
 
               <Section title="1. O serviço">
@@ -186,6 +185,10 @@ export default function PrivacidadePage() {
                 <a href="mailto:foradoninho.app@gmail.com" style={{ color: 'var(--green-dark)' }}>
                   foradoninho.app@gmail.com
                 </a>
+                <br />
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                  Endereço: Av. Dona Gertrudes, 181, Alvinópolis, Atibaia/SP, CEP 12.942-540.
+                </span>
               </Section>
             </article>
           )}
@@ -208,8 +211,7 @@ export default function PrivacidadePage() {
 
               <p style={{ marginBottom: 24, color: 'var(--text-muted)', lineHeight: 1.6, fontSize: 13 }}>
                 Controlador dos dados: <strong>FORA DO NINHO INOVA SIMPLES (I.S.)</strong>,
-                CNPJ 66.770.352/0001-34, Av. Dona Gertrudes, 181, Alvinópolis, Atibaia/SP,
-                CEP 12.942-540.
+                CNPJ 66.770.352/0001-34.
               </p>
 
               <Section title="1. Dados que coletamos">
@@ -350,6 +352,10 @@ export default function PrivacidadePage() {
                 <a href="mailto:foradoninho.app@gmail.com" style={{ color: 'var(--green-dark)' }}>
                   foradoninho.app@gmail.com
                 </a>
+                <br />
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                  Endereço: Av. Dona Gertrudes, 181, Alvinópolis, Atibaia/SP, CEP 12.942-540.
+                </span>
               </Section>
             </article>
           )}
