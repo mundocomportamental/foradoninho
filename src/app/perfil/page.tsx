@@ -457,7 +457,8 @@ export default function PerfilPage() {
               <div style={{ position: 'relative', flexShrink: 0 }}>
                 <div style={{
                   width: 52, height: 52, borderRadius: 14,
-                  background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(4px)',
+                  background: profile.avatar_url ? 'white' : 'rgba(255,255,255,0.22)',
+                  backdropFilter: profile.avatar_url ? undefined : 'blur(4px)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontWeight: 700, fontSize: 17, color: 'white', overflow: 'hidden',
                 }}>
@@ -559,8 +560,12 @@ export default function PerfilPage() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.1 }}>{tierName}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 2 }}>Contribuição</div>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 2 }}>Nível atual</div>
                     </div>
+                  </div>
+
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 10, lineHeight: 1.5 }}>
+                    Quanto mais avaliações e contribuições você fizer no app, mais você verá seu ninho evoluindo.
                   </div>
 
                   {total <= 50 && (() => {

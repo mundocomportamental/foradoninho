@@ -101,17 +101,9 @@ function Wave({ color, flip }: { color: string; flip?: boolean }) {
 export default function Landing() {
   const router = useRouter()
 
-  useEffect(() => {
-    // Aquece o chunk pesado do mapa (Leaflet) em segundo plano, sem competir
-    // com o carregamento da própria landing — assim "Ver o mapa" abre na hora.
-    const warm = () => {
-      import('@/components/MapView')
-      import('leaflet')
-    }
-    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void }).requestIdleCallback
-    if (ric) ric(warm, { timeout: 2000 })
-    else setTimeout(warm, 1200)
-  }, [])
+  // Aquecimento do chunk do mapa (Leaflet) foi movido pro layout raiz
+  // (src/components/MapWarmup.tsx) — roda em qualquer entrada do app, não só
+  // aqui na landing (usuário já logado ou PWA instalado pulam esta tela).
 
   useEffect(() => {
     const els = document.querySelectorAll('.reveal, .reveal-pop')

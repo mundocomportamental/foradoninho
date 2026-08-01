@@ -232,6 +232,13 @@ html, body {
   font-weight: 500;
   font-family: var(--font);
   color: var(--text-secondary);
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+}
+
+.amenity-chip svg {
+  flex-shrink: 0;
 }
 
 .amenity-chip.has {
@@ -683,7 +690,7 @@ html, body {
 
 .amenities-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
   padding: 0 16px;
 }

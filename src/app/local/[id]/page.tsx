@@ -907,7 +907,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                           {has ? <><circle cx="12" cy="12" r="9"/><polyline points="9,12 11,14 15,10"/></> : <><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></>}
                         </svg>
                         {a.label}
-                        {has && <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600 }}>✓</span>}
+                        {has && <span style={{ marginLeft: 'auto', flexShrink: 0, fontSize: 11, fontWeight: 600 }}>✓</span>}
                       </div>
                     )
                   })}

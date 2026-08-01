@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import MapWarmup from '@/components/MapWarmup'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
+        <MapWarmup />
         <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
