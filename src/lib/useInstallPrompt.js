@@ -14,6 +14,11 @@ function isIOS() {
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent)
 }
 
+function isAndroid() {
+  if (typeof window === 'undefined') return false
+  return /android/i.test(window.navigator.userAgent)
+}
+
 export function useInstallPrompt() {
   const [deferredEvent, setDeferredEvent] = useState(null)
   const [installed, setInstalled] = useState(false)
@@ -50,6 +55,7 @@ export function useInstallPrompt() {
     installed,
     canPromptNative: !!deferredEvent,
     isIOS: isIOS(),
+    isAndroid: isAndroid(),
     promptInstall,
   }
 }

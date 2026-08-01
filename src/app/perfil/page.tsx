@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import BottomNav from '@/components/BottomNav'
 import InstallBanner from '@/components/InstallBanner'
+import InstallCard from '@/components/InstallCard'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -1095,6 +1096,7 @@ export default function PerfilPage() {
           )}
         </div>
 
+        <InstallCard />
 
         {/* Anuncie seu serviço — aparece sempre (usuário pode ter múltiplos negócios) */}
         {isLoggedIn && <div

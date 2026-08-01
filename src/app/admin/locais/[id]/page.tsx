@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useRealtimeRefresh } from '@/lib/useRealtimeRefresh'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
 import { cardStyle, btn, badge } from '@/components/admin/theme'
 
@@ -11,6 +12,7 @@ interface Detail {
     id: string; nome: string; tipo: string; cidade: string | null; estado: string | null
     endereco: string | null; lat: number | null; lng: number | null
     is_active: boolean; aprovado: boolean; rating: number; total_ratings: number; total_checkins: number
+    fotos: string[] | null; descricao: string | null; telefone: string | null; website: string | null
     created_at: string
   }
   adicionado_por: { id: string | null; email: string | null; display_name: string | null; deletado: boolean } | null
@@ -43,6 +45,8 @@ export default function AdminLocalDetailPage() {
   }, [supabase, id])
 
   useEffect(() => { load() }, [load])
+  useRealtimeRefresh('avaliacoes', load, `local_id=eq.${id}`)
+  useRealtimeRefresh('checkins', load, `local_id=eq.${id}`)
 
   async function moderar(acao: 'aprovar' | 'rejeitar') {
     await supabase.rpc('admin_moderate_local', { p_local_id: id, p_acao: acao })
@@ -92,6 +96,16 @@ export default function AdminLocalDetailPage() {
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
               lat/lng: {local.lat ?? '—'}, {local.lng ?? '—'} · criado em {new Date(local.created_at).toLocaleString('pt-BR')}
             </div>
+            {(local.telefone || local.website) && (
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+                {local.telefone && <span>{local.telefone}</span>}
+                {local.telefone && local.website && ' · '}
+                {local.website && <span>{local.website}</span>}
+              </div>
+            )}
+            {local.descricao && (
+              <div style={{ fontSize: 13, color: 'var(--text)', marginTop: 8, maxWidth: 480, lineHeight: 1.5 }}>{local.descricao}</div>
+            )}
             {detail.adicionado_por && (detail.adicionado_por.display_name || detail.adicionado_por.email) && (
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                 Adicionado por{' '}
@@ -123,6 +137,19 @@ export default function AdminLocalDetailPage() {
           </div>
         </div>
       </div>
+
+      {local.fotos && local.fotos.length > 0 && (
+        <div style={{ ...cardStyle, padding: 16, marginBottom: 20 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10 }}>Fotos enviadas ({local.fotos.length})</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {local.fotos.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noreferrer">
+                <img src={url} alt="" style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 10, border: '1px solid var(--border)' }} />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
         <div>

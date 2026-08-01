@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useDebouncedValue } from '@/lib/useDebouncedValue'
+import { useRealtimeRefresh } from '@/lib/useRealtimeRefresh'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
 import { cardStyle, btn, badge, pillStyle, inputStyle } from '@/components/admin/theme'
 
@@ -66,6 +67,7 @@ function AdminProfissionaisInner() {
 
   useEffect(() => { setOffset(0) }, [filtro, debouncedSearch])
   useEffect(() => { load() }, [load])
+  useRealtimeRefresh('profissionais', load)
 
   async function moderar(id: string, acao: 'aprovar' | 'rejeitar') {
     setBusy(id)
@@ -84,6 +86,15 @@ function AdminProfissionaisInner() {
 
   return (
     <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', margin: 0 }}>Profissionais</h1>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#059669' }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#059669', display: 'inline-block', animation: 'pulse-live 1.6s infinite' }} />
+          ao vivo
+        </span>
+        <style>{`@keyframes pulse-live { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
+      </div>
+
       <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {FILTROS.map(f => (
