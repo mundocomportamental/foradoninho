@@ -19,6 +19,7 @@ interface ProfItem {
   status_aprovacao: string
   ativo: boolean
   pagamento_status: string
+  autor_deletado: boolean
   created_at: string
 }
 
@@ -120,6 +121,7 @@ function AdminProfissionaisInner() {
                   </div>
                 </div>
                 <span style={badge(st.variant)}>{st.label}</span>
+                {item.autor_deletado && <span style={badge('warn')}>conta excluída</span>}
                 <div style={{ display: 'flex', gap: 6 }} onClick={e => e.preventDefault()}>
                   {item.status_aprovacao !== 'aprovado' && (
                     <button disabled={busy === item.id} onClick={() => moderar(item.id, 'aprovar')} style={btn('success')}>Aprovar</button>

@@ -150,7 +150,7 @@ export default function AdminUsuarioDetailPage() {
       {excluirConta && (
         <ConfirmDialog
           title={`Excluir conta de "${perfil.display_name || perfil.username || perfil.email}"?`}
-          description="Remove a conta permanentemente, junto com todo o perfil, avaliações, check-ins, favoritos, locais adicionados e cadastro de profissional dela. Não pode ser desfeita."
+          description="Remove a conta permanentemente, junto com o perfil, check-ins e favoritos dela. Avaliações e locais que ela adicionou continuam no app (sem ficarem mais associados à conta). Se ela tiver cadastro de profissional, ele deixa de aparecer no app mas o histórico é mantido. Não pode ser desfeita."
           onConfirm={confirmarExcluirConta}
           onCancel={() => setExcluirConta(false)}
         />

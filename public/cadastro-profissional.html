@@ -5,27 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cadastro de Profissional — Fora do Ninho</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --primary: #7C3AED;
-    --primary-light: #EDE9FE;
-    --primary-dark: #5B21B6;
+    --primary: #33CCCC;
+    --primary-light: #EAFAFB;
+    --primary-dark: #1AABAB;
     --success: #059669;
     --success-light: #D1FAE5;
-    --text: #1F2937;
-    --text-muted: #6B7280;
-    --border: #E5E7EB;
-    --border-focus: #7C3AED;
-    --bg: #FAFAFA;
+    --text: #1A1A1A;
+    --text-muted: #8E8E8E;
+    --border: #E8E8E5;
+    --border-focus: #33CCCC;
+    --bg: #F5F5F3;
     --white: #FFFFFF;
     --error: #DC2626;
     --error-light: #FEE2E2;
     --warning: #D97706;
     --warning-light: #FEF3C7;
     --warning-border: #FCD34D;
+    --font: 'DM Sans', sans-serif;
   }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: var(--font);
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -43,7 +45,7 @@
   .step-label { font-size: 0.7rem; color: var(--text-muted); text-align: center; flex: 1; transition: color 0.3s; }
   .step-label.active { color: var(--primary); font-weight: 600; }
   .step-label.done { color: var(--success); }
-  .progress-bar-bg { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-bar-bg { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
   .progress-bar-fill { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.4s ease; }
   .step-dots { display: flex; justify-content: space-between; margin-top: 0.5rem; padding: 0 2px; }
   .step-dot {
@@ -55,7 +57,7 @@
   .step-dot.done { background: var(--success); color: white; }
 
   /* Card */
-  .card { background: var(--white); border-radius: 16px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 1.5rem; }
+  .card { background: var(--white); border-radius: 20px; border: none; box-shadow: 0 8px 32px rgba(0,0,0,0.08); padding: 2.25rem 2rem; margin-bottom: 1.5rem; }
   .step-section { display: none; }
   .step-section.visible { display: block; }
 
@@ -69,11 +71,11 @@
   .field-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text); }
   .field-group label .optional { font-weight: 400; color: var(--text-muted); font-size: 0.8rem; margin-left: 4px; }
   input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], select, textarea {
-    width: 100%; padding: 0.6rem 0.85rem; border: 1px solid var(--border); border-radius: 8px;
-    font-size: 0.9rem; font-family: inherit; color: var(--text); background: var(--white);
+    width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border); border-radius: 12px;
+    font-size: 0.92rem; font-family: inherit; color: var(--text); background: var(--white);
     transition: border-color 0.2s; outline: none;
   }
-  input:focus, select:focus, textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+  input:focus, select:focus, textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(51,204,204,0.12); }
   textarea { resize: vertical; min-height: 90px; }
   .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
@@ -81,8 +83,8 @@
   /* Service checkboxes */
   .service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; }
   .service-option {
-    display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem;
-    border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px; padding: 0.65rem 1rem;
+    border: 1.5px solid var(--border); border-radius: 50px; cursor: pointer;
     transition: all 0.2s; font-size: 0.82rem; color: var(--text); background: var(--white); user-select: none;
   }
   .service-option:hover { border-color: var(--primary); background: var(--primary-light); }
@@ -128,15 +130,15 @@
     display: flex; align-items: center; border: 1px solid var(--border);
     border-radius: 8px; overflow: hidden; transition: border-color 0.2s;
   }
-  .social-input-wrap:focus-within { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+  .social-input-wrap:focus-within { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(51,204,204,0.12); }
   .social-prefix { padding: 0.6rem 0.75rem; background: var(--bg); border-right: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
   .social-input-wrap input { border: none; border-radius: 0; box-shadow: none; flex: 1; }
   .social-input-wrap input:focus { box-shadow: none; border-color: transparent; }
 
   /* Credit card preview */
   .card-preview {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 14px; padding: 1.5rem; color: white; margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #1AABAB 0%, #0d6e6e 100%);
+    border-radius: 16px; padding: 1.5rem; color: white; margin-bottom: 1.5rem;
     position: relative; min-height: 130px;
   }
   .card-preview .card-num { font-size: 1.1rem; letter-spacing: 0.2em; font-family: 'Courier New', monospace; margin-top: 1.5rem; }
@@ -145,7 +147,7 @@
 
   /* Plan box */
   .plan-box {
-    background: var(--primary-light); border: 1px solid #C4B5FD; border-radius: 10px;
+    background: var(--primary-light); border: 1px solid #BEEFEF; border-radius: 14px;
     padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;
   }
   .plan-box .plan-name { font-weight: 700; color: var(--primary-dark); }
@@ -156,8 +158,8 @@
   .coupon-row { display: flex; gap: 0.5rem; }
   .coupon-row input { flex: 1; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
   .btn-coupon {
-    padding: 0.6rem 1rem; background: var(--primary); color: white; border: none;
-    border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap;
+    padding: 0.6rem 1.1rem; background: var(--primary); color: white; border: none;
+    border-radius: 50px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap;
     transition: background 0.2s;
   }
   .btn-coupon:hover { background: var(--primary-dark); }
@@ -172,10 +174,10 @@
 
   /* Buttons */
   .btn-row { display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: space-between; }
-  .btn { padding: 0.75rem 1.75rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-family: inherit; }
+  .btn { padding: 0.85rem 1.75rem; border-radius: 50px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-family: inherit; }
   .btn-primary { background: var(--primary); color: white; flex: 1; }
   .btn-primary:hover { background: var(--primary-dark); }
-  .btn-secondary { background: var(--white); color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-secondary { background: var(--white); color: var(--text-muted); border: 1.5px solid var(--border); }
   .btn-secondary:hover { background: var(--bg); }
   .btn-success { background: var(--success); color: white; flex: 1; }
   .btn-success:hover { filter: brightness(0.9); }
@@ -220,8 +222,8 @@
   #gate-screen h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
   #gate-screen p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; max-width: 420px; margin: 0 auto; }
   .btn-login-link {
-    display: inline-block; margin-top: 1.5rem; padding: 0.75rem 1.75rem;
-    background: var(--primary); color: white; border-radius: 10px; font-weight: 600;
+    display: inline-block; margin-top: 1.5rem; padding: 0.85rem 1.75rem;
+    background: var(--primary); color: white; border-radius: 50px; font-weight: 600;
     font-size: 0.9rem; text-decoration: none;
   }
   .btn-login-link:hover { background: var(--primary-dark); }
@@ -257,24 +259,8 @@
 
   <div id="app-content">
   <div class="progress-wrap" id="progress-wrap">
-    <div class="step-labels">
-      <span class="step-label active">Dados</span>
-      <span class="step-label">Negócio</span>
-      <span class="step-label">Endereço</span>
-      <span class="step-label">Serviços</span>
-      <span class="step-label">Presença</span>
-      <span class="step-label">Finalizar</span>
-    </div>
     <div class="progress-bar-bg">
       <div class="progress-bar-fill" id="progress-fill" style="width: 8%"></div>
-    </div>
-    <div class="step-dots">
-      <div class="step-dot active">1</div>
-      <div class="step-dot">2</div>
-      <div class="step-dot">3</div>
-      <div class="step-dot">4</div>
-      <div class="step-dot">5</div>
-      <div class="step-dot">6</div>
     </div>
   </div>
 
@@ -284,7 +270,7 @@
     <div class="step-section visible" id="step-1">
       <div class="step-header">
         <div class="step-num">Passo 1 de 6</div>
-        <h2>👤 Seus dados pessoais</h2>
+        <h2>Seus dados pessoais</h2>
         <p>Precisamos identificar você como responsável pelo cadastro.</p>
       </div>
       <div class="field-group">
@@ -331,7 +317,7 @@
     <div class="step-section" id="step-2">
       <div class="step-header">
         <div class="step-num">Passo 2 de 6</div>
-        <h2>🏢 Dados do negócio</h2>
+        <h2>Dados do negócio</h2>
         <p>Como você vai aparecer para as famílias? Pode ser seu nome ou o nome do seu negócio.</p>
       </div>
       <div class="field-group">
@@ -360,7 +346,7 @@
         </div>
       </div>
       <div class="divider"></div>
-      <p style="font-size: 0.82rem; color: var(--text-muted);">💡 Mesmo sem CNPJ, você pode se cadastrar para divulgar seus serviços no app normalmente.</p>
+      <p style="font-size: 0.82rem; color: var(--text-muted);">Mesmo sem CNPJ, você pode se cadastrar para divulgar seus serviços no app normalmente.</p>
       <div id="step-2-error"></div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="goTo(1)">← Voltar</button>
@@ -372,7 +358,7 @@
     <div class="step-section" id="step-3">
       <div class="step-header">
         <div class="step-num">Passo 3 de 6</div>
-        <h2>📍 Endereço e local de atendimento</h2>
+        <h2>Endereço e local de atendimento</h2>
         <p>Onde as famílias podem te encontrar — ou até onde você vai.</p>
       </div>
       <div class="field-group">
@@ -450,7 +436,7 @@
     <div class="step-section" id="step-4">
       <div class="step-header">
         <div class="step-num">Passo 4 de 6</div>
-        <h2>🌟 Seus serviços</h2>
+        <h2>Seus serviços</h2>
         <p>O que você oferece para as famílias? Selecione todas as opções que se aplicam.</p>
       </div>
       <div class="field-group" id="service-grid-group">
@@ -480,7 +466,7 @@
     <div class="step-section" id="step-5">
       <div class="step-header">
         <div class="step-num">Passo 5 de 6</div>
-        <h2>📸 Fotos e presença digital</h2>
+        <h2>Fotos e presença digital</h2>
         <p>Tudo opcional — mas ajuda as famílias a te conhecerem melhor!</p>
       </div>
       <div class="field-group">
@@ -541,7 +527,7 @@
     <div class="step-section" id="step-6">
       <div class="step-header">
         <div class="step-num">Passo 6 de 6</div>
-        <h2>🚀 Lançamento gratuito</h2>
+        <h2>Lançamento gratuito</h2>
         <p>Você está quase lá! Finalize seu cadastro.</p>
       </div>
 
@@ -771,13 +757,6 @@ function goTo(n) {
 function updateProgress() {
   const pct = Math.round(((currentStep - 1) / 5) * 92) + 8;
   document.getElementById('progress-fill').style.width = pct + '%';
-  document.querySelectorAll('.step-label').forEach((l, i) => {
-    l.className = 'step-label' + (i+1===currentStep?' active':i+1<currentStep?' done':'');
-  });
-  document.querySelectorAll('.step-dot').forEach((d, i) => {
-    d.className = 'step-dot' + (i+1===currentStep?' active':i+1<currentStep?' done':'');
-    d.textContent = i+1 < currentStep ? '✓' : (i+1);
-  });
 }
 
 // Campos obrigatórios das abas Dados/Negócio/Endereço/Serviços — Presença

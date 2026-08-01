@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
-import { cardStyle, btn } from '@/components/admin/theme'
+import { cardStyle, btn, badge } from '@/components/admin/theme'
 
 interface PendingChanges {
   nome_negocio?: string; resumo?: string; whatsapp?: string; telefone?: string
@@ -24,10 +24,10 @@ interface Detail {
     servicos: string[] | null; created_at: string
     pending_changes: PendingChanges | null; pending_since: string | null
   }
-  conta_vinculada: { id: string; email: string; display_name: string | null } | null
+  conta_vinculada: { id: string | null; email: string | null; display_name: string | null; deletado: boolean } | null
   local_sincronizado_id: string | null
   avaliacoes_recentes: {
-    id: string; user_id: string; user_email: string; user_nome: string | null
+    id: string; user_id: string | null; user_email: string | null; user_nome: string | null; user_deletado: boolean
     experiencia: number | null; comentario: string | null; created_at: string
   }[]
 }
@@ -86,15 +86,19 @@ export default function AdminProfissionalDetailPage() {
             {p.servicos && p.servicos.length > 0 && (
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>Serviços: {p.servicos.join(', ')}</div>
             )}
-            {detail.conta_vinculada && (
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
+            {(detail.conta_vinculada?.display_name || detail.conta_vinculada?.email) ? (
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                 Conta vinculada:{' '}
-                <Link href={`/admin/usuarios/${detail.conta_vinculada.id}`} style={{ color: 'var(--green-dark)', textDecoration: 'none', fontWeight: 700 }}>
-                  {detail.conta_vinculada.display_name || detail.conta_vinculada.email}
-                </Link>
+                {detail.conta_vinculada.id ? (
+                  <Link href={`/admin/usuarios/${detail.conta_vinculada.id}`} style={{ color: 'var(--green-dark)', textDecoration: 'none', fontWeight: 700 }}>
+                    {detail.conta_vinculada.display_name || detail.conta_vinculada.email}
+                  </Link>
+                ) : (
+                  <span style={{ fontWeight: 700, color: 'var(--text)' }}>{detail.conta_vinculada.display_name || detail.conta_vinculada.email}</span>
+                )}
+                {detail.conta_vinculada.deletado && <span style={badge('warn')}>conta excluída</span>}
               </div>
-            )}
-            {!detail.conta_vinculada && (
+            ) : (
               <div style={{ fontSize: 12, color: '#92400e', marginTop: 8 }}>Sem conta de usuário vinculada ainda (cadastro anônimo).</div>
             )}
           </div>
@@ -154,9 +158,16 @@ export default function AdminProfissionalDetailPage() {
         {detail.avaliacoes_recentes.length === 0 && <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Nenhuma avaliação ainda.</div>}
         {detail.avaliacoes_recentes.map(a => (
           <div key={a.id} style={{ ...cardStyle, padding: 12 }}>
-            <Link href={`/admin/usuarios/${a.user_id}`} style={{ color: 'var(--green-dark)', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
-              {a.user_nome || a.user_email}
-            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              {a.user_id ? (
+                <Link href={`/admin/usuarios/${a.user_id}`} style={{ color: 'var(--green-dark)', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
+                  {a.user_nome || a.user_email}
+                </Link>
+              ) : (
+                <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--text)' }}>{a.user_nome || a.user_email || 'Usuário'}</span>
+              )}
+              {a.user_deletado && <span style={badge('warn')}>conta excluída</span>}
+            </div>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
               experiência {a.experiencia ?? '—'}/10 {a.comentario ? `· "${a.comentario}"` : ''}
             </div>

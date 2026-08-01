@@ -95,18 +95,27 @@ export default function ExcluirContaPage() {
               borderRadius: 12, padding: '14px 16px', marginBottom: 24,
               fontSize: 14, color: '#5d4037',
             }}>
-              ⚠️ <strong>Atenção:</strong> A exclusão é permanente e remove todos os seus dados, avaliações e contribuições do mapa. Essa ação não pode ser desfeita.
+              ⚠️ <strong>Atenção:</strong> A exclusão da conta é permanente e não pode ser desfeita.
             </div>
 
-            <div style={{ background: '#f8fafc', borderRadius: 12, padding: '16px 18px', marginBottom: 28 }}>
+            <div style={{ background: '#f8fafc', borderRadius: 12, padding: '16px 18px', marginBottom: 16 }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10, margin: '0 0 10px' }}>
                 O que será excluído:
               </p>
               <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: '#64748b', lineHeight: 1.8 }}>
-                <li>Dados da sua conta (nome, e-mail)</li>
-                <li>Avaliações e fotos que você enviou</li>
-                <li>Check-ins e contribuições no mapa</li>
-                <li>Todos os dados pessoais do seu perfil</li>
+                <li>Login e dados pessoais da sua conta (nome, e-mail)</li>
+                <li>Informações do "Meu Ninho" (papel, cidade, filhos)</li>
+                <li>Check-ins e favoritos</li>
+                <li>Cadastro de profissional, se você tiver um (deixa de aparecer no app)</li>
+              </ul>
+            </div>
+
+            <div style={{ background: '#f0fdf4', borderRadius: 12, padding: '16px 18px', marginBottom: 28 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10, margin: '0 0 10px' }}>
+                O que continua no app:
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: '#64748b', lineHeight: 1.8 }}>
+                <li>Avaliações e locais que você adicionou continuam ajudando outras famílias, sem ficarem mais associados à sua conta</li>
               </ul>
             </div>
 

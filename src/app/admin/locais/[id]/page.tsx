@@ -13,9 +13,9 @@ interface Detail {
     is_active: boolean; aprovado: boolean; rating: number; total_ratings: number; total_checkins: number
     created_at: string
   }
-  adicionado_por: { id: string; email: string; display_name: string | null } | null
+  adicionado_por: { id: string | null; email: string | null; display_name: string | null; deletado: boolean } | null
   avaliacoes_recentes: {
-    id: string; user_id: string; user_email: string; user_nome: string | null
+    id: string; user_id: string | null; user_email: string | null; user_nome: string | null; user_deletado: boolean
     rating: number | null; experiencia: number | null; limpeza: number | null; atendimento: number | null
     instalacoes: number | null; comentario: string | null; aprovado: boolean; imagens: string[] | null; created_at: string
   }[]
@@ -92,12 +92,17 @@ export default function AdminLocalDetailPage() {
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
               lat/lng: {local.lat ?? '—'}, {local.lng ?? '—'} · criado em {new Date(local.created_at).toLocaleString('pt-BR')}
             </div>
-            {detail.adicionado_por && (
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
+            {detail.adicionado_por && (detail.adicionado_por.display_name || detail.adicionado_por.email) && (
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                 Adicionado por{' '}
-                <Link href={`/admin/usuarios/${detail.adicionado_por.id}`} style={{ color: 'var(--green-dark)', textDecoration: 'none', fontWeight: 700 }}>
-                  {detail.adicionado_por.display_name || detail.adicionado_por.email}
-                </Link>
+                {detail.adicionado_por.id ? (
+                  <Link href={`/admin/usuarios/${detail.adicionado_por.id}`} style={{ color: 'var(--green-dark)', textDecoration: 'none', fontWeight: 700 }}>
+                    {detail.adicionado_por.display_name || detail.adicionado_por.email}
+                  </Link>
+                ) : (
+                  <span style={{ fontWeight: 700, color: 'var(--text)' }}>{detail.adicionado_por.display_name || detail.adicionado_por.email}</span>
+                )}
+                {detail.adicionado_por.deletado && <span style={badge('warn')}>conta excluída</span>}
               </div>
             )}
           </div>
@@ -128,9 +133,14 @@ export default function AdminLocalDetailPage() {
               <div key={a.id} style={{ ...cardStyle, padding: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <Link href={`/admin/usuarios/${a.user_id}`} style={{ color: 'var(--green-dark)', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
-                      {a.user_nome || a.user_email}
-                    </Link>
+                    {a.user_id ? (
+                      <Link href={`/admin/usuarios/${a.user_id}`} style={{ color: 'var(--green-dark)', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
+                        {a.user_nome || a.user_email}
+                      </Link>
+                    ) : (
+                      <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--text)' }}>{a.user_nome || a.user_email || 'Usuário'}</span>
+                    )}
+                    {a.user_deletado && <span style={badge('warn')}>conta excluída</span>}
                     <span style={badge(a.aprovado ? 'success' : 'warn')}>{a.aprovado ? 'aprovada' : 'pendente'}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>

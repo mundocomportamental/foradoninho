@@ -135,6 +135,8 @@ export default function PerfilPage() {
   const [editFilhos, setEditFilhos] = useState<Filho[]>([])
   const [savingNinho, setSavingNinho] = useState(false)
   const [ninhoError, setNinhoError] = useState('')
+  const [confirmDeleteNinho, setConfirmDeleteNinho] = useState(false)
+  const [deletingNinho, setDeletingNinho] = useState(false)
 
   // ── Perfil profissional ──────────────────────────────────────────────────────
   const [profissional, setProfissional] = useState<any | null>(null)
@@ -143,6 +145,9 @@ export default function PerfilPage() {
   const [editProf, setEditProf] = useState<any>({})
   const [savingProf, setSavingProf] = useState(false)
   const [profSaved, setProfSaved] = useState(false)
+  const [confirmDeleteProf, setConfirmDeleteProf] = useState(false)
+  const [deletingProf, setDeletingProf] = useState(false)
+  const [profDeleteError, setProfDeleteError] = useState('')
 
   const router = useRouter()
   const supabase = createClient()
@@ -318,6 +323,36 @@ export default function PerfilPage() {
   function cancelNinhoEdit() {
     setNinhoMode('view')
     setNinhoError('')
+    setConfirmDeleteNinho(false)
+  }
+
+  async function deleteNinho() {
+    setDeletingNinho(true)
+    setNinhoError('')
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      await supabase.from('filhos').delete().eq('user_id', user.id)
+      const { error } = await supabase.from('profiles').update({
+        role: null, cidade: null, idade: null, updated_at: new Date().toISOString(),
+      }).eq('id', user.id)
+      if (error) { setNinhoError(`Erro: ${error.message}`); return }
+
+      setProfile(p => p ? { ...p, role: null, cidade: null, idade: null } : p)
+      setFilhos([])
+      setEditFilhos([])
+      setEditRole('')
+      setEditCidade('')
+      setEditIdade('')
+      setConfirmDeleteNinho(false)
+      setNinhoMode('view')
+    } catch (e) {
+      console.error(e)
+      setNinhoError('Erro ao excluir. Tente novamente.')
+    } finally {
+      setDeletingNinho(false)
+    }
   }
 
   async function saveNinho() {
@@ -409,6 +444,31 @@ export default function PerfilPage() {
     } finally {
       setSavingProf(false)
     }
+  }
+
+  async function deleteProfissional() {
+    if (!profissional) return
+    setDeletingProf(true)
+    setProfDeleteError('')
+    try {
+      const { error } = await supabase.from('profissionais').delete().eq('id', profissional.id)
+      if (error) { setProfDeleteError(`Erro: ${error.message}`); return }
+      setProfissional(null)
+      setProfLocalId(null)
+      setConfirmDeleteProf(false)
+      setShowEditProfissional(false)
+    } catch (e) {
+      console.error(e)
+      setProfDeleteError('Erro ao excluir. Tente novamente.')
+    } finally {
+      setDeletingProf(false)
+    }
+  }
+
+  function closeEditProfissional() {
+    setShowEditProfissional(false)
+    setConfirmDeleteProf(false)
+    setProfDeleteError('')
   }
 
   if (!profile) return null
@@ -814,6 +874,39 @@ export default function PerfilPage() {
                       Cancelar
                     </button>
                   </div>
+
+                  {/* Excluir informações do Ninho */}
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
+                    {!confirmDeleteNinho ? (
+                      <button
+                        onClick={() => setConfirmDeleteNinho(true)}
+                        style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: 13, fontWeight: 600, padding: '4px 0', fontFamily: 'var(--font)' }}
+                      >
+                        Excluir informações do Ninho
+                      </button>
+                    ) : (
+                      <div style={{ padding: '12px 14px', background: '#fff1f0', border: '1px solid #fecaca', borderRadius: 12 }}>
+                        <div style={{ fontSize: 12, color: '#dc2626', lineHeight: 1.5, marginBottom: 10 }}>
+                          Isso apaga seu papel, cidade, idade e todos os filhos cadastrados. Sua conta continua ativa. Não pode ser desfeito.
+                        </div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            onClick={deleteNinho}
+                            disabled={deletingNinho}
+                            style={{ flex: 1, padding: '9px 0', borderRadius: 50, border: 'none', background: '#dc2626', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font)' }}
+                          >
+                            {deletingNinho ? 'Excluindo...' : 'Sim, excluir'}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteNinho(false)}
+                            style={{ flex: 1, padding: '9px 0', borderRadius: 50, border: '1.5px solid var(--border)', background: 'transparent', color: 'var(--text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font)' }}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1020,7 +1113,7 @@ export default function PerfilPage() {
 
       {/* ── Modal editar perfil profissional ── */}
       {showEditProfissional && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowEditProfissional(false)}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }} onClick={closeEditProfissional}>
           <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '92vh', overflowY: 'auto', padding: '20px 20px 48px' }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 16px' }} />
 
@@ -1103,7 +1196,43 @@ export default function PerfilPage() {
                 >
                   {savingProf ? 'Salvando...' : 'Salvar e enviar para análise'}
                 </button>
-                <button className="btn-secondary" onClick={() => setShowEditProfissional(false)}>Cancelar</button>
+                <button className="btn-secondary" onClick={closeEditProfissional}>Cancelar</button>
+
+                {/* Excluir cadastro profissional */}
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                  {!confirmDeleteProf ? (
+                    <button
+                      onClick={() => setConfirmDeleteProf(true)}
+                      style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: 13, fontWeight: 600, padding: '4px 0', fontFamily: 'var(--font)' }}
+                    >
+                      Excluir cadastro profissional
+                    </button>
+                  ) : (
+                    <div style={{ padding: '12px 14px', background: '#fff1f0', border: '1px solid #fecaca', borderRadius: 12 }}>
+                      <div style={{ fontSize: 12, color: '#dc2626', lineHeight: 1.5, marginBottom: 10 }}>
+                        Isso remove seu cadastro profissional e sua listagem pública permanentemente. Sua conta de usuário continua ativa. Não pode ser desfeito.
+                      </div>
+                      {profDeleteError && (
+                        <div style={{ fontSize: 12, color: '#dc2626', marginBottom: 8 }}>{profDeleteError}</div>
+                      )}
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button
+                          onClick={deleteProfissional}
+                          disabled={deletingProf}
+                          style={{ flex: 1, padding: '9px 0', borderRadius: 50, border: 'none', background: '#dc2626', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font)' }}
+                        >
+                          {deletingProf ? 'Excluindo...' : 'Sim, excluir'}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteProf(false)}
+                          style={{ flex: 1, padding: '9px 0', borderRadius: 50, border: '1.5px solid var(--border)', background: 'transparent', color: 'var(--text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font)' }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>

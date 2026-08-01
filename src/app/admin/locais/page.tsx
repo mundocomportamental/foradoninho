@@ -23,6 +23,7 @@ interface LocalItem {
   added_by: string | null
   added_by_email: string | null
   added_by_nome: string | null
+  added_by_deletado: boolean
   created_at: string
 }
 
@@ -110,7 +111,7 @@ function AdminLocaisInner() {
               <div style={{ flex: '1 1 220px', minWidth: 0 }}>
                 <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 14 }}>{item.nome}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                  {item.cidade}{item.estado ? `/${item.estado}` : ''} · {item.tipo} · adicionado por {item.added_by_nome || item.added_by_email || 'desconhecido'}
+                  {item.cidade}{item.estado ? `/${item.estado}` : ''} · {item.tipo} · adicionado por {item.added_by_nome || item.added_by_email || 'desconhecido'}{item.added_by_deletado ? ' (conta excluída)' : ''}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 6, fontSize: 11 }}>
