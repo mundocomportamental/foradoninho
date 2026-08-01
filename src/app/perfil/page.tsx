@@ -461,9 +461,10 @@ export default function PerfilPage() {
                   backdropFilter: profile.avatar_url ? undefined : 'blur(4px)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontWeight: 700, fontSize: 17, color: 'white', overflow: 'hidden',
+                  padding: profile.avatar_url ? 8 : 0, boxSizing: 'border-box',
                 }}>
                   {profile.avatar_url
-                    ? <img src={profile.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ? <img src={profile.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     : initials
                   }
                 </div>
