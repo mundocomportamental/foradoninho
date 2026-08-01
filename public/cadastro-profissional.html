@@ -265,7 +265,7 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" id="form-card">
 
     <!-- STEP 1 -->
     <div class="step-section visible" id="step-1">
@@ -294,8 +294,9 @@
       </div>
       <div class="row-2">
         <div class="field-group">
-          <label>Telefone / WhatsApp<span class="required-mark">*</span> <span class="optional">(principal)</span></label>
+          <label>Telefone<span class="required-mark">*</span></label>
           <input type="tel" id="telefone" placeholder="(11) 99999-9999" />
+          <div class="hint">Esse número aparecerá com um botão de ligar no seu perfil.</div>
         </div>
         <div class="field-group">
           <label>Gênero <span class="optional">(opcional)</span></label>
@@ -516,7 +517,7 @@
       <div class="field-group">
         <label>WhatsApp de contato <span class="optional">(opcional)</span></label>
         <input type="tel" id="whatsapp" placeholder="(11) 99999-9999" />
-        <div class="hint">Caso diferente do telefone principal cadastrado no passo 1.</div>
+        <div class="hint">Preencha se quiser um botão de WhatsApp no seu perfil (pode repetir o telefone do passo 1, se for o mesmo número).</div>
       </div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="goTo(4)">← Voltar</button>
@@ -561,7 +562,8 @@
     <div class="success-icon">🎉</div>
     <h2 id="success-title">Cadastro enviado!</h2>
     <p style="margin-top:0.75rem;" id="success-msg">Recebemos seu cadastro com sucesso. Assim que nosso time validar a informação, seu perfil estará no app para todas as famílias. Muito obrigado e parabéns!</p>
-    <button class="btn btn-primary" style="margin-top:2rem;width:100%;" onclick="location.reload()">Cadastrar outro profissional</button>
+    <a class="btn btn-primary" style="margin-top:2rem;width:100%;text-decoration:none;box-sizing:border-box;" href="/mapa">Ir para o app</a>
+    <button class="btn btn-secondary" style="margin-top:0.75rem;width:100%;" onclick="location.reload()">Cadastrar outro profissional</button>
   </div>
 
   </div><!-- /app-content -->
@@ -783,7 +785,7 @@ const REQUIRED_FIELDS = {
     { id: 'cpf', label: 'CPF do responsável' },
     { id: 'nascimento', label: 'Data de nascimento' },
     { id: 'email', label: 'E-mail' },
-    { id: 'telefone', label: 'Telefone / WhatsApp' },
+    { id: 'telefone', label: 'Telefone' },
   ],
   2: [
     { id: 'nome-negocio', label: 'Nome profissional / nome do negócio' },
@@ -1058,12 +1060,11 @@ async function submitForm() {
     }
 
     // Sucesso
-    document.querySelector('.card').style.display = 'none';
+    document.getElementById('form-card').style.display = 'none';
     document.getElementById('progress-wrap').style.display = 'none';
-    document.getElementById('success-title').textContent = 'Cadastro enviado gratuitamente!';
+    document.getElementById('success-title').textContent = 'Cadastro enviado com sucesso!';
     document.getElementById('success-msg').innerHTML =
-      'Recebemos seu cadastro com sucesso — grátis no lançamento, sem cartão de crédito.<br><br>' +
-      'Assim que nosso time validar a informação, seu perfil estará no app para todas as famílias. Muito obrigado e parabéns!';
+      'Recebemos seu cadastro, grátis no lançamento. Assim que nosso time validar a informação, seu perfil estará no app para todas as famílias. Muito obrigado e parabéns!';
     document.getElementById('success-screen').classList.add('visible');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 

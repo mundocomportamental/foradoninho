@@ -5,7 +5,35 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRealtimeRefresh } from '@/lib/useRealtimeRefresh'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
-import { cardStyle, btn, badge } from '@/components/admin/theme'
+import { cardStyle, btn, badge, inputStyle } from '@/components/admin/theme'
+
+const EDITABLE_FIELDS: { key: string; label: string; type?: 'text' | 'textarea' | 'select'; options?: { value: string; label: string }[] }[] = [
+  { key: 'nome', label: 'Nome completo' },
+  { key: 'cpf', label: 'CPF' },
+  { key: 'data_nascimento', label: 'Data de nascimento (AAAA-MM-DD)' },
+  { key: 'email', label: 'E-mail' },
+  { key: 'telefone', label: 'Telefone' },
+  { key: 'genero', label: 'Gênero' },
+  { key: 'nome_negocio', label: 'Nome do negócio' },
+  { key: 'tipo_perfil', label: 'Tipo de perfil', type: 'select', options: [{ value: 'pf', label: 'Pessoa Física' }, { value: 'pj', label: 'Pessoa Jurídica' }] },
+  { key: 'cnpj', label: 'CNPJ' },
+  { key: 'razao_social', label: 'Razão social' },
+  { key: 'cep', label: 'CEP' },
+  { key: 'uf', label: 'UF' },
+  { key: 'cidade', label: 'Cidade' },
+  { key: 'rua', label: 'Rua' },
+  { key: 'numero', label: 'Número' },
+  { key: 'complemento', label: 'Complemento' },
+  { key: 'bairro', label: 'Bairro' },
+  { key: 'lat', label: 'Latitude' },
+  { key: 'lng', label: 'Longitude' },
+  { key: 'outros_servicos', label: 'Outros serviços' },
+  { key: 'resumo', label: 'Resumo / bio', type: 'textarea' },
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'facebook', label: 'Facebook' },
+  { key: 'site', label: 'Site' },
+  { key: 'whatsapp', label: 'WhatsApp' },
+]
 
 interface PendingChanges {
   nome_negocio?: string; resumo?: string; whatsapp?: string; telefone?: string
@@ -70,6 +98,10 @@ export default function AdminProfissionalDetailPage() {
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
   const [excluir, setExcluir] = useState(false)
+  const [showEditAdmin, setShowEditAdmin] = useState(false)
+  const [editAdminFields, setEditAdminFields] = useState<Record<string, string>>({})
+  const [savingAdmin, setSavingAdmin] = useState(false)
+  const [adminEditError, setAdminEditError] = useState('')
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.rpc('admin_get_profissional_detail', { p_id: id })
@@ -90,6 +122,39 @@ export default function AdminProfissionalDetailPage() {
   async function confirmarExcluir() {
     await supabase.rpc('admin_moderate_profissional', { p_id: id, p_acao: 'excluir' })
     router.push('/admin/profissionais')
+  }
+
+  function openAdminEdit() {
+    if (!detail) return
+    const p = detail.profissional
+    const fields: Record<string, string> = {}
+    EDITABLE_FIELDS.forEach(({ key }) => { fields[key] = (p as any)[key] ?? '' })
+    fields.modalidades_atendimento = (p.modalidades_atendimento || []).join(', ')
+    fields.servicos = (p.servicos || []).join(', ')
+    setEditAdminFields(fields)
+    setAdminEditError('')
+    setShowEditAdmin(true)
+  }
+
+  async function saveAdminEdit() {
+    setSavingAdmin(true)
+    setAdminEditError('')
+    try {
+      const payload: Record<string, unknown> = { ...editAdminFields }
+      payload.modalidades_atendimento = editAdminFields.modalidades_atendimento
+        .split(',').map(s => s.trim()).filter(Boolean)
+      payload.servicos = editAdminFields.servicos
+        .split(',').map(s => s.trim()).filter(Boolean)
+      if (editAdminFields.lat === '') delete payload.lat
+      if (editAdminFields.lng === '') delete payload.lng
+
+      const { error } = await supabase.rpc('admin_update_profissional', { p_id: id, p_fields: payload })
+      if (error) { setAdminEditError(`Erro: ${error.message}`); return }
+      setShowEditAdmin(false)
+      load()
+    } finally {
+      setSavingAdmin(false)
+    }
   }
 
   if (loading) return <div style={{ color: 'var(--text-muted)' }}>Carregando…</div>
@@ -149,6 +214,7 @@ export default function AdminProfissionalDetailPage() {
                   {p.status_aprovacao !== 'rejeitado' && <button onClick={() => moderar('rejeitar')} style={btn('warn')}>Rejeitar</button>}
                 </>
               )}
+              <button onClick={openAdminEdit} style={btn('neutral')}>Editar informações</button>
               <button onClick={() => setExcluir(true)} style={btn('danger')}>Excluir</button>
             </div>
             {detail.local_sincronizado_id && (
@@ -281,6 +347,81 @@ export default function AdminProfissionalDetailPage() {
           onConfirm={confirmarExcluir}
           onCancel={() => setExcluir(false)}
         />
+      )}
+
+      {showEditAdmin && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={e => { if (e.target === e.currentTarget) setShowEditAdmin(false) }}
+        >
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', padding: 24, maxWidth: 560, width: '100%', maxHeight: '85vh', overflowY: 'auto', fontFamily: 'var(--font)' }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', marginBottom: 4 }}>Editar informações</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+              Alterações feitas aqui vão direto pro cadastro, sem passar pela análise. Registrado no log de auditoria.
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12, marginBottom: 12 }}>
+              {EDITABLE_FIELDS.filter(f => f.type !== 'textarea').map(({ key, label, type, options }) => (
+                <div key={key}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+                  {type === 'select' ? (
+                    <select
+                      value={editAdminFields[key] || ''}
+                      onChange={e => setEditAdminFields(f => ({ ...f, [key]: e.target.value }))}
+                      style={{ ...inputStyle, width: '100%' }}
+                    >
+                      {options!.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  ) : (
+                    <input
+                      value={editAdminFields[key] || ''}
+                      onChange={e => setEditAdminFields(f => ({ ...f, [key]: e.target.value }))}
+                      style={{ ...inputStyle, width: '100%' }}
+                    />
+                  )}
+                </div>
+              ))}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>Modalidades de atendimento (separadas por vírgula)</div>
+                <input
+                  value={editAdminFields.modalidades_atendimento || ''}
+                  onChange={e => setEditAdminFields(f => ({ ...f, modalidades_atendimento: e.target.value }))}
+                  style={{ ...inputStyle, width: '100%' }}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>Categorias de serviço (separadas por vírgula)</div>
+                <input
+                  value={editAdminFields.servicos || ''}
+                  onChange={e => setEditAdminFields(f => ({ ...f, servicos: e.target.value }))}
+                  style={{ ...inputStyle, width: '100%' }}
+                />
+              </div>
+            </div>
+
+            {EDITABLE_FIELDS.filter(f => f.type === 'textarea').map(({ key, label }) => (
+              <div key={key} style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+                <textarea
+                  value={editAdminFields[key] || ''}
+                  onChange={e => setEditAdminFields(f => ({ ...f, [key]: e.target.value }))}
+                  style={{ width: '100%', minHeight: 90, padding: '10px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text)', fontSize: 13, fontFamily: 'var(--font)', boxSizing: 'border-box', resize: 'vertical' }}
+                />
+              </div>
+            ))}
+
+            {adminEditError && <div style={{ fontSize: 12, color: '#dc2626', marginBottom: 12 }}>{adminEditError}</div>}
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button onClick={() => setShowEditAdmin(false)} disabled={savingAdmin} style={{ flex: 1, height: 42, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                Cancelar
+              </button>
+              <button onClick={saveAdminEdit} disabled={savingAdmin} style={{ flex: 1, height: 42, borderRadius: 'var(--radius-sm)', border: 'none', background: 'var(--green)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                {savingAdmin ? 'Salvando...' : 'Salvar alterações'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

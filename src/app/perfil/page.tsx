@@ -104,10 +104,10 @@ export default function PerfilPage() {
   const [confirmDeleteNinho, setConfirmDeleteNinho] = useState(false)
   const [deletingNinho, setDeletingNinho] = useState(false)
 
-  // ── Perfil profissional ──────────────────────────────────────────────────────
-  const [profissional, setProfissional] = useState<any | null>(null)
-  const [profLocalId, setProfLocalId] = useState<string | null>(null) // ID na tabela locais (para o link)
-  const [showEditProfissional, setShowEditProfissional] = useState(false)
+  // ── Perfil profissional (um usuário pode ter múltiplos negócios/serviços) ──
+  const [profissionais, setProfissionais] = useState<any[]>([])
+  const [profLocalIds, setProfLocalIds] = useState<Record<string, string>>({}) // profissional.id -> locais.id
+  const [editingProfId, setEditingProfId] = useState<string | null>(null) // qual cadastro está aberto no modal de edição
   const [editProf, setEditProf] = useState<any>({})
   const [savingProf, setSavingProf] = useState(false)
   const [profSaved, setProfSaved] = useState(false)
@@ -176,48 +176,49 @@ export default function PerfilPage() {
         setCheckins(c.count || 0)
         setAvaliacoes(a.count || 0)
 
-        // Verifica se o usuário tem perfil profissional
+        // Verifica se o usuário tem cadastro(s) de profissional — a conta pode
+        // ter múltiplos negócios/serviços cadastrados (por isso .select() sem
+        // .maybeSingle(): com 2+ linhas pro mesmo user_id, .maybeSingle()
+        // lança erro "multiple rows returned", que ficava silenciosamente
+        // descartado aqui e fazia "Meu Negócio" nunca aparecer, mesmo já
+        // aprovado).
         let { data: profData } = await supabase
           .from('profissionais')
           .select('*')
           .eq('user_id', user.id)
-          .maybeSingle()
+          .order('created_at', { ascending: false })
 
         // O cadastro via cadastro-profissional.html é anônimo e não vincula
         // user_id no momento do envio. Se não achou nada pelo user_id direto,
         // tenta "reivindicar" um registro órfão com o mesmo e-mail da conta
         // logada (RPC restrita — só vincula à própria conta) e busca de novo.
-        if (!profData) {
+        if (!profData || profData.length === 0) {
           await supabase.rpc('claim_profissional_by_email')
           const retry = await supabase
             .from('profissionais')
             .select('*')
             .eq('user_id', user.id)
-            .maybeSingle()
+            .order('created_at', { ascending: false })
           profData = retry.data
         }
 
-        if (profData) {
-          setProfissional(profData)
-          setEditProf({
-            nome_negocio: profData.nome_negocio || '',
-            resumo: profData.resumo || '',
-            whatsapp: profData.whatsapp || '',
-            telefone: profData.telefone || '',
-            instagram: profData.instagram || '',
-            facebook: profData.facebook || '',
-            site: profData.site || '',
-            servicos: (profData.servicos || []).join(', '),
-            outros_servicos: profData.outros_servicos || '',
-          })
-          // Busca o ID na tabela locais para o link "Ver meu perfil"
-          const { data: locaisEntry } = await supabase
+        if (profData && profData.length > 0) {
+          setProfissionais(profData)
+          // Busca o ID na tabela locais de cada cadastro pro link "Ver como
+          // clientes veem" — o espelhamento usa profissionais.id, não o
+          // user_id da conta (esses dois nunca são o mesmo valor; a versão
+          // anterior desta consulta filtrava por user_id por engano e por
+          // isso o link quase nunca aparecia).
+          const { data: locaisEntries } = await supabase
             .from('locais')
-            .select('id')
-            .eq('profissional_id', user.id)
+            .select('id, profissional_id')
+            .in('profissional_id', profData.map((p: any) => p.id))
             .eq('is_servico', true)
-            .maybeSingle()
-          if (locaisEntry) setProfLocalId(locaisEntry.id)
+          if (locaisEntries) {
+            const map: Record<string, string> = {}
+            locaisEntries.forEach((l: any) => { map[l.profissional_id] = l.id })
+            setProfLocalIds(map)
+          }
         }
       } else {
         setProfile({ display_name: null, username: null, avatar_url: null, plano: 'gratis', role: null, cidade: null, idade: null })
@@ -384,8 +385,25 @@ export default function PerfilPage() {
     router.push('/onboarding')
   }
 
+  function openEditProfissional(p: any) {
+    setEditingProfId(p.id)
+    setEditProf({
+      nome_negocio: p.nome_negocio || '',
+      resumo: p.resumo || '',
+      whatsapp: p.whatsapp || '',
+      telefone: p.telefone || '',
+      instagram: p.instagram || '',
+      facebook: p.facebook || '',
+      site: p.site || '',
+      servicos: (p.servicos || []).join(', '),
+      outros_servicos: p.outros_servicos || '',
+    })
+    setConfirmDeleteProf(false)
+    setProfDeleteError('')
+  }
+
   async function saveProfissionalEdits() {
-    if (!profissional) return
+    if (!editingProfId) return
     setSavingProf(true)
     try {
       // Converte servicos de string (separada por vírgula) para array
@@ -403,26 +421,25 @@ export default function PerfilPage() {
         pending_changes: changes,
         pending_since: new Date().toISOString(),
         status_aprovacao: 'edicao_pendente',
-      }).eq('id', profissional.id)
-      setProfissional((p: any) => ({ ...p, pending_changes: changes, status_aprovacao: 'edicao_pendente' }))
+      }).eq('id', editingProfId)
+      setProfissionais(list => list.map(p => p.id === editingProfId ? { ...p, pending_changes: changes, status_aprovacao: 'edicao_pendente' } : p))
       setProfSaved(true)
-      setTimeout(() => { setShowEditProfissional(false); setProfSaved(false) }, 1800)
+      setTimeout(() => { setEditingProfId(null); setProfSaved(false) }, 1800)
     } finally {
       setSavingProf(false)
     }
   }
 
   async function deleteProfissional() {
-    if (!profissional) return
+    if (!editingProfId) return
     setDeletingProf(true)
     setProfDeleteError('')
     try {
-      const { error } = await supabase.from('profissionais').delete().eq('id', profissional.id)
+      const { error } = await supabase.from('profissionais').delete().eq('id', editingProfId)
       if (error) { setProfDeleteError(`Erro: ${error.message}`); return }
-      setProfissional(null)
-      setProfLocalId(null)
+      setProfissionais(list => list.filter(p => p.id !== editingProfId))
       setConfirmDeleteProf(false)
-      setShowEditProfissional(false)
+      setEditingProfId(null)
     } catch (e) {
       console.error(e)
       setProfDeleteError('Erro ao excluir. Tente novamente.')
@@ -432,7 +449,7 @@ export default function PerfilPage() {
   }
 
   function closeEditProfissional() {
-    setShowEditProfissional(false)
+    setEditingProfId(null)
     setConfirmDeleteProf(false)
     setProfDeleteError('')
   }
@@ -946,16 +963,17 @@ export default function PerfilPage() {
           </div>
         )}
 
-        {/* ── Meu Negócio (só para profissionais com cadastro) ── */}
-        {isLoggedIn && profissional && (() => {
+        {/* ── Meu Negócio (um card por cadastro — a conta pode ter múltiplos) ── */}
+        {isLoggedIn && profissionais.map((profissional) => {
           const st = profissional.status_aprovacao
           const isAprovado = st === 'aprovado' && profissional.ativo
           const isPending = st === 'edicao_pendente' || (!!profissional.pending_changes && !isAprovado)
           const isRejeitado = st === 'rejeitado'
           const isAguardando = !isAprovado && !isPending && !isRejeitado
+          const localId = profLocalIds[profissional.id]
 
           return (
-            <div style={{ margin: '0 16px 12px' }}>
+            <div key={profissional.id} style={{ margin: '0 16px 12px' }}>
               <div style={{ borderRadius: 16, border: '1.5px solid #c4b5fd', overflow: 'hidden' }}>
 
                 {/* Header gradiente */}
@@ -1006,7 +1024,7 @@ export default function PerfilPage() {
                 {/* Botões de ação */}
                 <div style={{ display: 'flex', background: 'white', borderTop: '1px solid #e9d5ff' }}>
                   <button
-                    onClick={() => setShowEditProfissional(true)}
+                    onClick={() => openEditProfissional(profissional)}
                     style={{ flex: 1, padding: '13px', background: 'none', border: 'none', fontSize: 13, fontWeight: 600, color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font)' }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -1015,11 +1033,11 @@ export default function PerfilPage() {
                     </svg>
                     Editar perfil
                   </button>
-                  {isAprovado && profLocalId && (
+                  {isAprovado && localId && (
                     <>
                       <div style={{ width: 1, background: '#e9d5ff' }} />
                       <a
-                        href={`/local/${profLocalId}`}
+                        href={`/local/${localId}`}
                         style={{ flex: 1, padding: '13px', background: 'none', border: 'none', fontSize: 13, fontWeight: 600, color: '#7c3aed', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none' }}
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -1033,7 +1051,7 @@ export default function PerfilPage() {
               </div>
             </div>
           )
-        })()}
+        })}
 
         {/* Menu */}
         <div className="card" style={{ margin: '0 16px 12px', overflow: 'hidden' }}>
@@ -1124,7 +1142,7 @@ export default function PerfilPage() {
       </div>
 
       {/* ── Modal editar perfil profissional ── */}
-      {showEditProfissional && (
+      {editingProfId && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }} onClick={closeEditProfissional}>
           <div style={{ background: 'var(--bg-card)', borderTopLeftRadius: 24, borderTopRightRadius: 24, width: '100%', maxHeight: '92vh', overflowY: 'auto', padding: '20px 20px 48px' }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 16px' }} />
