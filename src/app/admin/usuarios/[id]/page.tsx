@@ -1,9 +1,10 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { cardStyle, tierInfo } from '@/components/admin/theme'
+import ConfirmDialog from '@/components/admin/ConfirmDialog'
+import { cardStyle, btn, tierInfo } from '@/components/admin/theme'
 
 interface Detail {
   perfil: {
@@ -20,10 +21,12 @@ interface Detail {
 export default function AdminUsuarioDetailPage() {
   const supabase = createClient()
   const params = useParams()
+  const router = useRouter()
   const id = params.id as string
   const [detail, setDetail] = useState<Detail | null>(null)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
+  const [excluirConta, setExcluirConta] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -34,6 +37,21 @@ export default function AdminUsuarioDetailPage() {
   }, [supabase, id])
 
   useEffect(() => { load() }, [load])
+
+  async function confirmarExcluirConta() {
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('https://ndyujambnaskelklulwa.supabase.co/functions/v1/admin-delete-user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token || ''}`,
+      },
+      body: JSON.stringify({ targetUserId: id }),
+    })
+    const result = await res.json()
+    if (!result.success) throw new Error(result.error || 'Falha ao excluir a conta.')
+    router.push('/admin/usuarios')
+  }
 
   if (loading) return <div style={{ color: 'var(--text-muted)' }}>Carregando…</div>
   if (erro || !detail) return <div style={{ color: '#dc2626' }}>{erro}</div>
@@ -60,7 +78,12 @@ export default function AdminUsuarioDetailPage() {
               {perfil.cidade || '—'} · {perfil.role || '—'} · plano {perfil.plano}
             </div>
           </div>
-          <div style={{ fontSize: 14, color: 'var(--text)', fontWeight: 700 }}>{tier.icon} {tier.label}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+            <div style={{ fontSize: 14, color: 'var(--text)', fontWeight: 700 }}>{tier.icon} {tier.label}</div>
+            {!perfil.is_admin && (
+              <button onClick={() => setExcluirConta(true)} style={btn('danger')}>Excluir conta</button>
+            )}
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 16, marginTop: 16, flexWrap: 'wrap' }}>
@@ -123,6 +146,15 @@ export default function AdminUsuarioDetailPage() {
           </div>
         </div>
       </div>
+
+      {excluirConta && (
+        <ConfirmDialog
+          title={`Excluir conta de "${perfil.display_name || perfil.username || perfil.email}"?`}
+          description="Remove a conta permanentemente, junto com todo o perfil, avaliações, check-ins, favoritos, locais adicionados e cadastro de profissional dela. Não pode ser desfeita."
+          onConfirm={confirmarExcluirConta}
+          onCancel={() => setExcluirConta(false)}
+        />
+      )}
     </div>
   )
 }
