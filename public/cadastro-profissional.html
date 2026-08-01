@@ -192,6 +192,25 @@
   .cnpj-toggle { font-size: 0.82rem; color: var(--primary); cursor: pointer; text-decoration: underline; margin-bottom: 1rem; display: inline-block; }
   #cnpj-section { display: none; }
 
+  /* Validação de campos obrigatórios */
+  .required-mark { color: var(--error); margin-left: 2px; }
+  .field-group.invalid input, .field-group.invalid select, .field-group.invalid textarea {
+    border-color: var(--error); background: var(--error-light);
+  }
+  .invalid-group { outline: 2px solid var(--error); outline-offset: 6px; border-radius: 8px; }
+  .field-error-msg {
+    font-size: 0.82rem; color: var(--error); background: var(--error-light);
+    padding: 0.6rem 0.85rem; border-radius: 8px; border: 1px solid #FCA5A5;
+    margin-top: 0.75rem; line-height: 1.5;
+  }
+  .field-success-msg {
+    font-size: 0.82rem; color: var(--success); background: var(--success-light);
+    padding: 0.6rem 0.85rem; border-radius: 8px; border: 1px solid #6EE7B7;
+    margin-top: 0.5rem; line-height: 1.5;
+  }
+  .map-link-row { display: flex; gap: 0.5rem; }
+  .map-link-row input { flex: 1; }
+
   /* Gate de login */
   #gate-screen { display: none; text-align: center; padding: 2.5rem 2rem; }
   #gate-screen.visible { display: block; }
@@ -269,26 +288,26 @@
         <p>Precisamos identificar você como responsável pelo cadastro.</p>
       </div>
       <div class="field-group">
-        <label>Nome completo</label>
+        <label>Nome completo<span class="required-mark">*</span></label>
         <input type="text" id="nome" placeholder="Ex.: Maria da Silva" />
       </div>
       <div class="row-2">
         <div class="field-group">
-          <label>CPF do responsável</label>
+          <label>CPF do responsável<span class="required-mark">*</span></label>
           <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" />
         </div>
         <div class="field-group">
-          <label>Data de nascimento</label>
+          <label>Data de nascimento<span class="required-mark">*</span></label>
           <input type="text" id="nascimento" placeholder="DD/MM/AAAA" maxlength="10" />
         </div>
       </div>
       <div class="field-group">
-        <label>E-mail</label>
+        <label>E-mail<span class="required-mark">*</span></label>
         <input type="email" id="email" placeholder="seu@email.com" />
       </div>
       <div class="row-2">
         <div class="field-group">
-          <label>Telefone / WhatsApp <span class="optional">(principal)</span></label>
+          <label>Telefone / WhatsApp<span class="required-mark">*</span> <span class="optional">(principal)</span></label>
           <input type="tel" id="telefone" placeholder="(11) 99999-9999" />
         </div>
         <div class="field-group">
@@ -302,8 +321,9 @@
           </select>
         </div>
       </div>
+      <div id="step-1-error"></div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="goTo(2)">Continuar →</button>
+        <button class="btn btn-primary" onclick="tryNext(2)">Continuar →</button>
       </div>
     </div>
 
@@ -315,7 +335,7 @@
         <p>Como você vai aparecer para as famílias? Pode ser seu nome ou o nome do seu negócio.</p>
       </div>
       <div class="field-group">
-        <label>Nome profissional / nome do negócio</label>
+        <label>Nome profissional / nome do negócio<span class="required-mark">*</span></label>
         <input type="text" id="nome-negocio" placeholder="Ex.: Dra. Ana Costa — Lactação" />
         <div class="hint">Este é o nome que aparecerá no app para as famílias.</div>
       </div>
@@ -341,9 +361,10 @@
       </div>
       <div class="divider"></div>
       <p style="font-size: 0.82rem; color: var(--text-muted);">💡 Mesmo sem CNPJ, você pode se cadastrar para divulgar seus serviços no app normalmente.</p>
+      <div id="step-2-error"></div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="goTo(1)">← Voltar</button>
-        <button class="btn btn-primary" onclick="goTo(3)">Continuar →</button>
+        <button class="btn btn-primary" onclick="tryNext(3)">Continuar →</button>
       </div>
     </div>
 
@@ -354,13 +375,24 @@
         <h2>📍 Endereço e local de atendimento</h2>
         <p>Onde as famílias podem te encontrar — ou até onde você vai.</p>
       </div>
+      <div class="field-group">
+        <label>Cole o link do Google Maps ou Apple Maps <span class="optional">(opcional)</span></label>
+        <div class="map-link-row">
+          <input type="text" id="map-link" placeholder="https://maps.app.goo.gl/..." />
+          <button type="button" class="btn-coupon" id="map-link-btn" onclick="usarMapLink()">Usar link</button>
+        </div>
+        <div class="hint">Copie o link de "Compartilhar" no Google Maps ou Apple Maps do seu local de atendimento — preenchemos cidade, estado e endereço automaticamente.</div>
+        <div id="map-link-msg"></div>
+      </div>
+      <div class="divider"></div>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">ou preencha manualmente:</p>
       <div class="row-2">
         <div class="field-group">
-          <label>CEP</label>
+          <label>CEP<span class="required-mark">*</span></label>
           <input type="text" id="cep" placeholder="00000-000" maxlength="9" onblur="buscaCep()" />
         </div>
         <div class="field-group">
-          <label>Estado (UF)</label>
+          <label>Estado (UF)<span class="required-mark">*</span></label>
           <select id="uf">
             <option value="">Selecione</option>
             <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
@@ -374,16 +406,16 @@
         </div>
       </div>
       <div class="field-group">
-        <label>Cidade</label>
+        <label>Cidade<span class="required-mark">*</span></label>
         <input type="text" id="cidade" placeholder="Ex.: São Paulo" />
       </div>
       <div class="row-2">
         <div class="field-group">
-          <label>Rua / Avenida</label>
+          <label>Rua / Avenida<span class="required-mark">*</span></label>
           <input type="text" id="rua" placeholder="Nome da rua" />
         </div>
         <div class="field-group">
-          <label>Número</label>
+          <label>Número<span class="required-mark">*</span></label>
           <input type="text" id="numero" placeholder="123" />
         </div>
       </div>
@@ -393,13 +425,13 @@
           <input type="text" id="complemento" placeholder="Apto, Sala, Bloco..." />
         </div>
         <div class="field-group">
-          <label>Bairro</label>
+          <label>Bairro<span class="required-mark">*</span></label>
           <input type="text" id="bairro" placeholder="Ex.: Centro" />
         </div>
       </div>
       <div class="divider"></div>
-      <div class="field-group">
-        <label>Como você atende?</label>
+      <div class="field-group" id="atendimento-group">
+        <label>Como você atende?<span class="required-mark">*</span></label>
         <div class="toggle-group" id="atendimento-toggle">
           <button class="toggle-btn" onclick="toggleAtend(this)">🏠 No meu estabelecimento</button>
           <button class="toggle-btn" onclick="toggleAtend(this)">🚗 Em domicílio</button>
@@ -407,9 +439,10 @@
         </div>
         <div class="hint">Selecione quantas opções quiser.</div>
       </div>
+      <div id="step-3-error"></div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="goTo(2)">← Voltar</button>
-        <button class="btn btn-primary" onclick="goTo(4)">Continuar →</button>
+        <button class="btn btn-primary" onclick="tryNext(4)">Continuar →</button>
       </div>
     </div>
 
@@ -420,8 +453,8 @@
         <h2>🌟 Seus serviços</h2>
         <p>O que você oferece para as famílias? Selecione todas as opções que se aplicam.</p>
       </div>
-      <div class="field-group">
-        <label>Categoria(s) de serviço</label>
+      <div class="field-group" id="service-grid-group">
+        <label>Categoria(s) de serviço<span class="required-mark">*</span></label>
         <div class="service-grid" id="service-grid"></div>
         <div class="hint">Selecionados: <span id="selected-count">0</span></div>
       </div>
@@ -432,13 +465,14 @@
         <div class="hint">Caso seu serviço não esteja na lista acima.</div>
       </div>
       <div class="field-group">
-        <label>Resumo dos seus serviços</label>
+        <label>Resumo dos seus serviços<span class="required-mark">*</span></label>
         <textarea id="resumo" placeholder="Conte em poucas palavras o que você oferece, sua experiência e diferenciais. As famílias vão ver este texto no seu perfil." maxlength="500"></textarea>
         <div class="hint"><span id="char-count">0</span>/500 caracteres</div>
       </div>
+      <div id="step-4-error"></div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="goTo(3)">← Voltar</button>
-        <button class="btn btn-primary" onclick="goTo(5)">Continuar →</button>
+        <button class="btn btn-primary" onclick="tryNext(5)">Continuar →</button>
       </div>
     </div>
 
@@ -631,6 +665,9 @@ let currentStep = 1;
 let selectedServices = new Set();
 // Fotos já comprimidas, prontas pra upload (preenchido por previewPhoto)
 const photoFiles = { 'slot-1': null, 'slot-2': null, 'slot-3': null };
+// Preenchido por usarMapLink() — enviado junto no cadastro final, se disponível
+let mapLinkLat = null;
+let mapLinkLng = null;
 
 // Redimensiona/recomprime a foto no navegador antes de guardar — uma foto de
 // câmera de celular moderna facilmente passa de 5-8MB, e nada limitava isso
@@ -702,6 +739,13 @@ function init() {
     if (v.length > 5) v = v.substring(0,5) + '/' + v.substring(5,9);
     this.value = v;
   });
+  // Tira o destaque de erro assim que a pessoa começa a corrigir o campo
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('input', function() {
+      const group = this.closest('.field-group');
+      if (group) group.classList.remove('invalid');
+    });
+  });
 }
 
 function toggleService(el, name) {
@@ -734,6 +778,142 @@ function updateProgress() {
     d.className = 'step-dot' + (i+1===currentStep?' active':i+1<currentStep?' done':'');
     d.textContent = i+1 < currentStep ? '✓' : (i+1);
   });
+}
+
+// Campos obrigatórios das abas Dados/Negócio/Endereço/Serviços — Presença
+// continua opcional. A página não usa um <form> nativo (a navegação entre
+// passos é toda via goTo()/JS), então o required do HTML5 não bloquearia
+// nada sozinho — a validação abaixo roda manualmente antes de avançar.
+const REQUIRED_FIELDS = {
+  1: [
+    { id: 'nome', label: 'Nome completo' },
+    { id: 'cpf', label: 'CPF do responsável' },
+    { id: 'nascimento', label: 'Data de nascimento' },
+    { id: 'email', label: 'E-mail' },
+    { id: 'telefone', label: 'Telefone / WhatsApp' },
+  ],
+  2: [
+    { id: 'nome-negocio', label: 'Nome profissional / nome do negócio' },
+  ],
+  3: [
+    { id: 'cep', label: 'CEP' },
+    { id: 'uf', label: 'Estado (UF)' },
+    { id: 'cidade', label: 'Cidade' },
+    { id: 'rua', label: 'Rua / Avenida' },
+    { id: 'numero', label: 'Número' },
+    { id: 'bairro', label: 'Bairro' },
+  ],
+  4: [
+    { id: 'resumo', label: 'Resumo dos seus serviços' },
+  ],
+};
+
+function clearStepErrors(step) {
+  document.querySelectorAll('#step-' + step + ' .field-group.invalid').forEach(el => el.classList.remove('invalid'));
+  document.querySelectorAll('#step-' + step + ' .invalid-group').forEach(el => el.classList.remove('invalid-group'));
+  const errEl = document.getElementById('step-' + step + '-error');
+  if (errEl) { errEl.className = ''; errEl.textContent = ''; }
+}
+
+function validateStep(step) {
+  clearStepErrors(step);
+  const missing = [];
+
+  (REQUIRED_FIELDS[step] || []).forEach(({ id, label }) => {
+    const el = document.getElementById(id);
+    if (!el.value || !el.value.trim()) {
+      missing.push(label);
+      el.closest('.field-group').classList.add('invalid');
+    }
+  });
+
+  if (step === 3 && document.querySelectorAll('#atendimento-toggle .toggle-btn.active').length === 0) {
+    missing.push('Como você atende');
+    document.getElementById('atendimento-group').classList.add('invalid-group');
+  }
+
+  if (step === 4 && selectedServices.size === 0) {
+    missing.push('Categoria(s) de serviço');
+    document.getElementById('service-grid-group').classList.add('invalid-group');
+  }
+
+  if (missing.length > 0) {
+    const errEl = document.getElementById('step-' + step + '-error');
+    errEl.className = 'field-error-msg';
+    errEl.textContent = '⚠️ Preencha os campos obrigatórios: ' + missing.join(', ') + '.';
+    return false;
+  }
+  return true;
+}
+
+function tryNext(n) {
+  if (!validateStep(currentStep)) return;
+  goTo(n);
+}
+
+async function usarMapLink() {
+  const input = document.getElementById('map-link');
+  const link = input.value.trim();
+  const msgEl = document.getElementById('map-link-msg');
+  const btn = document.getElementById('map-link-btn');
+  if (!link) return;
+
+  msgEl.className = '';
+  msgEl.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Lendo...';
+
+  try {
+    const res = await fetch(
+      'https://ndyujambnaskelklulwa.supabase.co/functions/v1/resolver-link-mapa',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + (window.__ninhoSession && window.__ninhoSession.access_token || ''),
+        },
+        body: JSON.stringify({ url: link }),
+      }
+    );
+    const result = await res.json();
+
+    if (!result.success) {
+      msgEl.className = 'field-error-msg';
+      msgEl.textContent = result.error || 'Não consegui ler esse link. Preencha manualmente.';
+      return;
+    }
+
+    mapLinkLat = result.lat;
+    mapLinkLng = result.lng;
+    if (result.cidade) document.getElementById('cidade').value = result.cidade;
+    if (result.estado) document.getElementById('uf').value = result.estado;
+    if (result.endereco) {
+      // Nominatim costuma devolver "Rua X, 123" — separa em rua/número
+      // quando dá pra reconhecer o padrão; senão joga tudo em "rua" mesmo.
+      const partes = result.endereco.split(',').map(s => s.trim());
+      if (partes.length > 1 && /^\d/.test(partes[partes.length - 1])) {
+        document.getElementById('numero').value = partes.pop();
+        document.getElementById('rua').value = partes.join(', ');
+      } else {
+        document.getElementById('rua').value = result.endereco;
+      }
+    }
+    const nomeNegocioEl = document.getElementById('nome-negocio');
+    if (result.nome && !nomeNegocioEl.value.trim()) nomeNegocioEl.value = result.nome;
+
+    ['cidade', 'uf', 'rua', 'numero'].forEach(id => {
+      document.getElementById(id).closest('.field-group').classList.remove('invalid');
+    });
+
+    msgEl.className = 'field-success-msg';
+    msgEl.textContent = '✓ Endereço preenchido! Confira e complete CEP/número/bairro se precisar.';
+  } catch (err) {
+    msgEl.className = 'field-error-msg';
+    msgEl.textContent = 'Erro ao processar o link. Tente novamente ou preencha manualmente.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Usar link';
+  }
 }
 
 function toggleCNPJ() {
@@ -824,6 +1004,8 @@ async function submitForm() {
       numero: document.getElementById('numero').value,
       complemento: document.getElementById('complemento').value || null,
       bairro: document.getElementById('bairro').value,
+      lat: mapLinkLat,
+      lng: mapLinkLng,
       // Atendimento & serviços
       modalidadesAtendimento: modalidades,
       servicos: Array.from(selectedServices),
