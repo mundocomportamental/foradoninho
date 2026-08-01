@@ -83,8 +83,8 @@
   /* Service checkboxes */
   .service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; }
   .service-option {
-    display: flex; align-items: center; gap: 8px; padding: 0.65rem 1rem;
-    border: 1.5px solid var(--border); border-radius: 50px; cursor: pointer;
+    display: flex; align-items: flex-start; gap: 8px; padding: 0.65rem 1rem;
+    border: 1.5px solid var(--border); border-radius: 14px; cursor: pointer;
     transition: all 0.2s; font-size: 0.82rem; color: var(--text); background: var(--white); user-select: none;
   }
   .service-option:hover { border-color: var(--primary); background: var(--primary-light); }
@@ -93,6 +93,7 @@
   .service-option .check-icon {
     width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 4px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
+    margin-top: 1px;
   }
   .service-option.checked .check-icon { background: var(--primary); border-color: var(--primary); color: white; font-size: 10px; }
 
