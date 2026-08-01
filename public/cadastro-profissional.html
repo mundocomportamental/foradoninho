@@ -693,6 +693,19 @@ function compressImage(file, maxDim, quality) {
   });
 }
 
+// O campo de nascimento é digitado como DD/MM/AAAA (máscara em init()), mas
+// a coluna date do Postgres precisa de AAAA-MM-DD sem ambiguidade — mandar
+// "19/11/1992" direto faz o Postgres tentar interpretar como MDY e falhar
+// ("date/time field value out of range"), já que 19 não é um mês válido.
+function toIsoDate(br) {
+  if (!br) return null;
+  const partes = br.split('/');
+  if (partes.length !== 3) return null;
+  const [dd, mm, yyyy] = partes;
+  if (dd.length !== 2 || mm.length !== 2 || yyyy.length !== 4) return null;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function init() {
   const grid = document.getElementById('service-grid');
   SERVICES.forEach(s => {
@@ -967,7 +980,7 @@ async function submitForm() {
       // Dados pessoais
       nome: document.getElementById('nome').value,
       cpf: document.getElementById('cpf').value,
-      dataNascimento: document.getElementById('nascimento').value || null,
+      dataNascimento: toIsoDate(document.getElementById('nascimento').value),
       email: document.getElementById('email').value,
       telefone: document.getElementById('telefone').value,
       genero: document.getElementById('genero').value || null,
