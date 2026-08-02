@@ -247,6 +247,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
   const [comment, setComment] = useState('')
   const [amenReportadas, setAmenReportadas] = useState<Record<string, boolean>>({})
   const [sending, setSending] = useState(false)
+  const [reviewSubmitError, setReviewSubmitError] = useState('')
   const [done, setDone] = useState(false)
   const [checkinCount, setCheckinCount] = useState<number>(0)
 
@@ -362,6 +363,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
   async function startCheckinFlow() {
     setCheckinDone(true)
     setFlowStep(1)
+    setReviewSubmitError('')
     try {
       const { error } = await supabase.from('checkins').insert({ local_id: id })
       if (!error) setCheckinCount(prev => prev + 1)
@@ -379,6 +381,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
 
   async function sendReview() {
     setSending(true)
+    setReviewSubmitError('')
     try {
       // Fotos ficam guardadas na avaliação (coluna imagens) pra revisão do
       // admin antes de aparecer pra qualquer outra pessoa — a avaliação
@@ -425,6 +428,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
       if (newMedias) setMedias(newMedias as Medias)
     } catch (err) {
       console.error(err)
+      setReviewSubmitError(err instanceof Error ? err.message : 'Erro ao enviar avaliação. Tente novamente.')
     } finally {
       setSending(false)
     }
@@ -1071,6 +1075,11 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
                     </label>
                   ))}
                 </div>
+                {reviewSubmitError && (
+                  <div style={{ fontSize: 13, color: '#dc2626', background: '#fff1f0', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 12px', marginBottom: 12, lineHeight: 1.5 }}>
+                    {reviewSubmitError}
+                  </div>
+                )}
                 <button className="btn-primary" onClick={sendReview} disabled={sending}>
                   {sending ? 'Enviando...' : 'Enviar avaliação'}
                 </button>
