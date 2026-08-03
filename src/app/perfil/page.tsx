@@ -6,6 +6,7 @@ import InstallCard from '@/components/InstallCard'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { getTierInfo, getNextTierProgress } from '@/lib/tiers'
 
 interface Profile {
   display_name: string | null
@@ -63,13 +64,6 @@ function formatarIdade(data_nascimento: string): string {
   return `${anos} ${anos === 1 ? 'ano' : 'anos'}`
 }
 
-// Tiers: Filhote 0-5 | Andorinha 6-15 | Gaivota 16-50 | Águia 51+
-function getTierInfo(total: number): { label: string; color: string; bg: string; icon: string } {
-  if (total > 50) return { label: 'Contribuidor(a) Águia',     color: '#d97706', bg: '#fffbeb', icon: '🦅' }
-  if (total > 15) return { label: 'Contribuidor(a) Gaivota',   color: '#0891b2', bg: '#ecfeff', icon: '🕊️' }
-  if (total > 5)  return { label: 'Contribuidor(a) Andorinha', color: '#059669', bg: '#f0fdf4', icon: '🐦' }
-  return             { label: 'Contribuidor(a) Filhote',    color: '#6b7280', bg: '#f9fafb', icon: '🐣' }
-}
 
 export default function PerfilPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -562,7 +556,7 @@ export default function PerfilPage() {
             {isLoggedIn && (() => {
               const total = checkins + avaliacoes
               const tier = getTierInfo(total)
-              const tierName = tier.label.replace('Contribuidor(a) ', '')
+              const tierName = tier.label
               return (
                 <>
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 20 }}>
@@ -586,19 +580,17 @@ export default function PerfilPage() {
                     Quanto mais avaliações e contribuições você fizer no app, mais você verá seu ninho evoluindo.
                   </div>
 
-                  {total <= 50 && (() => {
-                    let rangeStart = 0, rangeEnd = 5, nextLabel = 'Andorinha'
-                    if (total > 15) { rangeStart = 16; rangeEnd = 50; nextLabel = 'Águia' }
-                    else if (total > 5) { rangeStart = 6; rangeEnd = 15; nextLabel = 'Gaivota' }
-                    const progress = Math.min(((total - rangeStart) / (rangeEnd - rangeStart)) * 100, 100)
+                  {(() => {
+                    const next = getNextTierProgress(total)
+                    if (!next) return null
                     return (
                       <div style={{ marginTop: 16 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 12, color: 'rgba(255,255,255,0.85)' }}>
-                          <span>Próximo nível: {nextLabel}</span>
-                          <span>{total}/{rangeEnd}</span>
+                          <span>Próximo nível: {next.nextLabel}</span>
+                          <span>{total}/{next.rangeEnd}</span>
                         </div>
                         <div style={{ height: 6, background: 'rgba(255,255,255,0.25)', borderRadius: 3, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${progress}%`, background: 'white', borderRadius: 3, transition: 'width 0.4s' }} />
+                          <div style={{ height: '100%', width: `${next.progress}%`, background: 'white', borderRadius: 3, transition: 'width 0.4s' }} />
                         </div>
                       </div>
                     )

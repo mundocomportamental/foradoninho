@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRealtimeRefresh } from '@/lib/useRealtimeRefresh'
 import ConfirmDialog from '@/components/admin/ConfirmDialog'
 import { cardStyle, btn, badge } from '@/components/admin/theme'
+import { extractBucketPath } from '@/lib/storagePath'
 
 interface Detail {
   local: {
@@ -35,6 +36,7 @@ export default function AdminLocalDetailPage() {
   const [excluirAvaliacao, setExcluirAvaliacao] = useState<string | null>(null)
   const [excluirCheckin, setExcluirCheckin] = useState<string | null>(null)
   const [excluirLocal, setExcluirLocal] = useState(false)
+  const [removendoFoto, setRemovendoFoto] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -75,6 +77,19 @@ export default function AdminLocalDetailPage() {
   async function confirmarExcluirLocal() {
     await supabase.rpc('admin_moderate_local', { p_local_id: id, p_acao: 'excluir' })
     router.push('/admin/locais')
+  }
+
+  async function excluirFoto(url: string) {
+    if (!confirm('Excluir esta foto permanentemente?')) return
+    setRemovendoFoto(url)
+    try {
+      const path = extractBucketPath(url, 'locais-fotos')
+      if (path) await supabase.storage.from('locais-fotos').remove([path])
+      await supabase.rpc('admin_remove_local_foto', { p_local_id: id, p_foto_url: url })
+      await load()
+    } finally {
+      setRemovendoFoto(null)
+    }
   }
 
   if (loading) return <div style={{ color: 'var(--text-muted)' }}>Carregando…</div>
@@ -143,9 +158,23 @@ export default function AdminLocalDetailPage() {
           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10 }}>Fotos enviadas ({local.fotos.length})</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {local.fotos.map((url, i) => (
-              <a key={i} href={url} target="_blank" rel="noreferrer">
-                <img src={url} alt="" style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 10, border: '1px solid var(--border)' }} />
-              </a>
+              <div key={i} style={{ position: 'relative' }}>
+                <a href={url} target="_blank" rel="noreferrer">
+                  <img src={url} alt="" style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 10, border: '1px solid var(--border)' }} />
+                </a>
+                <button
+                  onClick={() => excluirFoto(url)}
+                  disabled={removendoFoto === url}
+                  title="Excluir foto"
+                  style={{
+                    position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: '50%',
+                    border: 'none', background: 'rgba(220,38,38,0.9)', color: 'white', fontSize: 13, fontWeight: 700,
+                    cursor: removendoFoto === url ? 'default' : 'pointer', lineHeight: '22px', padding: 0,
+                  }}
+                >
+                  {removendoFoto === url ? '…' : '×'}
+                </button>
+              </div>
             ))}
           </div>
         </div>

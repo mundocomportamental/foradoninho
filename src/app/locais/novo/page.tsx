@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AMENIDADES, TIPO_LABELS } from '@/lib/types'
 import { compressImage } from '@/lib/compressImage'
+import { getTierInfo, getNextTierProgress } from '@/lib/tiers'
 
 const TIPOS = Object.entries(TIPO_LABELS)
 
@@ -57,7 +58,7 @@ export default function NovoLocalPage() {
   const [step, setStep] = useState(0)
   const [authReady, setAuthReady] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [newMonthlyTotal, setNewMonthlyTotal] = useState(0)
+  const [newTotal, setNewTotal] = useState(0)
 
   // Step 0: localização
   const [gpsLoading, setGpsLoading] = useState(false)
@@ -295,18 +296,16 @@ export default function NovoLocalPage() {
         })
       }
 
-      // Buscar total mensal atualizado para mostrar na tela de sucesso
+      // Busca o total vitalício de contribuições (mesmo critério do tier
+      // mostrado em /perfil: checkins + avaliações, sem recorte por mês) pra
+      // mostrar o nível de contribuidor(a) atualizado na tela de sucesso.
       try {
         if (user) {
-          const startOfMonth = new Date()
-          startOfMonth.setDate(1)
-          startOfMonth.setHours(0, 0, 0, 0)
-          const monthISO = startOfMonth.toISOString()
           const [cm, am] = await Promise.all([
-            supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', monthISO),
-            supabase.from('avaliacoes').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', monthISO),
+            supabase.from('checkins').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+            supabase.from('avaliacoes').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           ])
-          setNewMonthlyTotal((cm.count || 0) + (am.count || 0))
+          setNewTotal((cm.count || 0) + (am.count || 0))
         }
       } catch {}
 
@@ -326,11 +325,8 @@ export default function NovoLocalPage() {
 
   // ── Tela de sucesso ──────────────────────────────────────────────────────────
   if (submitted) {
-    const targetStars = newMonthlyTotal >= 5 ? 10 : 5
-    const progress = Math.min((newMonthlyTotal / targetStars) * 100, 100)
-    const remaining = Math.max(5 - newMonthlyTotal, 0)
-    const starsArr = Array.from({ length: 5 }, (_, i) => i < Math.min(newMonthlyTotal, 5))
-    const reachedTop = newMonthlyTotal >= 5
+    const tier = getTierInfo(newTotal)
+    const nextTier = getNextTierProgress(newTotal)
 
     return (
       <div className="app-shell" style={{ background: 'var(--bg)' }}>
@@ -355,36 +351,29 @@ export default function NovoLocalPage() {
             <div style={{ fontSize: 14, color: 'var(--green-dark)' }}>adicionado ao seu perfil este mês</div>
           </div>
 
-          {/* Progresso Contribuidor Top */}
-          {!reachedTop ? (
+          {/* Progresso de nível — mesmos nomes/níveis usados em /perfil */}
+          {nextTier ? (
             <div style={{
               width: '100%', maxWidth: 320, background: 'var(--bg-card)',
               border: '1.5px solid var(--border)', borderRadius: 16, padding: '16px', marginBottom: 28
             }}>
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Próximo: Contribuidor Top</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Próximo nível: {nextTier.nextLabel}</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-                {remaining > 0
-                  ? `Faltam ${remaining} contribuição${remaining > 1 ? 'ões' : ''} para ganhar o selo!`
-                  : 'Você está perto!'}
-              </div>
-              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 10 }}>
-                {starsArr.map((earned, i) => (
-                  <span key={i} style={{ fontSize: 22, opacity: earned ? 1 : 0.2 }}>⭐</span>
-                ))}
+                Você é {tier.icon} {tier.label} — continue avaliando e adicionando locais para evoluir!
               </div>
               <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${progress}%`, background: '#f59e0b', borderRadius: 3, transition: 'width 0.6s' }} />
+                <div style={{ height: '100%', width: `${nextTier.progress}%`, background: '#f59e0b', borderRadius: 3, transition: 'width 0.6s' }} />
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>{newMonthlyTotal}/5 este mês</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>{newTotal}/{nextTier.rangeEnd}</div>
             </div>
           ) : (
             <div style={{
               width: '100%', maxWidth: 320, background: '#fffbeb',
               border: '2px solid #f59e0b', borderRadius: 16, padding: '18px', marginBottom: 28
             }}>
-              <div style={{ fontSize: 36, marginBottom: 6 }}>⭐</div>
-              <div style={{ fontSize: 17, fontWeight: 800, color: '#d97706' }}>Contribuidor Top!</div>
-              <div style={{ fontSize: 13, color: '#92400e', marginTop: 4 }}>Você desbloqueou o selo este mês. Obrigado!</div>
+              <div style={{ fontSize: 36, marginBottom: 6 }}>{tier.icon}</div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: '#d97706' }}>Contribuidor(a) {tier.label}!</div>
+              <div style={{ fontSize: 13, color: '#92400e', marginTop: 4 }}>Você alcançou o nível máximo de contribuição. Muito obrigado!</div>
             </div>
           )}
 
