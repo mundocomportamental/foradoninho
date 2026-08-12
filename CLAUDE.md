@@ -1,7 +1,7 @@
 @AGENTS.md
 
 # Workspace
-O código-fonte do projeto está em `C:\Fora do Ninho`. Sempre leia, edite e salve arquivos diretamente nessa pasta — nunca use outra pasta como destino de edições. Se ainda não tiver acesso a `C:\Fora do Ninho`, solicite-o como primeiro passo.
+O código-fonte do projeto está em `D:\FORA DO NINHO`. Sempre leia, edite e salve arquivos diretamente nessa pasta — nunca use outra pasta como destino de edições. Se ainda não tiver acesso a `D:\FORA DO NINHO`, solicite-o como primeiro passo.
 
 # Projeto: Fora do Ninho
 App PWA + Android para famílias encontrarem locais baby-friendly (fraldários, microondas, espaço kids, etc.) e profissionais da área (consultoras de amamentação, doulas, pediatras) em estradas e cidades do Brasil.
@@ -80,3 +80,28 @@ android/                      ← projeto Android (TWA - Trusted Web Activity)
 - URL e chave anônima em variáveis de ambiente: `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - Edge Functions disponíveis (verificar via MCP Supabase se necessário)
 - Tabela principal: `locais` (campos definidos na interface `Local`)
+
+# Kit de Marca (Marketing/Instagram)
+Arquivo completo em `marketing/kit-de-marca.html`. Usar sempre que criar artes, posts, prompts de imagem/vídeo ou qualquer material visual da marca.
+
+**Tagline:** "Você não está sozinho nessa."
+
+**Paleta de cores:**
+- Teal Principal `#33CCCC` — confiança, praticidade, ação (cor já usada no app)
+- Teal Escuro `#1F8F8F` — texto sobre teal, hover, ícones
+- Off-White `#FAF7F3` — fundo principal
+- Cinza Escuro `#22262B` — texto, seções de contraste
+- Secundária quente (recomendada): Terracota `#C9714F` — usar com moderação em CTAs secundários, ícones de "comunidade", acentos editoriais. Alternativas: Laranja suave `#E2915B`, Âmbar `#D9A441`
+
+**Tipografia:**
+- Títulos/headlines: **Plus Jakarta Sans**
+- Corpo de texto/legendas/UI: **DM Sans**
+- Pesos disponíveis: Regular 400, Medium 500, Semibold 600, Bold 700
+
+**Artes de post (Canva):** seguir sempre `marketing/instrucoes-artes-canva.md` — regra principal: foto grande de fundo (full-bleed), nunca em card/moldura pequena, e gerar sempre 3+ opções por conceito.
+
+**Estilo fotográfico e visual (regra importante para marketing):**
+- Fotos documentais de pais E mães reais com filhos pequenos em situações reais de viagem (carro, posto, restaurante, hotel) — não usar apenas mães, sempre incluir pais também
+- Luz natural e quente, sem estúdio, sem superexposição
+- Nunca usar ilustração infantil ou ícones de bebê fofinhos — estética adulta e moderna, a ternura vem da cena real, não do desenho
+- Evitar: filtro frio, clichê de banco de imagens/stock genérico

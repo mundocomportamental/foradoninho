@@ -39,6 +39,7 @@ function newFilho(): Filho {
 
 export default function CompletarPerfilPage() {
   const [role, setRole] = useState('')
+  const [nome, setNome] = useState('')
   const [avatar, setAvatar] = useState('')
   const [cidade, setCidade] = useState('')
   const [idade, setIdade] = useState('')
@@ -56,7 +57,7 @@ export default function CompletarPerfilPage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('role, cidade, idade, avatar_url')
+        .select('role, cidade, idade, avatar_url, display_name')
         .eq('id', user.id)
         .single()
 
@@ -65,6 +66,7 @@ export default function CompletarPerfilPage() {
         if (profileData.cidade) setCidade(profileData.cidade)
         if (profileData.idade) setIdade(String(profileData.idade))
         if (profileData.avatar_url) setAvatar(profileData.avatar_url)
+        if (profileData.display_name) setNome(profileData.display_name)
       }
 
       const { data: filhosData } = await supabase
@@ -99,6 +101,7 @@ export default function CompletarPerfilPage() {
   }
 
   async function handleSave() {
+    if (!nome.trim()) { setError('Informe seu nome'); return }
     if (!role) { setError('Selecione quem você é'); return }
     if (!cidade.trim()) { setError('Informe sua cidade'); return }
     setSaving(true)
@@ -109,6 +112,7 @@ export default function CompletarPerfilPage() {
 
       const upsertData: Record<string, unknown> = {
         id: user.id,
+        display_name: nome.trim(),
         role,
         cidade: cidade.trim(),
         idade: idade ? parseInt(idade) : null,
@@ -231,6 +235,26 @@ export default function CompletarPerfilPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Nome */}
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ fontSize: 15, fontWeight: 700, display: 'block', marginBottom: 8, color: 'var(--text)' }}>
+              Seu nome <span style={{ color: '#ef4444', fontSize: 13 }}>*</span>
+            </label>
+            <input
+              value={nome}
+              onChange={e => setNome(e.target.value)}
+              placeholder="Como podemos te chamar?"
+              style={{
+                width: '100%', padding: '13px 16px', borderRadius: 14,
+                border: '1.5px solid var(--border)', background: 'var(--bg-card)',
+                fontFamily: 'var(--font)', fontSize: 15, color: 'var(--text)',
+                outline: 'none', boxSizing: 'border-box',
+              }}
+              onFocus={e => e.target.style.borderColor = 'var(--green)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'}
+            />
           </div>
 
           {/* Escolher passarinho / avatar */}

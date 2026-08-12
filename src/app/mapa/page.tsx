@@ -316,6 +316,22 @@ export default function MapaPage() {
     } catch {}
   }, [])
 
+  useEffect(() => {
+    // Login via Google já traz o nome da pessoa (user_metadata.full_name) —
+    // aproveita e preenche o perfil automaticamente, sem precisar perguntar de novo.
+    async function syncGoogleName() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const googleName = user.user_metadata?.full_name || user.user_metadata?.name
+      if (!googleName) return
+      const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', user.id).maybeSingle()
+      if (!profile?.display_name) {
+        await supabase.from('profiles').upsert({ id: user.id, display_name: googleName, updated_at: new Date().toISOString() })
+      }
+    }
+    syncGoogleName()
+  }, [supabase])
+
   function closeWelcome() {
     setShowWelcome(false)
     try { localStorage.setItem('welcome_seen', '1') } catch {}

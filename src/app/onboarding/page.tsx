@@ -144,7 +144,7 @@ function AuthScreen({ onSkip, defaultIsLogin, startInEmailMode, showUnlockMessag
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/mapa` },
+          options: { emailRedirectTo: `${window.location.origin}/onboarding/completo` },
         })
         if (error) { setError(error.message); return }
         setMagicSent(true)
