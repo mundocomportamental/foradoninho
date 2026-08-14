@@ -319,18 +319,30 @@ export default function MapaPage() {
   useEffect(() => {
     // Login via Google já traz o nome da pessoa (user_metadata.full_name) —
     // aproveita e preenche o perfil automaticamente, sem precisar perguntar de novo.
-    async function syncGoogleName() {
+    // Além disso, se a conta acabou de ser criada agora (cadastro via Google —
+    // created_at muito recente), manda completar cidade/idade/filhos antes de
+    // continuar. Usuários antigos/já existentes nunca são afetados por essa
+    // checagem, mesmo com perfil incompleto — só quem está se cadastrando agora.
+    async function syncProfile() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+
       const googleName = user.user_metadata?.full_name || user.user_metadata?.name
-      if (!googleName) return
-      const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', user.id).maybeSingle()
-      if (!profile?.display_name) {
+      const { data: profile } = await supabase.from('profiles').select('display_name, role, cidade').eq('id', user.id).maybeSingle()
+
+      if (googleName && !profile?.display_name) {
         await supabase.from('profiles').upsert({ id: user.id, display_name: googleName, updated_at: new Date().toISOString() })
       }
+
+      const contaAcabouDeSerCriada = user.created_at
+        ? Date.now() - new Date(user.created_at).getTime() < 60_000
+        : false
+      if (contaAcabouDeSerCriada && (!profile?.role || !profile?.cidade)) {
+        router.replace('/onboarding/completo')
+      }
     }
-    syncGoogleName()
-  }, [supabase])
+    syncProfile()
+  }, [supabase, router])
 
   function closeWelcome() {
     setShowWelcome(false)
