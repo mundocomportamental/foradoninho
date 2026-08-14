@@ -1,12 +1,20 @@
 'use client'
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AMENIDADES, TIPO_LABELS } from '@/lib/types'
 import { compressImage } from '@/lib/compressImage'
 import { getTierInfo, getNextTierProgress } from '@/lib/tiers'
 
+const PinConfirmMap = dynamic(() => import('@/components/PinConfirmMap'), { ssr: false })
+
 const TIPOS = Object.entries(TIPO_LABELS)
+
+// Centro geográfico do Brasil — ponto de partida quando não temos GPS, link
+// nem geocodificação da cidade digitada, pra sempre abrir o mapa de
+// confirmação em algum lugar (a pessoa ajusta arrastando).
+const DEFAULT_CENTER = { lat: -14.235, lng: -51.9253 }
 
 // Steps: 0=localização, 1=info básica, 2=amenidades, 3=avaliação, 4=fotos
 const STEP_LABELS = ['Localização', 'Sobre o local', 'Comodidades', 'Avaliação', 'Fotos']
@@ -72,6 +80,8 @@ export default function NovoLocalPage() {
   const [mapLinkLoading, setMapLinkLoading] = useState(false)
   const [mapLinkError, setMapLinkError] = useState('')
   const [mapLinkSuccess, setMapLinkSuccess] = useState(false)
+  const [locationPhase, setLocationPhase] = useState<'input' | 'confirm'>('input')
+  const [locatingCidade, setLocatingCidade] = useState(false)
 
   // Step 1: info básica
   const [nome, setNome] = useState('')
@@ -207,6 +217,41 @@ export default function NovoLocalPage() {
     }
   }
 
+  async function handleLocationNext() {
+    setError('')
+
+    // Já temos coordenada (GPS ou link de mapa) — só falta confirmar o pino.
+    if (lat != null && lng != null) {
+      setLocationPhase('confirm')
+      return
+    }
+
+    // Preenchimento manual, sem coordenada ainda — geocodifica cidade/estado
+    // pra abrir o mapa de confirmação num ponto de partida razoável.
+    setLocatingCidade(true)
+    try {
+      const q = encodeURIComponent(`${cidade}, ${estado}, Brasil`)
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`,
+        { headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' } }
+      )
+      const data = await res.json()
+      if (data && data[0]) {
+        setLat(parseFloat(data[0].lat))
+        setLng(parseFloat(data[0].lon))
+      } else {
+        setLat(DEFAULT_CENTER.lat)
+        setLng(DEFAULT_CENTER.lng)
+      }
+    } catch {
+      setLat(DEFAULT_CENTER.lat)
+      setLng(DEFAULT_CENTER.lng)
+    } finally {
+      setLocatingCidade(false)
+      setLocationPhase('confirm')
+    }
+  }
+
   async function handleFotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])
     e.target.value = '' // permite selecionar o mesmo arquivo de novo depois de remover
@@ -322,6 +367,22 @@ export default function NovoLocalPage() {
       <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>Carregando...</div>
     </div>
   )
+
+  // ── Confirmar pino no mapa (sub-etapa da Localização) ───────────────────────
+  if (step === 0 && locationPhase === 'confirm' && lat != null && lng != null) {
+    return (
+      <PinConfirmMap
+        initialCenter={{ lat, lng }}
+        onBack={() => setLocationPhase('input')}
+        onConfirm={(pos) => {
+          setLat(pos.lat)
+          setLng(pos.lng)
+          setLocationPhase('input')
+          setStep(1)
+        }}
+      />
+    )
+  }
 
   // ── Tela de sucesso ──────────────────────────────────────────────────────────
   if (submitted) {
@@ -576,11 +637,11 @@ export default function NovoLocalPage() {
 
               <button
                 className="btn-primary"
-                disabled={!cidade.trim() || !estado.trim()}
-                onClick={() => { setError(''); setStep(1) }}
+                disabled={!cidade.trim() || !estado.trim() || locatingCidade}
+                onClick={handleLocationNext}
                 style={{ marginTop: 8 }}
               >
-                Próximo
+                {locatingCidade ? 'Localizando...' : 'Próximo'}
               </button>
             </>
           )}
