@@ -60,9 +60,17 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
         attributionControl: false,
       })
 
+      // Esri Light Gray Canvas — base em escala de cinza + camada de rótulos
+      // por cima. Esse serviço só tem tiles nativos até o zoom 16; acima
+      // disso o Leaflet amplia o próprio tile de z16 (maxNativeZoom) em vez
+      // de tentar buscar um zoom que não existe.
       L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        { attribution: '© CartoDB', noWrap: true }
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        { attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors', noWrap: true, maxNativeZoom: 16, maxZoom: 19 }
+      ).addTo(map)
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        { noWrap: true, maxNativeZoom: 16, maxZoom: 19 }
       ).addTo(map)
 
       map.on('click', () => onMapClickRef.current?.())
