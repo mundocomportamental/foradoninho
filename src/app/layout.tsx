@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next'
+import { Suspense } from 'react'
 import { Analytics } from '@vercel/analytics/next'
 import MapWarmup from '@/components/MapWarmup'
+import PostHogProvider from '@/components/PostHogProvider'
+import PostHogPageView from '@/components/PostHogPageView'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -45,7 +48,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body>
-        {children}
+        <PostHogProvider>
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
+          {children}
+        </PostHogProvider>
         <MapWarmup />
         <Analytics />
         <script dangerouslySetInnerHTML={{
