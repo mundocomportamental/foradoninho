@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Landing from '@/components/Landing'
+import AppSplash from '@/components/AppSplash'
 
 function isStandalone() {
   return (
@@ -42,6 +43,6 @@ export default function Root() {
     return () => { cancelled = true }
   }, [router])
 
-  if (!showLanding) return null
+  if (!showLanding) return <AppSplash />
   return <Landing />
 }
