@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { track } from '@vercel/analytics'
 import { useInstallPrompt } from '@/lib/useInstallPrompt'
 
 export default function InstallCard() {
@@ -13,6 +14,7 @@ export default function InstallCard() {
       await promptInstall()
       return
     }
+    if (isIOS) track('pwa_instalar_clicado', { plataforma: 'ios' })
     setShowGuide(true)
   }
 

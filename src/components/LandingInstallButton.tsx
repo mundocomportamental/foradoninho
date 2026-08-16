@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { track } from '@vercel/analytics'
 import { useInstallPrompt } from '@/lib/useInstallPrompt'
 
 export default function LandingInstallButton() {
@@ -13,6 +14,7 @@ export default function LandingInstallButton() {
       await promptInstall()
       return
     }
+    if (isIOS) track('pwa_instalar_clicado', { plataforma: 'ios' })
     setShowIosGuide(true)
   }
 

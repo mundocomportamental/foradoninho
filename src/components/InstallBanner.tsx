@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { track } from '@vercel/analytics'
 import { useInstallPrompt } from '@/lib/useInstallPrompt'
 
 const DISMISS_KEY = 'fdn_install_banner_dismissed'
@@ -26,7 +27,10 @@ export default function InstallBanner() {
       await promptInstall()
       return
     }
-    if (isIOS) setShowIosGuide(true)
+    if (isIOS) {
+      track('pwa_instalar_clicado', { plataforma: 'ios' })
+      setShowIosGuide(true)
+    }
   }
 
   return (
