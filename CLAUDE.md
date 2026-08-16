@@ -7,7 +7,7 @@ O código-fonte do projeto está em `D:\FORA DO NINHO`. Sempre leia, edite e sal
 App PWA + Android para famílias encontrarem locais baby-friendly (fraldários, microondas, espaço kids, etc.) e profissionais da área (consultoras de amamentação, doulas, pediatras) em estradas e cidades do Brasil.
 
 - **Site:** https://foradoninho.com.br
-- **Repositório:** https://github.com/pitstopbabyapp-blip/-pitstop-baby
+- **Repositório:** https://github.com/mundocomportamental/foradoninho
 - **Deploy:** Vercel (deploy automático ao fazer push para `main`)
 - **Banco de dados:** Supabase
 

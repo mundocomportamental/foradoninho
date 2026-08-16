@@ -12,7 +12,7 @@ App criado na Google Play Console. AAB enviado para Teste Interno. Falta complet
 | Nome | Fora do Ninho |
 | Package name | `com.foradoninho.app` |
 | Site | https://foradoninho.com.br |
-| Repositório | https://github.com/pitstopbabyapp-blip/-pitstop-baby |
+| Repositório | https://github.com/mundocomportamental/foradoninho |
 | Deploy | Vercel (push para `main` → deploy automático) |
 | Banco | Supabase |
 | Keystore | `signing.keystore` + `signing-key-info.txt` (GUARDAR COM SEGURANÇA) |
