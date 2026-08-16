@@ -20,7 +20,7 @@ export interface Local {
   balanco?: boolean
   carrinho?: boolean
   agua_quente?: boolean
-  certificado_pitstop: boolean
+  certificado_fora_do_ninho: boolean
   is_servico?: boolean
   aprovado?: boolean
   // Campos de profissionais (preenchidos quando is_servico=true)

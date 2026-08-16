@@ -118,7 +118,7 @@ export default function LocaisPage() {
     distKm: userPos ? getDistanceKm(userPos.lat, userPos.lng, l.lat, l.lng) : null,
   })).sort((a, b) => (a.distKm ?? 999) - (b.distKm ?? 999))
 
-  const destaques = estabelecimentos.filter(l => l.certificado_pitstop)
+  const destaques = estabelecimentos.filter(l => l.certificado_fora_do_ninho)
 
   return (
     <div className="app-shell">
@@ -207,8 +207,8 @@ export default function LocaisPage() {
                           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--green-dark)', background: 'var(--green-soft)', padding: '2px 8px', borderRadius: 20 }}>
                             {TIPO_LABELS[local.tipo] || local.tipo}
                           </span>
-                          {local.certificado_pitstop && (
-                            <span style={{ fontSize: 11, fontWeight: 600, color: '#059669', background: '#d1fae5', padding: '2px 8px', borderRadius: 20 }}>✓ PitStop</span>
+                          {local.certificado_fora_do_ninho && (
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#059669', background: '#d1fae5', padding: '2px 8px', borderRadius: 20 }}>✓ Verificado</span>
                           )}
                         </div>
                         <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

@@ -710,7 +710,7 @@ export default function MapaPage() {
                   </svg>
                   {selectedLocal.total_checkins ?? 0} check-ins
                 </span>
-                {selectedLocal.certificado_pitstop && (
+                {selectedLocal.certificado_fora_do_ninho && (
                   <>
                     <span style={{ color: 'var(--border)' }}>·</span>
                     <span style={{ fontSize: 12, fontWeight: 600, color: '#059669' }}>✓ Verificado</span>
@@ -856,7 +856,7 @@ export default function MapaPage() {
                         </div>
                       )}
                     </div>
-                    {!local.is_servico && local.certificado_pitstop && (
+                    {!local.is_servico && local.certificado_fora_do_ninho && (
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginLeft: 8 }}>
                         <circle cx="12" cy="12" r="9" /><polyline points="9,12 11,14 15,10" />
                       </svg>
