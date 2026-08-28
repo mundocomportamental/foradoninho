@@ -61,13 +61,14 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
       })
 
       // CartoDB passou a exigir API key (28/08/2026) e sobrepõe "API KEY REQUIRED"
-      // nos tiles sem chave — trocado para Esri World Light Gray Canvas (mesmo
-      // visual cinza claro, sem exigir chave). maxNativeZoom:16 porque essa
-      // camada só tem tiles nativos até zoom 16; além disso o Leaflet amplia
-      // o último tile disponível (fica levemente borrado, mas funcional).
+      // nos tiles sem chave — trocado para OpenStreetMap Standard (gratuito, sem
+      // chave, e mostra comércios/prédios reais, diferente do gray canvas puro).
+      // Aplicamos um filtro CSS (classe "map-tiles-gray", ver globals.css) pra
+      // dessaturar o visual colorido padrão do OSM e aproximar da identidade
+      // minimalista do app.
       L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-        { attribution: 'Tiles © Esri — Esri, DeLorme, NAVTEQ', noWrap: true, maxNativeZoom: 16, maxZoom: 19 }
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        { attribution: '© OpenStreetMap contributors', noWrap: true, maxZoom: 19, className: 'map-tiles-gray' }
       ).addTo(map)
 
       map.on('click', () => onMapClickRef.current?.())

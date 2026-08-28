@@ -40,6 +40,12 @@ html, body {
   overflow: hidden;
 }
 
+/* Mapa: dessatura os tiles coloridos do OpenStreetMap pra aproximar do visual
+   minimalista do app (pins/UI do Leaflet não são afetados, só as imagens de tile). */
+.map-tiles-gray .leaflet-tile {
+  filter: grayscale(75%) saturate(0.5) brightness(1.09) contrast(0.935);
+}
+
 /* App Shell */
 .app-shell {
   position: fixed;
