@@ -30,7 +30,7 @@ export default function PinConfirmMap({ initialCenter, onConfirm, onBack }: Prop
       // OpenStreetMap Standard + filtro cinza (ver MapView.tsx e globals.css).
       L.tileLayer(
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { subdomains: 'abc', noWrap: true, maxZoom: 19, className: 'map-tiles-gray' }
+        { subdomains: 'abc', noWrap: true, maxZoom: 19, detectRetina: true, className: 'map-tiles-gray' }
       ).addTo(map)
 
       mapRef.current = map

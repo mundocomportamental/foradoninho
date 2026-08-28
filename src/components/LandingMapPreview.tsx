@@ -32,7 +32,7 @@ export default function LandingMapPreview() {
       // OpenStreetMap Standard + filtro cinza (ver MapView.tsx e globals.css).
       L.tileLayer(
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { maxZoom: 19, className: 'map-tiles-gray' }
+        { maxZoom: 19, detectRetina: true, className: 'map-tiles-gray' }
       ).addTo(map)
 
       const pins: [number, number, string][] = [

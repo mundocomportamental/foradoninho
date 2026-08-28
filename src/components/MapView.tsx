@@ -66,9 +66,13 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
       // Aplicamos um filtro CSS (classe "map-tiles-gray", ver globals.css) pra
       // dessaturar o visual colorido padrão do OSM e aproximar da identidade
       // minimalista do app.
+      // detectRetina: em telas de alta densidade (celular), busca tiles de um
+      // zoom mais fundo em vez de esticar o tile normal — evita o texto/traço
+      // fino e borrado que aparecia em telas retina (o OSM não serve tiles @2x
+      // por URL, então é assim que o Leaflet compensa).
       L.tileLayer(
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { attribution: '© OpenStreetMap contributors', noWrap: true, maxZoom: 19, className: 'map-tiles-gray' }
+        { attribution: '© OpenStreetMap contributors', noWrap: true, maxZoom: 19, detectRetina: true, className: 'map-tiles-gray' }
       ).addTo(map)
 
       map.on('click', () => onMapClickRef.current?.())
