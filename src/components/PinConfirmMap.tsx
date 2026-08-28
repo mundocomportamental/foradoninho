@@ -26,9 +26,11 @@ export default function PinConfirmMap({ initialCenter, onConfirm, onBack }: Prop
         attributionControl: false,
       })
 
+      // CartoDB passou a exigir API key (28/08/2026) — trocado para Esri
+      // World Light Gray Canvas, mesmo visual, sem exigir chave (ver MapView.tsx).
       L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        { subdomains: 'abcd', noWrap: true, maxZoom: 19 }
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        { noWrap: true, maxNativeZoom: 16, maxZoom: 19 }
       ).addTo(map)
 
       mapRef.current = map

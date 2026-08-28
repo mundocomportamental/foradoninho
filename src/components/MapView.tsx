@@ -60,9 +60,14 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
         attributionControl: false,
       })
 
+      // CartoDB passou a exigir API key (28/08/2026) e sobrepõe "API KEY REQUIRED"
+      // nos tiles sem chave — trocado para Esri World Light Gray Canvas (mesmo
+      // visual cinza claro, sem exigir chave). maxNativeZoom:16 porque essa
+      // camada só tem tiles nativos até zoom 16; além disso o Leaflet amplia
+      // o último tile disponível (fica levemente borrado, mas funcional).
       L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        { attribution: '© CartoDB', noWrap: true }
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        { attribution: 'Tiles © Esri — Esri, DeLorme, NAVTEQ', noWrap: true, maxNativeZoom: 16, maxZoom: 19 }
       ).addTo(map)
 
       map.on('click', () => onMapClickRef.current?.())

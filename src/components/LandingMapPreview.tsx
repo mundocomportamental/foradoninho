@@ -28,7 +28,12 @@ export default function LandingMapPreview() {
         touchZoom: false,
       })
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map)
+      // CartoDB passou a exigir API key (28/08/2026) — trocado para Esri
+      // World Light Gray Canvas, mesmo visual, sem exigir chave (ver MapView.tsx).
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        { maxNativeZoom: 16, maxZoom: 19 }
+      ).addTo(map)
 
       const pins: [number, number, string][] = [
         [-22.951, -43.192, '#33cccc'],
