@@ -1,27 +1,11 @@
 'use client'
 import { useEffect, useRef } from 'react'
+import { getOsmStyle } from '@/lib/mapStyle'
 
 interface Props {
   initialCenter: { lat: number; lng: number }
   onConfirm: (pos: { lat: number; lng: number }) => void
   onBack: () => void
-}
-
-const OSM_STYLE = {
-  version: 8 as const,
-  sources: {
-    osm: {
-      type: 'raster' as const,
-      tiles: [
-        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      ],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors',
-    },
-  },
-  layers: [{ id: 'osm', type: 'raster' as const, source: 'osm' }],
 }
 
 export default function PinConfirmMap({ initialCenter, onConfirm, onBack }: Props) {
@@ -37,7 +21,7 @@ export default function PinConfirmMap({ initialCenter, onConfirm, onBack }: Prop
 
       const map = new MapLibreMap({
         container: containerRef.current!,
-        style: OSM_STYLE,
+        style: getOsmStyle(),
         center: [initialCenter.lng, initialCenter.lat],
         zoom: 17,
         minZoom: 4,

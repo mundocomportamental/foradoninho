@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import type { Local } from '@/lib/types'
+import { getOsmStyle } from '@/lib/mapStyle'
 
 interface Props {
   locais: Local[]
@@ -65,26 +66,6 @@ function pinSVG(color: string, size: number, isProfissional = false) {
   </div>`
 }
 
-// Tiles do OpenStreetMap Standard — gratuito, sem API key (a CartoDB passou a
-// exigir chave em 28/08/2026). O filtro cinza fica em globals.css, aplicado
-// direto em ".maplibregl-canvas".
-const OSM_STYLE = {
-  version: 8 as const,
-  sources: {
-    osm: {
-      type: 'raster' as const,
-      tiles: [
-        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      ],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors',
-    },
-  },
-  layers: [{ id: 'osm', type: 'raster' as const, source: 'osm' }],
-}
-
 export default function MapView({ locais, userPos, center, onMarkerClick, onMapClick, flyTrigger }: Props) {
   const mapRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -102,7 +83,7 @@ export default function MapView({ locais, userPos, center, onMarkerClick, onMapC
 
       const map = new MapLibreMap({
         container: containerRef.current!,
-        style: OSM_STYLE,
+        style: getOsmStyle(),
         center: [center.lng, center.lat],
         zoom: 11,
         // Impede zoom-out a ponto de mostrar cópias repetidas do mapa-múndi —

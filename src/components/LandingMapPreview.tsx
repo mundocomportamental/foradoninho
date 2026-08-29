@@ -1,24 +1,8 @@
 'use client'
 import { useEffect, useRef } from 'react'
+import { getOsmStyle } from '@/lib/mapStyle'
 
 // Recorte decorativo do mesmo mapa (tiles OSM + filtro cinza) usado em /mapa, sem interação.
-const OSM_STYLE = {
-  version: 8 as const,
-  sources: {
-    osm: {
-      type: 'raster' as const,
-      tiles: [
-        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      ],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors',
-    },
-  },
-  layers: [{ id: 'osm', type: 'raster' as const, source: 'osm' }],
-}
-
 export default function LandingMapPreview() {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<any>(null)
@@ -34,7 +18,7 @@ export default function LandingMapPreview() {
 
       const map = new MapLibreMap({
         container: containerRef.current,
-        style: OSM_STYLE,
+        style: getOsmStyle(),
         center: [-43.185, -22.955],
         zoom: 13,
         interactive: false,
