@@ -433,6 +433,28 @@ export default function MapaPage() {
     } catch {}
   }
 
+  function handleLocateClick() {
+    // Se já sabemos a posição, só recentraliza. Se não (permissão negada ou
+    // primeira visita sem cache — casos em que o botão antes nem aparecia),
+    // tenta pedir a localização de novo agora.
+    if (userPos) {
+      setFlyTrigger(t => t + 1)
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const pos = { lat: coords.latitude, lng: coords.longitude }
+        setUserPos(pos)
+        setMapCenter(pos)
+        setFlyTrigger(t => t + 1)
+        fetchLocais(pos.lat, pos.lng)
+        try { localStorage.setItem(LAST_POS_KEY, JSON.stringify(pos)) } catch {}
+      },
+      () => {},
+      { timeout: 6000, maximumAge: 5 * 60 * 1000 }
+    )
+  }
+
   function handleMarkerClick(id: string) {
     const local = locais.find(l => l.id === id)
     if (local) {
@@ -593,35 +615,37 @@ export default function MapaPage() {
         </div>
       </div>
 
-      {/* ── Botão de geolocalização (canto superior direito, abaixo dos filtros) ── */}
-      {userPos && (
-        <button
-          onClick={() => setFlyTrigger(t => t + 1)}
-          title="Voltar para minha localização"
-          style={{
-            position: 'absolute',
-            top: 'calc(var(--overlay-top-height, 110px) + 8px)',
-            right: 12,
-            zIndex: 450,
-            width: 36, height: 36,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.95)',
-            border: '1.5px solid var(--border)',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.16)',
-            backdropFilter: 'blur(6px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <line x1="12" y1="2" x2="12" y2="5"/>
-            <line x1="12" y1="19" x2="12" y2="22"/>
-            <line x1="2" y1="12" x2="5" y2="12"/>
-            <line x1="19" y1="12" x2="22" y2="12"/>
-          </svg>
-        </button>
-      )}
+      {/* ── Botão de geolocalização (canto superior direito, abaixo dos filtros) ──
+           Sempre visível — antes só aparecia depois que o GPS respondia, então
+           quem negasse a permissão (ou abrisse o app pela 1ª vez sem cache de
+           posição) nunca via o botão. Agora clicar sem posição conhecida tenta
+           pedir a localização de novo (ver handleLocateClick). */}
+      <button
+        onClick={handleLocateClick}
+        title="Voltar para minha localização"
+        style={{
+          position: 'absolute',
+          top: 'calc(var(--overlay-top-height, 110px) + 8px)',
+          right: 12,
+          zIndex: 450,
+          width: 36, height: 36,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.95)',
+          border: '1.5px solid var(--border)',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.16)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33cccc" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <line x1="12" y1="2" x2="12" y2="5"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="5" y2="12"/>
+          <line x1="19" y1="12" x2="22" y2="12"/>
+        </svg>
+      </button>
 
       {/* ── Mini card do local selecionado ── */}
       {selectedLocal && (

@@ -1,7 +1,24 @@
 'use client'
 import { useEffect, useRef } from 'react'
 
-// Recorte decorativo do mesmo mapa (tiles cinza CartoDB) usado em /mapa, sem interação.
+// Recorte decorativo do mesmo mapa (tiles OSM + filtro cinza) usado em /mapa, sem interação.
+const OSM_STYLE = {
+  version: 8 as const,
+  sources: {
+    osm: {
+      type: 'raster' as const,
+      tiles: [
+        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [{ id: 'osm', type: 'raster' as const, source: 'osm' }],
+}
+
 export default function LandingMapPreview() {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<any>(null)
@@ -11,29 +28,18 @@ export default function LandingMapPreview() {
     let cancelled = false
 
     async function init() {
-      const L = (await import('leaflet')).default
-      await import('leaflet/dist/leaflet.css')
+      const { Map: MapLibreMap, Marker } = await import('maplibre-gl')
+      await import('maplibre-gl/dist/maplibre-gl.css')
       if (cancelled || !containerRef.current) return
 
-      const map = L.map(containerRef.current, {
-        center: [-22.955, -43.185],
+      const map = new MapLibreMap({
+        container: containerRef.current,
+        style: OSM_STYLE,
+        center: [-43.185, -22.955],
         zoom: 13,
-        zoomControl: false,
+        interactive: false,
         attributionControl: false,
-        dragging: false,
-        scrollWheelZoom: false,
-        doubleClickZoom: false,
-        boxZoom: false,
-        keyboard: false,
-        touchZoom: false,
       })
-
-      // CartoDB passou a exigir API key (28/08/2026) — trocado para
-      // OpenStreetMap Standard + filtro cinza (ver MapView.tsx e globals.css).
-      L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { maxZoom: 19, detectRetina: true, className: 'map-tiles-gray' }
-      ).addTo(map)
 
       const pins: [number, number, string][] = [
         [-22.951, -43.192, '#33cccc'],
@@ -41,12 +47,9 @@ export default function LandingMapPreview() {
         [-22.947, -43.198, '#33cccc'],
       ]
       pins.forEach(([lat, lng, color]) => {
-        const icon = L.divIcon({
-          html: `<div style="width:20px;height:20px;border-radius:50% 50% 50% 0;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25);transform:rotate(-45deg);"></div>`,
-          iconSize: [20, 20],
-          className: '',
-        })
-        L.marker([lat, lng], { icon }).addTo(map)
+        const el = document.createElement('div')
+        el.style.cssText = `width:20px;height:20px;border-radius:50% 50% 50% 0;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25);transform:rotate(-45deg);`
+        new Marker({ element: el, anchor: 'bottom' }).setLngLat([lng, lat]).addTo(map)
       })
 
       mapRef.current = map

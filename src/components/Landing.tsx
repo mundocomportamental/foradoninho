@@ -101,7 +101,7 @@ function Wave({ color, flip }: { color: string; flip?: boolean }) {
 export default function Landing() {
   const router = useRouter()
 
-  // Aquecimento do chunk do mapa (Leaflet) foi movido pro layout raiz
+  // Aquecimento do chunk do mapa (MapLibre) foi movido pro layout raiz
   // (src/components/MapWarmup.tsx) — roda em qualquer entrada do app, não só
   // aqui na landing (usuário já logado ou PWA instalado pulam esta tela).
 

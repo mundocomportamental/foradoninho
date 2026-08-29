@@ -41,9 +41,10 @@ html, body {
 }
 
 /* Mapa: dessatura os tiles coloridos do OpenStreetMap pra aproximar do visual
-   minimalista do app (pins/UI do Leaflet não são afetados, só as imagens de tile). */
-.map-tiles-gray .leaflet-tile {
-  filter: grayscale(80%) saturate(0.5) brightness(1.09) contrast(0.935);
+   minimalista do app (o filtro vai no canvas WebGL do MapLibre — pins, que são
+   elementos HTML separados por cima, não são afetados). */
+.maplibregl-canvas {
+  filter: grayscale(90%) saturate(0.5) brightness(1.09) contrast(0.935);
 }
 
 /* App Shell */
@@ -369,7 +370,7 @@ html, body {
   position: absolute;
   inset: 0;
   bottom: var(--nav-height);
-  z-index: 1; /* cria stacking context para isolar z-indices internos do Leaflet */
+  z-index: 1; /* cria stacking context para isolar z-indices internos do MapLibre */
 }
 
 .map-overlay-top {

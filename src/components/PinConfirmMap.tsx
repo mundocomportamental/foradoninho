@@ -7,6 +7,23 @@ interface Props {
   onBack: () => void
 }
 
+const OSM_STYLE = {
+  version: 8 as const,
+  sources: {
+    osm: {
+      type: 'raster' as const,
+      tiles: [
+        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [{ id: 'osm', type: 'raster' as const, source: 'osm' }],
+}
+
 export default function PinConfirmMap({ initialCenter, onConfirm, onBack }: Props) {
   const mapRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -15,23 +32,25 @@ export default function PinConfirmMap({ initialCenter, onConfirm, onBack }: Prop
     if (mapRef.current || !containerRef.current) return
 
     async function init() {
-      const L = (await import('leaflet')).default
-      await import('leaflet/dist/leaflet.css')
+      const { Map: MapLibreMap } = await import('maplibre-gl')
+      await import('maplibre-gl/dist/maplibre-gl.css')
 
-      const map = L.map(containerRef.current!, {
-        center: [initialCenter.lat, initialCenter.lng],
+      const map = new MapLibreMap({
+        container: containerRef.current!,
+        style: OSM_STYLE,
+        center: [initialCenter.lng, initialCenter.lat],
         zoom: 17,
         minZoom: 4,
-        zoomControl: false,
+        maxZoom: 19,
+        // Tela de "arraste pra confirmar o pino" — sem girar, pra manter o
+        // gesto simples e o pino fixo no centro sempre óbvio.
+        dragRotate: false,
+        pitchWithRotate: false,
+        touchPitch: false,
         attributionControl: false,
       })
-
-      // CartoDB passou a exigir API key (28/08/2026) — trocado para
-      // OpenStreetMap Standard + filtro cinza (ver MapView.tsx e globals.css).
-      L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { subdomains: 'abc', noWrap: true, maxZoom: 19, detectRetina: true, className: 'map-tiles-gray' }
-      ).addTo(map)
+      // Mantém zoom por pinça, mas sem o componente de rotação do gesto.
+      map.touchZoomRotate.disableRotation()
 
       mapRef.current = map
     }
